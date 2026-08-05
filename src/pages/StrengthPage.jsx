@@ -103,8 +103,8 @@ function StrengthPage() {
         <h1>One-Rep Max</h1>
         <p className="page-lead">
           Estimate your 1RM with the Epley formula. Add bodyweight for a
-          relative-strength ratio, then optionally compare with peer-reviewed
-          powerlifting norms for your age, gender, and lift.
+          relative-strength ratio, then optionally compare with recreational
+          lifters in your age, gender, and bodyweight category.
         </p>
       </header>
 
@@ -153,7 +153,7 @@ function StrengthPage() {
           gender={gender}
           onAgeChange={setAge}
           onGenderChange={setGender}
-          note="Add bodyweight, lift, age, and gender to estimate your percentile from van den Hoek et al. (2024) — 809,986 drug-tested powerlifting entries. Bodyweight stays in sync with the field above."
+          note="Add bodyweight, lift, age, and gender to estimate your percentile among recreational lifters / average gym-goers. Bodyweight stays in sync with the field above."
         >
           {renderBodyweightField()}
           <label className="field">
@@ -220,7 +220,7 @@ function StrengthPage() {
                 },
                 {
                   label: 'Reference population',
-                  value: 'Competitive powerlifters (peer-reviewed)',
+                  value: 'Recreational lifters / average gym-goers',
                 },
               ]}
               source={result.peer.source}

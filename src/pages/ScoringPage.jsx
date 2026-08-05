@@ -379,7 +379,7 @@ function ScoringPage() {
               },
               {
                 label: 'Strength reference',
-                value: 'Competitive powerlifters (van den Hoek 2024)',
+                value: 'Recreational lifters / average gym-goers',
               },
               {
                 label: 'Running reference',

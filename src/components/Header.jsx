@@ -1,4 +1,5 @@
 import { navTabs } from '../data/calculators'
+import { BRAND } from '../data/brand'
 
 function Header({ activeTab, onTabChange }) {
   return (
@@ -7,8 +8,10 @@ function Header({ activeTab, onTabChange }) {
         type="button"
         className="brand"
         onClick={() => onTabChange('home')}
+        title={BRAND.full}
+        aria-label={BRAND.full}
       >
-        FPC
+        {BRAND.short}
       </button>
 
       <nav className="site-nav" aria-label="Main">

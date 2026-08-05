@@ -1,15 +1,14 @@
 import { sources } from '../data/sources'
+import { BRAND } from '../data/brand'
 
 function AboutPage() {
   return (
     <main className="page about-page">
       <header className="page-header">
         <p className="page-eyebrow">About</p>
-        <h1>FPC</h1>
+        <h1 className="about-brand">{BRAND.full}</h1>
         <p className="page-lead">
-          FPC's goal is to bring affordable, modern fitness calculation
-          tools to the general population through transparent sources and clear
-          results.
+          {`${BRAND.full}'s goal is to bring affordable, modern fitness calculation tools to the general population through transparent sources and clear results.`}
         </p>
       </header>
 
@@ -17,15 +16,16 @@ function AboutPage() {
         <h2 className="result-section-title">Our mission</h2>
         <p>
           Strength and endurance calculators are often locked behind paywalls,
-          apps, or confusing spreadsheets. FPC focuses on free, simple tools
-          anyone can use to estimate one-rep max, compare relative strength,
-          predict race times, and understand how a result stacks up against
-          published data for their age and gender group.
+          apps, or confusing spreadsheets. {BRAND.full} focuses on free, simple
+          tools anyone can use to estimate one-rep max, compare relative
+          strength, predict race times, and understand how a result stacks up
+          against published data for their age and gender group.
         </p>
         <p>
-          We keep formulas and comparison datasets documented so you can see
-          exactly what powers each estimate. Fitness Scoring combines those same
-          strength and running percentiles into one balanced FPC Score.
+          We keep formulas and comparison datasets documented below so you can
+          see exactly what powers each estimate. Fitness Scoring combines those
+          same recreational strength and running percentiles into one balanced{' '}
+          {BRAND.scoreName}.
         </p>
       </section>
 
@@ -34,9 +34,10 @@ function AboutPage() {
           Sources & methods
         </h2>
         <p className="about-intro">
-          The calculators use established formulas and large published datasets.
+          These are the citations behind FPC formulas and peer comparisons.
           Percentiles mean “better than X out of 100” people in the stated
-          reference population.
+          reference population — recreational lifters for strength, race
+          finishers for running.
         </p>
 
         <ul className="source-list">
@@ -53,14 +54,32 @@ function AboutPage() {
         </ul>
       </section>
 
+      <section
+        className="about-section business-inquiry"
+        aria-labelledby="business-heading"
+      >
+        <h2 id="business-heading" className="result-section-title">
+          Business
+        </h2>
+        <p className="business-copy">
+          For business inquiries, contact{' '}
+          <a
+            className="business-email-inline"
+            href={`mailto:${BRAND.businessEmail}`}
+          >
+            {BRAND.businessEmail}
+          </a>
+          .
+        </p>
+      </section>
+
       <section className="about-section">
         <h2 className="result-section-title">Important notes</h2>
         <ul className="about-notes">
           <li>
-            Strength percentiles come from competitive powerlifting research.
-            Recreational lifters often rank lower on that scale — that does not
-            mean the estimate is wrong, only that the reference group is highly
-            trained.
+            Strength percentiles compare you with recreational lifters / average
+            gym-goers in your age and gender group — not competitive
+            powerlifters.
           </li>
           <li>
             Running percentiles compare you with race finishers, not the entire

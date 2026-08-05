@@ -17,8 +17,7 @@ function formatGender(gender) {
 }
 
 /**
- * Compare relative strength to peer-reviewed powerlifting norms
- * (van den Hoek et al., 2024).
+ * Compare relative strength to recreational / average-gym-goer norms.
  *
  * Percentile = percent of that reference group you outperform.
  *
@@ -48,7 +47,7 @@ export function compareStrengthToNorms(ratio, age, gender, lift = 'deadlift') {
     percentile: betterThanPercent,
     percentileLabel: ordinal,
     betterThanPercent,
-    summary: `You are stronger than about ${betterThanPercent} out of 100 competitive powerlifters in your age and gender group for this lift (${ordinal} percentile), based on peer-reviewed norms from 809,986 competition entries.`,
+    summary: `You are stronger than about ${betterThanPercent} out of 100 recreational lifters in your age, gender, and bodyweight category for this lift (${ordinal} percentile).`,
     ageLabel: band.label,
     genderLabel: formatGender(gender),
     gender,

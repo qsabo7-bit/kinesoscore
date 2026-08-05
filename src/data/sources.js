@@ -1,42 +1,53 @@
+import { STRENGTH_NORM_SOURCE } from './strengthNorms.js'
+import { RUNNING_NORM_SOURCE } from './runningNorms.js'
+import { FITNESS_SCORE_SOURCE } from '../calculations/fitnessScore.js'
+import { BRAND } from './brand.js'
+
 /**
- * Public citations for FPC formulas and comparison data.
- * Shown on the About page and kept in one place for easy updates.
+ * Public citations for Fitness Performance Calculator formulas and data.
+ * About page renders this list. Live calculator sources are included so
+ * About stays aligned with peer-comparison panels.
  */
 export const sources = [
   {
     id: 'epley',
     category: 'Strength formulas',
     title: 'Epley one-rep max formula',
-    detail:
-      'FPC estimates 1RM with the Epley equation: 1RM = weight × (1 + reps / 30). This is a widely used practical estimate for submaximal sets.',
+    detail: `${BRAND.full} estimates 1RM with the Epley equation: 1RM = weight × (1 + reps / 30). This is a widely used practical estimate for submaximal sets.`,
     url: 'https://en.wikipedia.org/wiki/One-repetition_maximum#Epley_formula',
     linkLabel: 'One-repetition maximum (Epley formula)',
   },
   {
-    id: 'van-den-hoek',
+    id: 'recreational-strength',
     category: 'Strength percentiles',
-    title: 'van den Hoek et al. (2024)',
+    title: STRENGTH_NORM_SOURCE.name,
+    detail: `${STRENGTH_NORM_SOURCE.detail} Standards follow common recreational beginner → elite bodyweight-ratio ladders (similar to Strength Level–style gym standards) with age scaling for older adults.`,
+    url: STRENGTH_NORM_SOURCE.url,
+    linkLabel: 'Barbell Medicine strength standards (recreational context)',
+  },
+  {
+    id: 'strength-level-context',
+    category: 'Strength percentiles',
+    title: 'Recreational gym strength ladders',
     detail:
-      'Peer-reviewed normative data for squat, bench press, and deadlift from 809,986 drug-tested, unequipped powerlifting competition entries. Used for age- and sex-specific bodyweight-relative strength percentiles.',
-    url: 'https://doi.org/10.1016/j.jsams.2024.07.005',
-    linkLabel: 'Journal of Science and Medicine in Sport (DOI)',
+      'Beginner, novice, intermediate, advanced, and elite recreational bodyweight ratios for squat, bench, and deadlift are widely published for everyday lifters. FPC uses that recreational framing — not competitive powerlifting meet data — when estimating strength percentiles.',
+    url: 'https://strengthlevel.com/strength-standards',
+    linkLabel: 'Strength Level strength standards',
   },
   {
     id: 'riegel',
     category: 'Running formulas',
     title: 'Riegel race-time prediction formula',
-    detail:
-      'FPC predicts equivalent race times with the Riegel model: T2 = T1 × (D2 / D1)^1.06. This is a common endurance prediction formula for converting between distances.',
+    detail: `${BRAND.full} predicts equivalent race times with the Riegel model: T2 = T1 × (D2 / D1)^1.06. This is a common endurance prediction formula for converting between distances.`,
     url: 'https://en.wikipedia.org/wiki/Peter_Riegel',
     linkLabel: 'Peter Riegel / race prediction formula',
   },
   {
     id: 'runrepeat',
     category: 'Running percentiles',
-    title: 'RunRepeat race-result percentiles',
-    detail:
-      'Sex-specific 5K finish-time percentile curves drawn from RunRepeat’s analysis of tens of millions of race results across tens of thousands of events. FPC converts those curves into “better than X out of 100” percentiles.',
-    url: 'https://runrepeat.com/how-do-you-masure-up-the-runners-percentile-calculator',
+    title: RUNNING_NORM_SOURCE.name,
+    detail: RUNNING_NORM_SOURCE.detail,
+    url: RUNNING_NORM_SOURCE.url,
     linkLabel: 'RunRepeat percentile calculator',
   },
   {
@@ -49,12 +60,11 @@ export const sources = [
     linkLabel: 'Outside Online 5K age-group reporting',
   },
   {
-    id: 'FPC-score',
+    id: 'fpc-score',
     category: 'Fitness Scoring',
-    title: 'FPC composite score',
-    detail:
-      'Fitness Scoring averages your strength percentile (van den Hoek et al., 2024) and running percentile (RunRepeat) with equal weight. The FPC Score is the percent of people you outperform on average across both domains for your age and gender group.',
-    url: 'https://doi.org/10.1016/j.jsams.2024.07.005',
-    linkLabel: 'Strength norms used in the composite (DOI)',
+    title: FITNESS_SCORE_SOURCE.name,
+    detail: FITNESS_SCORE_SOURCE.detail,
+    url: FITNESS_SCORE_SOURCE.url,
+    linkLabel: 'Recreational strength standards used in the composite',
   },
 ]

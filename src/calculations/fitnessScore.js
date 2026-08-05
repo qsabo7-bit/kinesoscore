@@ -6,8 +6,8 @@ import { formatOrdinal } from './percentile.js'
 export const FITNESS_SCORE_SOURCE = {
   name: 'FPC composite score',
   detail:
-    'Equal-weighted average of your strength percentile (van den Hoek et al., 2024) and running percentile (RunRepeat race-result curves). Score = how many people out of 100 you outperform on average across both domains.',
-  url: 'https://doi.org/10.1016/j.jsams.2024.07.005',
+    'Equal-weighted average of your recreational strength percentile and running percentile (RunRepeat race-result curves). Score = how many people out of 100 you outperform on average across both domains.',
+  url: 'https://www.barbellmedicine.com/blog/strength-standards/',
 }
 
 /**
@@ -91,7 +91,7 @@ export function calculateFitnessScore({
     runningScore,
     strengthPeer,
     runningPeer,
-    summary: `Your FPC Score is ${FPCScore} — about the ${ordinal} percentile across strength and running combined. That means you outperform roughly ${FPCScore} out of 100 people on average in both domains for your age and gender group.`,
+    summary: `Your FPC Score is ${FPCScore} — about the ${ordinal} percentile across strength and running combined. That means you outperform roughly ${FPCScore} out of 100 recreational peers on average (gym-goers for strength, race finishers for running) in your age and gender group.`,
     source: FITNESS_SCORE_SOURCE,
   }
 }

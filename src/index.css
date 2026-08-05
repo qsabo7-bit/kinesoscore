@@ -181,11 +181,22 @@ select:focus {
 
 .home-brand {
   font-family: var(--display);
-  font-size: clamp(4rem, 14vw, 7rem);
+  font-size: clamp(2.4rem, 8vw, 4.5rem);
   font-weight: 700;
-  line-height: 0.9;
+  line-height: 0.95;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  max-width: 14ch;
+}
+
+.about-brand {
+  font-family: var(--display);
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1;
+  max-width: 16ch;
 }
 
 .home-tagline,
@@ -504,6 +515,19 @@ select:focus {
 
 .about-notes li {
   line-height: 1.55;
+}
+
+.business-inquiry {
+  max-width: 40rem;
+}
+
+.business-copy {
+  margin-bottom: 0;
+}
+
+.business-email-inline {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .results {
