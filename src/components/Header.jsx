@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import {
   calculators,
   DEFAULT_CALCULATOR_ID,
@@ -7,7 +8,17 @@ import {
 import { BRAND } from '../data/brand'
 
 function Header({ activeTab, onTabChange }) {
+  const { isAuthenticated, firstName, loading } = useAuth()
   const calculatorActive = isCalculatorTab(activeTab)
+
+  // Wait for session restore before deciding Login vs Welcome.
+  const showLogin = !loading && !isAuthenticated
+  const showWelcome = !loading && isAuthenticated
+
+  const visibleTabs = navTabs.filter((tab) => {
+    if (tab.id === 'login') return showLogin
+    return true
+  })
 
   const handleMainTab = (tabId) => {
     if (tabId === 'calculators') {
@@ -20,6 +31,19 @@ function Header({ activeTab, onTabChange }) {
 
   return (
     <header className="site-header">
+      {showWelcome ? (
+        <div className="account-welcome-bar">
+          <button
+            type="button"
+            className="account-welcome-link"
+            onClick={() => onTabChange('account')}
+            aria-label="Open account settings"
+          >
+            Welcome, {firstName || 'Athlete'}
+          </button>
+        </div>
+      ) : null}
+
       <div className="site-header-top">
         <button
           type="button"
@@ -32,21 +56,21 @@ function Header({ activeTab, onTabChange }) {
         </button>
 
         <nav className="site-nav" aria-label="Main">
-          {navTabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const isActive =
-              tab.id === 'calculators' ? calculatorActive : activeTab === tab.id
-            const isDev = tab.status === 'development'
+              tab.id === 'calculators'
+                ? calculatorActive
+                : activeTab === tab.id
 
             return (
               <button
                 key={tab.id}
                 type="button"
-                className={`nav-tab${isActive ? ' is-active' : ''}${isDev ? ' is-dev' : ''}`}
+                className={`nav-tab${isActive ? ' is-active' : ''}`}
                 onClick={() => handleMainTab(tab.id)}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {tab.name}
-                {isDev ? <span className="nav-badge">Soon</span> : null}
               </button>
             )
           })}

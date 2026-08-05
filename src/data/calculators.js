@@ -51,6 +51,11 @@ export const navTabs = [
     status: 'ready',
   },
   {
+    id: 'login',
+    name: 'Login',
+    status: 'ready',
+  },
+  {
     id: 'about',
     name: 'About',
     status: 'ready',

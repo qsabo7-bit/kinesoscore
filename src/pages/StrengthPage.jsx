@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
 import UnitToggle from '../components/UnitToggle'
@@ -13,7 +14,7 @@ import {
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
 
-function StrengthPage() {
+function StrengthPage({ onRequestAuth }) {
   const [massUnit, setMassUnit] = useState('lb')
   const [weight, setWeight] = useState('185')
   const [reps, setReps] = useState('5')
@@ -226,6 +227,14 @@ function StrengthPage() {
               source={result.peer.source}
             />
           ) : null}
+
+          <CalculatorTracking
+            calculatorType="strength"
+            resultValue={result.oneRepMax}
+            resultUnit={massUnit}
+            yAxisLabel={`1RM (${massUnit})`}
+            onRequestAuth={onRequestAuth}
+          />
         </section>
       ) : (
         <p className="calc-hint">Enter a valid weight and reps.</p>

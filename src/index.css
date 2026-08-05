@@ -655,6 +655,228 @@ select:focus {
   max-width: 36rem;
 }
 
+/* Auth / account nav -------------------------------------------------------- */
+
+.account-welcome-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.account-welcome-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  transition: opacity 160ms ease;
+}
+
+.account-welcome-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  color: #0f1412;
+  background: var(--accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #a6ffcb;
+}
+
+.btn-ghost {
+  color: var(--text-strong);
+  border-color: var(--border);
+  background: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.btn-danger {
+  color: #0f1412;
+  background: #ff8f8f;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #ffb0b0;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.text-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.feedback {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.feedback-success {
+  color: var(--accent);
+}
+
+.feedback-error {
+  color: #ff8f8f;
+}
+
+.confirm-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  display: grid;
+  gap: 0.85rem;
+}
+
+.confirm-box-danger {
+  border-color: rgba(255, 143, 143, 0.35);
+}
+
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.auth-form {
+  margin-top: 0.5rem;
+}
+
+.auth-switch {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.account-card {
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.account-controls {
+  display: grid;
+  gap: 1rem;
+}
+
+.btn-danger-ghost {
+  color: #ff8f8f;
+  border: 1px solid rgba(255, 143, 143, 0.35);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.72rem;
+}
+
+.btn-danger-ghost:hover:not(:disabled) {
+  background: rgba(255, 143, 143, 0.12);
+}
+
+.tracking-panel {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 1rem;
+}
+
+.tracking-panel-guest {
+  padding-top: 1rem;
+}
+
+.tracking-cta {
+  font-size: 1.05rem;
+  color: var(--text-strong);
+}
+
+.save-result-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.progress-section {
+  display: grid;
+  gap: 0.85rem;
+  padding-top: 0.5rem;
+}
+
+.progress-chart-wrap {
+  padding: 0.75rem 0.25rem 0;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+}
+
+.progress-empty {
+  max-width: 36rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.progress-history-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.progress-history-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-history-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.progress-history-value {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  letter-spacing: 0.02em;
+}
+
+.progress-history-meta {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
 @media (min-width: 720px) {
   .tool-list {
     grid-template-columns: repeat(3, 1fr);
@@ -671,7 +893,9 @@ select:focus {
     align-items: start;
   }
 
-  .result-table-wrap {
+  .result-table-wrap,
+  .tracking-panel,
+  .peer-comparison {
     grid-column: 1 / -1;
   }
 }
