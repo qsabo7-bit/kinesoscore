@@ -15,16 +15,16 @@ function AboutPage() {
       <section className="about-section">
         <h2 className="result-section-title">Our mission</h2>
         <p>
-          Strength and endurance calculators are often locked behind paywalls,
-          apps, or confusing spreadsheets. {BRAND.full} focuses on free, simple
-          tools anyone can use to estimate one-rep max, compare relative
-          strength, predict race times, and understand how a result stacks up
-          against published data for their age and gender group.
+          Strength, endurance, and metabolism calculators are often locked
+          behind paywalls, apps, or confusing spreadsheets. {BRAND.full} focuses
+          on free, simple tools anyone can use to estimate one-rep max, predict
+          race times, estimate VO₂ max and BMR, and understand how a result
+          stacks up against published data for their age and gender group.
         </p>
         <p>
           We keep formulas and comparison datasets documented below so you can
-          see exactly what powers each estimate. Fitness Scoring combines those
-          same recreational strength and running percentiles into one balanced{' '}
+          see exactly what powers each estimate. Fitness Scoring combines
+          recreational strength and running percentiles into one balanced{' '}
           {BRAND.scoreName}.
         </p>
       </section>
@@ -37,7 +37,8 @@ function AboutPage() {
           These are the citations behind FPC formulas and peer comparisons.
           Percentiles mean “better than X out of 100” people in the stated
           reference population — recreational lifters for strength, race
-          finishers for running.
+          finishers for running, and Cooper Institute / ACSM adult norms for
+          VO₂ max.
         </p>
 
         <ul className="source-list">
@@ -91,9 +92,18 @@ function AboutPage() {
             other.
           </li>
           <li>
-            Strength inputs support pounds or kilograms, and running distance
-            supports miles or kilometers. Values are converted so ratios and
-            race predictions stay scientifically consistent.
+            VO₂ max estimates come from field tests (Cooper or Rockport), not
+            laboratory gas analysis. Use them as practical cardio benchmarks.
+          </li>
+          <li>
+            BMR uses Mifflin–St Jeor resting metabolism. Optional TDEE activity
+            multipliers are planning estimates, not individualized lab measures.
+          </li>
+          <li>
+            Strength and BMR support pounds or kilograms; height supports inches
+            or centimeters; running and Cooper distance support miles or
+            kilometers. Values are converted so formulas stay scientifically
+            consistent.
           </li>
           <li>
             These tools are educational estimates, not medical advice or coaching

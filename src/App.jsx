@@ -4,6 +4,8 @@ import HomePage from './pages/HomePage'
 import StrengthPage from './pages/StrengthPage'
 import RunningPage from './pages/RunningPage'
 import ScoringPage from './pages/ScoringPage'
+import Vo2MaxPage from './pages/Vo2MaxPage'
+import BmrPage from './pages/BmrPage'
 import AboutPage from './pages/AboutPage'
 
 function App() {
@@ -16,6 +18,10 @@ function App() {
     content = <RunningPage />
   } else if (activeTab === 'scoring') {
     content = <ScoringPage />
+  } else if (activeTab === 'vo2max') {
+    content = <Vo2MaxPage />
+  } else if (activeTab === 'bmr') {
+    content = <BmrPage />
   } else if (activeTab === 'about') {
     content = <AboutPage />
   } else {

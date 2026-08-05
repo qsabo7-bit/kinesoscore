@@ -8,8 +8,8 @@ function HomePage({ onOpenTab }) {
         <p className="home-eyebrow">Performance tools</p>
         <h1 className="home-brand">{BRAND.full}</h1>
         <p className="home-tagline">
-          Measure strength, running, and overall fitness with clear, practical
-          calculators.
+          Measure strength, running, VO₂ max, metabolism, and overall fitness
+          with clear, practical calculators.
         </p>
       </section>
 

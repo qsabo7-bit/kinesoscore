@@ -13,6 +13,13 @@ export const DISTANCE_UNITS = [
   { value: 'km', label: 'km' },
 ]
 
+export const HEIGHT_UNITS = [
+  { value: 'in', label: 'in' },
+  { value: 'cm', label: 'cm' },
+]
+
+export const CM_PER_INCH = 2.54
+
 export function lbToKg(pounds) {
   return pounds / LB_PER_KG
 }
@@ -49,6 +56,34 @@ export function convertMass(value, from, to) {
 export function convertDistance(value, from, to) {
   if (!Number.isFinite(value) || from === to) return value
   return from === 'mi' ? miToKm(value) : kmToMi(value)
+}
+
+export function inToCm(inches) {
+  return inches * CM_PER_INCH
+}
+
+export function cmToIn(centimeters) {
+  return centimeters / CM_PER_INCH
+}
+
+/**
+ * Convert a height value between in and cm.
+ * @param {number} value
+ * @param {'in' | 'cm'} from
+ * @param {'in' | 'cm'} to
+ */
+export function convertHeight(value, from, to) {
+  if (!Number.isFinite(value) || from === to) return value
+  return from === 'in' ? inToCm(value) : cmToIn(value)
+}
+
+/**
+ * Normalize height to centimeters for metabolic formulas.
+ * @param {number} value
+ * @param {'in' | 'cm'} unit
+ */
+export function toCm(value, unit) {
+  return unit === 'in' ? inToCm(value) : value
 }
 
 /**

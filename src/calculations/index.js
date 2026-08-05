@@ -22,15 +22,37 @@ export {
 } from './fitnessScore.js'
 export { formatOrdinal, estimatePercentOutperformed, interpolatePercentile } from './percentile.js'
 export {
+  ACTIVITY_LEVELS,
+  calculateBmr,
+  estimateMifflinStJeor,
+  estimateTdee,
+  MIFFLIN_ST_JEOR_SOURCE,
+  TDEE_ACTIVITY_SOURCE,
+} from './bmr.js'
+export {
+  calculateCooperVo2,
+  calculateRockportVo2,
+  compareVo2ToNorms,
+  COOPER_VO2_SOURCE,
+  estimateVo2FromCooper,
+  estimateVo2FromRockport,
+  getVo2FitnessCategory,
+  ROCKPORT_VO2_SOURCE,
+  VO2_NORM_SOURCE,
+} from './vo2max.js'
+export {
   convertDistance,
+  convertHeight,
   convertMass,
   DISTANCE_UNITS,
   formatConverted,
+  HEIGHT_UNITS,
   KM_PER_MILE,
   kmToMi,
   LB_PER_KG,
   lbToKg,
   MASS_UNITS,
   miToKm,
+  toCm,
   toMiles,
 } from './units.js'

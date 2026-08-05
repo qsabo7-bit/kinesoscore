@@ -1,6 +1,15 @@
 import { STRENGTH_NORM_SOURCE } from './strengthNorms.js'
 import { RUNNING_NORM_SOURCE } from './runningNorms.js'
 import { FITNESS_SCORE_SOURCE } from '../calculations/fitnessScore.js'
+import {
+  COOPER_VO2_SOURCE,
+  ROCKPORT_VO2_SOURCE,
+  VO2_NORM_SOURCE,
+} from '../calculations/vo2max.js'
+import {
+  MIFFLIN_ST_JEOR_SOURCE,
+  TDEE_ACTIVITY_SOURCE,
+} from '../calculations/bmr.js'
 import { BRAND } from './brand.js'
 
 /**
@@ -66,5 +75,45 @@ export const sources = [
     detail: FITNESS_SCORE_SOURCE.detail,
     url: FITNESS_SCORE_SOURCE.url,
     linkLabel: 'Recreational strength standards used in the composite',
+  },
+  {
+    id: 'cooper-vo2',
+    category: 'VO₂ Max formulas',
+    title: COOPER_VO2_SOURCE.name,
+    detail: COOPER_VO2_SOURCE.detail,
+    url: COOPER_VO2_SOURCE.url,
+    linkLabel: 'Cooper test (Wikipedia)',
+  },
+  {
+    id: 'rockport-vo2',
+    category: 'VO₂ Max formulas',
+    title: ROCKPORT_VO2_SOURCE.name,
+    detail: ROCKPORT_VO2_SOURCE.detail,
+    url: ROCKPORT_VO2_SOURCE.url,
+    linkLabel: 'Kline et al., 1987 (PubMed)',
+  },
+  {
+    id: 'vo2-norms',
+    category: 'VO₂ Max percentiles',
+    title: VO2_NORM_SOURCE.name,
+    detail: VO2_NORM_SOURCE.detail,
+    url: VO2_NORM_SOURCE.url,
+    linkLabel: 'ACSM Guidelines for Exercise Testing and Prescription',
+  },
+  {
+    id: 'mifflin-st-jeor',
+    category: 'Metabolism formulas',
+    title: MIFFLIN_ST_JEOR_SOURCE.name,
+    detail: MIFFLIN_ST_JEOR_SOURCE.detail,
+    url: MIFFLIN_ST_JEOR_SOURCE.url,
+    linkLabel: 'Mifflin et al., 1990 (PubMed)',
+  },
+  {
+    id: 'tdee-activity',
+    category: 'Metabolism formulas',
+    title: TDEE_ACTIVITY_SOURCE.name,
+    detail: TDEE_ACTIVITY_SOURCE.detail,
+    url: TDEE_ACTIVITY_SOURCE.url,
+    linkLabel: 'Dietary Guidelines energy needs context (NCBI Bookshelf)',
   },
 ]

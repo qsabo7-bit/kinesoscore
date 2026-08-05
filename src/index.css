@@ -107,13 +107,18 @@ select:focus {
 }
 
 .site-header {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.5rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header-top {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.5rem 0 1.5rem;
-  border-bottom: 1px solid var(--border);
 }
 
 .brand {
@@ -155,6 +160,44 @@ select:focus {
 
 .nav-tab.is-dev {
   opacity: 0.85;
+}
+
+.sub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-top: 0.15rem;
+}
+
+.sub-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  border: 1px solid var(--border);
+}
+
+.sub-nav-tab:hover {
+  color: var(--text-strong);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.sub-nav-tab.is-active {
+  color: var(--text-strong);
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.sub-nav-tab:disabled,
+.sub-nav-tab.is-dev {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .nav-badge {
@@ -378,8 +421,20 @@ select:focus {
 }
 
 .field-group {
+  margin: 0;
+  padding: 0;
+  border: none;
   display: grid;
   gap: 0.4rem;
+}
+
+.field-group legend {
+  margin-bottom: 0.15rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
 }
 
 .field-row {
