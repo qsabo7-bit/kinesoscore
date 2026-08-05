@@ -145,16 +145,16 @@ function ScoringPage() {
     if (result.missing.demographics) {
       parts.push('age and gender')
     }
-    return `Add ${parts.join(' + ')} to calculate your FitRank Score.`
+    return `Add ${parts.join(' + ')} to calculate your FPC Score.`
   })()
 
   return (
     <main className="page">
       <header className="page-header">
         <p className="page-eyebrow">Fitness Scoring</p>
-        <h1>FitRank Score</h1>
+        <h1>FPC Score</h1>
         <p className="page-lead">
-          Combine strength and running into one balanced score. FitRank Score
+          Combine strength and running into one balanced score. FPC Score
           averages your lifting and endurance percentiles so you can see overall
           fitness — not just one specialty.
         </p>
@@ -306,8 +306,8 @@ function ScoringPage() {
       {result.score ? (
         <section className="results" aria-live="polite">
           <div className="result-stat result-stat-hero">
-            <p className="result-label">FitRank Score</p>
-            <p className="result-value">{result.score.fitRankScore}</p>
+            <p className="result-label">FPC Score</p>
+            <p className="result-value">{result.score.FPCScore}</p>
             <p className="result-sub">
               {result.score.band} · {result.score.balance}
             </p>
@@ -371,7 +371,7 @@ function ScoringPage() {
             details={[
               {
                 label: 'Estimated percentile',
-                value: `${result.score.percentileLabel} (better than ${result.score.fitRankScore}%)`,
+                value: `${result.score.percentileLabel} (better than ${result.score.FPCScore}%)`,
               },
               {
                 label: 'Comparison group',

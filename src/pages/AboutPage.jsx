@@ -5,9 +5,9 @@ function AboutPage() {
     <main className="page about-page">
       <header className="page-header">
         <p className="page-eyebrow">About</p>
-        <h1>FitRank</h1>
+        <h1>FPC</h1>
         <p className="page-lead">
-          FitRank's goal is to bring affordable, modern fitness calculation
+          FPC's goal is to bring affordable, modern fitness calculation
           tools to the general population through transparent sources and clear
           results.
         </p>
@@ -17,7 +17,7 @@ function AboutPage() {
         <h2 className="result-section-title">Our mission</h2>
         <p>
           Strength and endurance calculators are often locked behind paywalls,
-          apps, or confusing spreadsheets. FitRank focuses on free, simple tools
+          apps, or confusing spreadsheets. FPC focuses on free, simple tools
           anyone can use to estimate one-rep max, compare relative strength,
           predict race times, and understand how a result stacks up against
           published data for their age and gender group.
@@ -25,7 +25,7 @@ function AboutPage() {
         <p>
           We keep formulas and comparison datasets documented so you can see
           exactly what powers each estimate. Fitness Scoring combines those same
-          strength and running percentiles into one balanced FitRank Score.
+          strength and running percentiles into one balanced FPC Score.
         </p>
       </section>
 

@@ -5,7 +5,7 @@ function HomePage({ onOpenTab }) {
     <main className="home">
       <section className="home-hero">
         <p className="home-eyebrow">Performance tools</p>
-        <h1 className="home-brand">FitRank</h1>
+        <h1 className="home-brand">FPC</h1>
         <p className="home-tagline">
           Measure strength, running, and overall fitness with clear, practical
           calculators.

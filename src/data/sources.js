@@ -1,5 +1,5 @@
 /**
- * Public citations for FitRank formulas and comparison data.
+ * Public citations for FPC formulas and comparison data.
  * Shown on the About page and kept in one place for easy updates.
  */
 export const sources = [
@@ -8,7 +8,7 @@ export const sources = [
     category: 'Strength formulas',
     title: 'Epley one-rep max formula',
     detail:
-      'FitRank estimates 1RM with the Epley equation: 1RM = weight × (1 + reps / 30). This is a widely used practical estimate for submaximal sets.',
+      'FPC estimates 1RM with the Epley equation: 1RM = weight × (1 + reps / 30). This is a widely used practical estimate for submaximal sets.',
     url: 'https://en.wikipedia.org/wiki/One-repetition_maximum#Epley_formula',
     linkLabel: 'One-repetition maximum (Epley formula)',
   },
@@ -26,7 +26,7 @@ export const sources = [
     category: 'Running formulas',
     title: 'Riegel race-time prediction formula',
     detail:
-      'FitRank predicts equivalent race times with the Riegel model: T2 = T1 × (D2 / D1)^1.06. This is a common endurance prediction formula for converting between distances.',
+      'FPC predicts equivalent race times with the Riegel model: T2 = T1 × (D2 / D1)^1.06. This is a common endurance prediction formula for converting between distances.',
     url: 'https://en.wikipedia.org/wiki/Peter_Riegel',
     linkLabel: 'Peter Riegel / race prediction formula',
   },
@@ -35,7 +35,7 @@ export const sources = [
     category: 'Running percentiles',
     title: 'RunRepeat race-result percentiles',
     detail:
-      'Sex-specific 5K finish-time percentile curves drawn from RunRepeat’s analysis of tens of millions of race results across tens of thousands of events. FitRank converts those curves into “better than X out of 100” percentiles.',
+      'Sex-specific 5K finish-time percentile curves drawn from RunRepeat’s analysis of tens of millions of race results across tens of thousands of events. FPC converts those curves into “better than X out of 100” percentiles.',
     url: 'https://runrepeat.com/how-do-you-masure-up-the-runners-percentile-calculator',
     linkLabel: 'RunRepeat percentile calculator',
   },
@@ -49,11 +49,11 @@ export const sources = [
     linkLabel: 'Outside Online 5K age-group reporting',
   },
   {
-    id: 'fitrank-score',
+    id: 'FPC-score',
     category: 'Fitness Scoring',
-    title: 'FitRank composite score',
+    title: 'FPC composite score',
     detail:
-      'Fitness Scoring averages your strength percentile (van den Hoek et al., 2024) and running percentile (RunRepeat) with equal weight. The FitRank Score is the percent of people you outperform on average across both domains for your age and gender group.',
+      'Fitness Scoring averages your strength percentile (van den Hoek et al., 2024) and running percentile (RunRepeat) with equal weight. The FPC Score is the percent of people you outperform on average across both domains for your age and gender group.',
     url: 'https://doi.org/10.1016/j.jsams.2024.07.005',
     linkLabel: 'Strength norms used in the composite (DOI)',
   },

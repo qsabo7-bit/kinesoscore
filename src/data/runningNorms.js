@@ -7,7 +7,7 @@
  *   https://runrepeat.com/how-do-you-masure-up-the-runners-percentile-calculator
  *
  * RunRepeat lists percentiles from the fast end (1st = fastest ~1%).
- * FitRank converts those to “percent outperformed” (better than N%).
+ * FPC converts those to “percent outperformed” (better than N%).
  *
  * Age centering:
  *   Age-group median 5K times from large race-result reporting (Outside Online
@@ -135,7 +135,7 @@ export const AGE_BAND_5K_MEDIANS = [
 ]
 
 /**
- * Build FitRank percentile points for an age/gender group.
+ * Build FPC percentile points for an age/gender group.
  * `percentile` = percent of race finishers outperformed (higher is better).
  *
  * @param {'male' | 'female'} gender

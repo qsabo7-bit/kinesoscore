@@ -8,7 +8,7 @@ function Header({ activeTab, onTabChange }) {
         className="brand"
         onClick={() => onTabChange('home')}
       >
-        FitRank
+        FPC
       </button>
 
       <nav className="site-nav" aria-label="Main">

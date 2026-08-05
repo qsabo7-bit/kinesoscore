@@ -1,5 +1,5 @@
 /**
- * Pure calculation helpers for FitRank.
+ * Pure calculation helpers for FPC.
  * Keep math separate from React components.
  */
 

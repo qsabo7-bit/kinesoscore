@@ -1,5 +1,5 @@
 /**
- * Registry of FitRank tools.
+ * Registry of FPC tools.
  * Pages and nav read from this list.
  */
 export const calculators = [
@@ -18,7 +18,7 @@ export const calculators = [
   {
     id: 'scoring',
     name: 'Fitness Scoring',
-    description: 'Combine strength and running into one FitRank Score.',
+    description: 'Combine strength and running into one FPC Score.',
     status: 'ready',
   },
 ]

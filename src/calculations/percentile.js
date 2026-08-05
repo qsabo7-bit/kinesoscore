@@ -26,7 +26,7 @@ export function formatOrdinal(value) {
 /**
  * Estimate what percent of a reference group a score outperforms.
  *
- * Definition used everywhere in FitRank:
+ * Definition used everywhere in FPC:
  *   percentile = percent of people you are better than (0–100)
  *   Example: better than 53 out of 100 people → 53rd percentile
  *
