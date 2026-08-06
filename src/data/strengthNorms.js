@@ -1,6 +1,6 @@
 /**
  * Recreational relative-strength norms (estimated 1RM ÷ bodyweight) by age, sex,
- * and lift — used for strength percentiles inside FPC Score and peer comparison.
+ * and lift — used for strength percentiles inside Fitness Score and peer comparison.
  *
  * Reference population: typical recreational gym-goers / average adults who train
  * with free weights, not competitive powerlifters and not the fully sedentary
@@ -43,6 +43,15 @@ export const STRENGTH_LIFTS = [
   { id: 'deadlift', name: 'Deadlift' },
 ]
 
+/** Strength calculator top tabs — SBD Total first as the default mode. */
+export const STRENGTH_MODES = [
+  { id: 'sbd-total', name: 'SBD Total' },
+  ...STRENGTH_LIFTS,
+]
+
+export const SBD_TOTAL_EXERCISE_NAME = 'SBD Total'
+export const SBD_TOTAL_MODE_ID = 'sbd-total'
+
 /**
  * Young-adult (18–29) recreational bodyweight ratios by lift and sex.
  * Tuned so p50 ≈ ordinary consistent gym trainee, not dedicated intermediate.
@@ -60,6 +69,25 @@ const BASE_RATIOS = {
     male: { p5: 0.4, p25: 0.65, p50: 0.9, p75: 1.25, p95: 1.6 },
     female: { p5: 0.2, p25: 0.35, p50: 0.55, p75: 0.8, p95: 1.1 },
   },
+}
+
+/** SBD Total recreational ratios = sum of the three lift ladders. */
+function sumSexRatios(sex) {
+  const bench = BASE_RATIOS.bench[sex]
+  const squat = BASE_RATIOS.squat[sex]
+  const deadlift = BASE_RATIOS.deadlift[sex]
+  return {
+    p5: roundRatio(bench.p5 + squat.p5 + deadlift.p5),
+    p25: roundRatio(bench.p25 + squat.p25 + deadlift.p25),
+    p50: roundRatio(bench.p50 + squat.p50 + deadlift.p50),
+    p75: roundRatio(bench.p75 + squat.p75 + deadlift.p75),
+    p95: roundRatio(bench.p95 + squat.p95 + deadlift.p95),
+  }
+}
+
+BASE_RATIOS.sbd = {
+  male: sumSexRatios('male'),
+  female: sumSexRatios('female'),
 }
 
 /**
@@ -107,4 +135,5 @@ export const STRENGTH_NORMS = {
   deadlift: buildLiftNorms('deadlift'),
   squat: buildLiftNorms('squat'),
   bench: buildLiftNorms('bench'),
+  sbd: buildLiftNorms('sbd'),
 }

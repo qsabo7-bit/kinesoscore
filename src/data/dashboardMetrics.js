@@ -70,6 +70,16 @@ export const DASHBOARD_GRAPH_METRICS = [
     tab: 'strength',
   },
   {
+    id: 'sbd-total',
+    label: 'SBD Total',
+    calculatorType: 'strength',
+    exerciseName: 'SBD Total',
+    valueKind: 'mass',
+    yAxisLabel: 'SBD Total',
+    higherIsBetter: true,
+    tab: 'strength',
+  },
+  {
     id: 'running',
     label: 'Running',
     calculatorType: 'running',
@@ -109,6 +119,31 @@ export const ACTIVITY_META = {
   vo2max: {
     title: 'VO₂ Max',
     tab: 'vo2max',
+    valueKind: 'number',
+  },
+  'air-force-pfra': {
+    title: 'Air Force PFRA',
+    tab: 'air-force-pfra',
+    valueKind: 'number',
+  },
+  'air-force-pfa': {
+    title: 'Air Force PFA',
+    tab: 'air-force-pfa',
+    valueKind: 'number',
+  },
+  'army-aft': {
+    title: 'Army AFT',
+    tab: 'army-aft',
+    valueKind: 'number',
+  },
+  'marine-pft': {
+    title: 'Marine Corps PFT',
+    tab: 'marine-pft',
+    valueKind: 'number',
+  },
+  'navy-prt': {
+    title: 'Navy PRT',
+    tab: 'navy-prt',
     valueKind: 'number',
   },
 }

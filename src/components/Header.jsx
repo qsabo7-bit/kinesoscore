@@ -1,6 +1,7 @@
 import { useAuth } from '../auth/AuthContext'
 import {
-  calculators,
+  CALCULATOR_CATEGORIES,
+  calculatorsByCategory,
   DEFAULT_CALCULATOR_ID,
   isCalculatorTab,
   navTabs,
@@ -24,7 +25,8 @@ function Header({ activeTab, onTabChange }) {
 
   const handleMainTab = (tabId) => {
     if (tabId === 'calculators') {
-      onTabChange(calculatorActive ? activeTab : DEFAULT_CALCULATOR_ID)
+      // Hub landing for SEO; same default Strength experience when first opening Calculator.
+      onTabChange(calculatorActive ? activeTab : 'calculators')
       return
     }
 
@@ -82,23 +84,45 @@ function Header({ activeTab, onTabChange }) {
       </div>
 
       {calculatorActive ? (
-        <nav className="sub-nav" aria-label="Calculator tools">
-          {calculators.map((tool) => {
-            const isActive = activeTab === tool.id
-            const isDev = tool.status === 'development'
+        <nav className="sub-nav sub-nav-categorized" aria-label="Calculator tools">
+          {CALCULATOR_CATEGORIES.map((category) => {
+            const tools = calculatorsByCategory(category.id)
+            if (!tools.length) return null
 
             return (
-              <button
-                key={tool.id}
-                type="button"
-                className={`sub-nav-tab${isActive ? ' is-active' : ''}${isDev ? ' is-dev' : ''}`}
-                onClick={() => onTabChange(tool.id)}
-                aria-current={isActive ? 'page' : undefined}
-                disabled={isDev}
-              >
-                {tool.name}
-                {isDev ? <span className="nav-badge">Soon</span> : null}
-              </button>
+              <div key={category.id} className="sub-nav-category">
+                <p className="sub-nav-category-label">{category.label}</p>
+                <div className="sub-nav-category-tools">
+                  {tools.map((tool) => {
+                    const isActive =
+                      activeTab === tool.id ||
+                      (activeTab === 'calculators' &&
+                        tool.id === DEFAULT_CALCULATOR_ID)
+                    const isDev = tool.status === 'development'
+
+                    return (
+                      <button
+                        key={tool.id}
+                        type="button"
+                        className={`sub-nav-tab${isActive ? ' is-active' : ''}${isDev ? ' is-dev' : ''}`}
+                        onClick={() => onTabChange(tool.id)}
+                        aria-current={isActive ? 'page' : undefined}
+                        disabled={isDev}
+                      >
+                        {tool.name}
+                        {tool.badge ? (
+                          <span
+                            className={`nav-badge nav-badge-${String(tool.badge).toLowerCase()}`}
+                          >
+                            {tool.badge}
+                          </span>
+                        ) : null}
+                        {isDev ? <span className="nav-badge">Soon</span> : null}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             )
           })}
         </nav>

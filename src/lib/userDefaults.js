@@ -14,13 +14,35 @@ export const EMPTY_USER_DEFAULTS = {
   lift: 'bench',
   liftWeight: '',
   reps: '',
+  /** Per-lift weight/reps (shared by individual Strength tabs + SBD Calculate). */
+  benchWeight: '',
+  benchReps: '',
+  squatWeight: '',
+  squatReps: '',
+  deadliftWeight: '',
+  deadliftReps: '',
+  /** Known 1RMs for SBD "I know my SBD total" / known-1RM entry. */
+  bench1rm: '',
+  squat1rm: '',
+  deadlift1rm: '',
+  /** Per-lift SBD calculate entry: reps | known */
+  benchEntryMode: 'reps',
+  squatEntryMode: 'reps',
+  deadliftEntryMode: 'reps',
+  /** Strength calculator tab: sbd-total | bench | squat | deadlift */
+  strengthTab: 'sbd-total',
+  /** SBD Total input method: calculate | enter */
+  sbdInputMode: 'calculate',
+  sbdTotal: '',
+  /** Fitness Score strength source: sbd | lift */
+  scoreStrengthMode: 'sbd',
   vo2Max: '',
   restingHr: '',
   bodyFat: '',
   weeklySessions: '',
   strengthScore: '',
   activityId: '',
-  /** Last race / time-trial inputs (Running ↔ FPC Score). */
+  /** Last race / time-trial inputs (Running ↔ Fitness Score). */
   raceDistance: '',
   raceHours: '',
   raceMinutes: '',

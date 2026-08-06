@@ -1,10 +1,54 @@
 import {
-  calculators,
+  CALCULATOR_CATEGORIES,
+  calculatorsByCategory,
   DEFAULT_CALCULATOR_ID,
 } from '../data/calculators'
 import { BRAND } from '../data/brand'
 
+function ToolList({ tools, onOpenTab }) {
+  return (
+    <ul className="tool-list">
+      {tools.map((tool) => (
+        <li key={tool.id} className="tool-item">
+          <h3>
+            {tool.name}
+            {tool.badge ? (
+              <span
+                className={`nav-badge nav-badge-${String(tool.badge).toLowerCase()}`}
+                style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+              >
+                {tool.badge}
+              </span>
+            ) : null}
+          </h3>
+          <p>{tool.description}</p>
+          {tool.status === 'ready' ? (
+            <button
+              type="button"
+              className="tool-link"
+              onClick={() => onOpenTab(tool.id)}
+            >
+              Open calculator
+            </button>
+          ) : (
+            <span className="tool-status">In development</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function HomePage({ onOpenTab }) {
+  const performanceTools = calculatorsByCategory('performance')
+  const militaryTools = calculatorsByCategory('military')
+  const performanceLabel =
+    CALCULATOR_CATEGORIES.find((c) => c.id === 'performance')?.label ||
+    'Fitness Performance'
+  const militaryLabel =
+    CALCULATOR_CATEGORIES.find((c) => c.id === 'military')?.label ||
+    'Military Fitness Assessments'
+
   return (
     <main className="home">
       <section className="home-hero">
@@ -42,25 +86,16 @@ function HomePage({ onOpenTab }) {
             Tools
           </button>
         </h2>
-        <ul className="tool-list">
-          {calculators.map((tool) => (
-            <li key={tool.id} className="tool-item">
-              <h3>{tool.name}</h3>
-              <p>{tool.description}</p>
-              {tool.status === 'ready' ? (
-                <button
-                  type="button"
-                  className="tool-link"
-                  onClick={() => onOpenTab(tool.id)}
-                >
-                  Open calculator
-                </button>
-              ) : (
-                <span className="tool-status">In development</span>
-              )}
-            </li>
-          ))}
-        </ul>
+
+        <div className="home-tools-group">
+          <h3 className="home-tools-group-label">{performanceLabel}</h3>
+          <ToolList tools={performanceTools} onOpenTab={onOpenTab} />
+        </div>
+
+        <div className="home-tools-group">
+          <h3 className="home-tools-group-label">{militaryLabel}</h3>
+          <ToolList tools={militaryTools} onOpenTab={onOpenTab} />
+        </div>
       </section>
     </main>
   )

@@ -24,7 +24,7 @@ function formatGender(gender) {
  * @param {number} ratio - 1RM / bodyweight
  * @param {number} age
  * @param {'male' | 'female'} gender
- * @param {'deadlift' | 'squat' | 'bench'} lift
+ * @param {'deadlift' | 'squat' | 'bench' | 'sbd'} lift
  */
 export function compareStrengthToNorms(ratio, age, gender, lift = 'deadlift') {
   const band = getAgeBand(lift, age)

@@ -29,6 +29,14 @@ const SAMPLE_CARDS = [
     tone: 'good',
   },
   {
+    id: 'resting-hr',
+    title: 'Resting Heart Rate',
+    primary: '54 bpm',
+    secondary: 'Last recorded Aug 5',
+    trend: '−2 bpm ↓',
+    tone: 'good',
+  },
+  {
     id: 'strength',
     title: 'Strength',
     primary: '225 lb',
@@ -41,6 +49,28 @@ const SAMPLE_CARDS = [
     primary: '24:18',
     secondary: '5K',
     trend: null,
+  },
+]
+
+const SAMPLE_ASSESSMENT_CARDS = [
+  {
+    id: 'air-force-pfra',
+    title: 'Air Force PFRA',
+    primary: '92 pts',
+    secondary: 'Last taken Aug 2',
+    badge: 'NEW',
+  },
+  {
+    id: 'army-aft',
+    title: 'Army AFT',
+    primary: '480 pts',
+    secondary: 'Last taken Jul 18',
+  },
+  {
+    id: 'navy-prt',
+    title: 'Navy PRT',
+    primary: '88 pts',
+    secondary: 'Last taken Jul 9',
   },
 ]
 
@@ -91,6 +121,29 @@ function LockedDashboardPreview({ onRequestAuth }) {
                     {card.trend}
                   </p>
                 ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="dashboard-section">
+          <h2 className="result-section-title">Fitness assessment summary</h2>
+          <div className="dashboard-card-grid">
+            {SAMPLE_ASSESSMENT_CARDS.map((card) => (
+              <div key={card.id} className="dashboard-metric-card">
+                <p className="result-label">
+                  {card.title}
+                  {card.badge ? (
+                    <span
+                      className={`nav-badge nav-badge-${String(card.badge).toLowerCase()}`}
+                      style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }}
+                    >
+                      {card.badge}
+                    </span>
+                  ) : null}
+                </p>
+                <p className="dashboard-metric-value">{card.primary}</p>
+                <p className="dashboard-metric-secondary">{card.secondary}</p>
               </div>
             ))}
           </div>

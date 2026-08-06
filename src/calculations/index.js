@@ -1,11 +1,16 @@
 /**
- * Pure calculation helpers for FPC.
+ * Pure calculation helpers for KinesoScore.
  * Keep math separate from React components.
  */
 
 export { calculateOneRepMax, estimateOneRepMax } from './oneRepMax.js'
 export { getStrengthLevel } from './strengthLevel.js'
 export { compareStrengthToNorms } from './strengthComparison.js'
+export {
+  calculateSbdTotal,
+  compareSbdToNorms,
+  getSbdStrengthLevel,
+} from './sbdTotal.js'
 export {
   calculatePace,
   formatDuration,
@@ -73,3 +78,8 @@ export {
   toCm,
   toMiles,
 } from './units.js'
+export {
+  pointsFromAscendingSteps,
+  pointsFromDescendingTimeSteps,
+  sumEventPoints,
+} from './military/scoreEvents.js'

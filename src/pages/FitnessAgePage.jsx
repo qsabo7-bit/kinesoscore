@@ -15,6 +15,7 @@ import { FITNESS_AGE_LOCKED_PREVIEW } from '../components/tracking/lockedPreview
 import {
   FITNESS_AGE_CALCULATOR_TYPE,
   FITNESS_AGE_TRACKS,
+  RESTING_HEART_RATE_EXERCISE_NAME,
 } from '../data/trackingTracks'
 
 function toSeconds(hours, minutes, seconds) {
@@ -381,6 +382,17 @@ function FitnessAgePage({ onRequestAuth }) {
         saveLabel="Save Assessment"
         sampleKind="fitnessAge"
         lockedPreview={FITNESS_AGE_LOCKED_PREVIEW}
+        companionSaves={
+          result?.restingHr != null
+            ? [
+                {
+                  exerciseName: RESTING_HEART_RATE_EXERCISE_NAME,
+                  resultValue: result.restingHr,
+                  resultUnit: 'bpm',
+                },
+              ]
+            : []
+        }
         onRequestAuth={onRequestAuth}
       />
     </main>

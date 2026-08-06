@@ -36,7 +36,7 @@ function ratingFromAdjustment(adjustment, goodMax = -1, fairMax = 1.5) {
 }
 
 /**
- * Estimate FPC Fitness Age from transparent inputs.
+ * Estimate Fitness Age from transparent inputs.
  *
  * @param {object} input
  * @param {number} input.age - chronological age

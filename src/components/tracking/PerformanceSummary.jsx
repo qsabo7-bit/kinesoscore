@@ -34,26 +34,30 @@ function PerformanceSummary({
 }) {
   if (!summary) return null
 
-  if (variant === 'score') {
+  if (variant === 'score' || variant === 'assessment') {
+    const isAssessment = variant === 'assessment'
+    const scoreLabel = isAssessment ? 'Score' : BRAND.scoreName
     return (
       <div
         className="performance-summary performance-summary-score"
-        aria-label={`${BRAND.scoreName} summary`}
+        aria-label={
+          isAssessment ? 'Assessment score summary' : `${BRAND.scoreName} summary`
+        }
       >
         <div className="performance-stat">
-          <p className="result-label">Current {BRAND.scoreName}</p>
+          <p className="result-label">Current {scoreLabel}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.latestValue, 'number')}
           </p>
         </div>
         <div className="performance-stat">
-          <p className="result-label">Best {BRAND.scoreName}</p>
+          <p className="result-label">Best {scoreLabel}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.personalRecord, 'number')}
           </p>
         </div>
         <div className="performance-stat">
-          <p className="result-label">Average {BRAND.scoreName}</p>
+          <p className="result-label">Average {scoreLabel}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.averageValue, 'number')}
           </p>

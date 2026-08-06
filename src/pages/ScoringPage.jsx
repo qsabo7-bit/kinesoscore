@@ -6,9 +6,14 @@ import {
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
+import SharedDataNotification, {
+  SharedInputShell,
+} from '../components/SharedDataNotification'
 import UnitToggle from '../components/UnitToggle'
 import {
   calculateFitnessScore,
+  calculateOneRepMax,
+  calculateSbdTotal,
   convertDistance,
   convertMass,
   DISTANCE_UNITS,
@@ -32,34 +37,94 @@ function ScoringPage({ onRequestAuth }) {
   const { patchDefaults } = useUserDefaults()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
-  const [weight, setWeight] = useSyncedDefault('liftWeight', '')
-  const [reps, setReps] = useSyncedDefault('reps', '')
-  const [bodyweight, setBodyweight] = useSyncedDefault('bodyweight', '')
+  const [scoreStrengthMode, setScoreStrengthMode] = useSyncedDefault(
+    'scoreStrengthMode',
+    'sbd',
+  )
+  const [weight, setWeight, weightShared] = useSyncedDefault('liftWeight', '')
+  const [reps, setReps, repsShared] = useSyncedDefault('reps', '')
+  const [bodyweight, setBodyweight, bodyweightShared] = useSyncedDefault(
+    'bodyweight',
+    '',
+  )
   const [lift, setLift] = useSyncedDefault('lift', 'bench')
-  const [distance, setDistance] = useSyncedDefault('raceDistance', '')
-  const [hours, setHours] = useSyncedDefault('raceHours', '')
-  const [minutes, setMinutes] = useSyncedDefault('raceMinutes', '')
-  const [seconds, setSeconds] = useSyncedDefault('raceSeconds', '')
-  const [age, setAge] = useSyncedDefault('age', '')
-  const [gender, setGender] = useSyncedDefault('gender', '')
+  const [benchWeight, setBenchWeight, benchWeightShared] = useSyncedDefault(
+    'benchWeight',
+    '',
+  )
+  const [benchReps, setBenchReps, benchRepsShared] = useSyncedDefault(
+    'benchReps',
+    '',
+  )
+  const [squatWeight, setSquatWeight, squatWeightShared] = useSyncedDefault(
+    'squatWeight',
+    '',
+  )
+  const [squatReps, setSquatReps, squatRepsShared] = useSyncedDefault(
+    'squatReps',
+    '',
+  )
+  const [deadliftWeight, setDeadliftWeight, deadliftWeightShared] =
+    useSyncedDefault('deadliftWeight', '')
+  const [deadliftReps, setDeadliftReps, deadliftRepsShared] = useSyncedDefault(
+    'deadliftReps',
+    '',
+  )
+  const [sbdTotalInput, setSbdTotalInput, sbdTotalShared] = useSyncedDefault(
+    'sbdTotal',
+    '',
+  )
+  const [bench1rm, setBench1rm, bench1rmShared] = useSyncedDefault(
+    'bench1rm',
+    '',
+  )
+  const [squat1rm, setSquat1rm, squat1rmShared] = useSyncedDefault(
+    'squat1rm',
+    '',
+  )
+  const [deadlift1rm, setDeadlift1rm, deadlift1rmShared] = useSyncedDefault(
+    'deadlift1rm',
+    '',
+  )
+  const [sbdInputMode, setSbdInputMode] = useSyncedDefault(
+    'sbdInputMode',
+    'calculate',
+  )
+  const [distance, setDistance, distanceShared] = useSyncedDefault(
+    'raceDistance',
+    '',
+  )
+  const [hours, setHours, hoursShared] = useSyncedDefault('raceHours', '')
+  const [minutes, setMinutes, minutesShared] = useSyncedDefault(
+    'raceMinutes',
+    '',
+  )
+  const [seconds, setSeconds, secondsShared] = useSyncedDefault(
+    'raceSeconds',
+    '',
+  )
+  const [age, setAge, ageShared] = useSyncedDefault('age', '')
+  const [gender, setGender, genderShared] = useSyncedDefault('gender', '')
 
   const handleMassUnitChange = (nextUnit) => {
     if (nextUnit === massUnit) return
 
-    const weightNum = Number(weight)
-    if (Number.isFinite(weightNum) && weightNum > 0) {
-      setWeight(formatConverted(convertMass(weightNum, massUnit, nextUnit), 1))
+    const convertField = (value) => {
+      const num = Number(value)
+      if (!Number.isFinite(num) || num <= 0 || value === '') return value
+      return formatConverted(convertMass(num, massUnit, nextUnit), 1)
     }
 
-    if (bodyweight !== '') {
-      const bodyweightNum = Number(bodyweight)
-      if (Number.isFinite(bodyweightNum) && bodyweightNum > 0) {
-        setBodyweight(
-          formatConverted(convertMass(bodyweightNum, massUnit, nextUnit), 1),
-        )
-      }
-    }
-
+    const keepShared = { keepShared: true }
+    setWeight(convertField(weight), keepShared)
+    setBodyweight(convertField(bodyweight), keepShared)
+    setBenchWeight(convertField(benchWeight), keepShared)
+    setSquatWeight(convertField(squatWeight), keepShared)
+    setDeadliftWeight(convertField(deadliftWeight), keepShared)
+    setSbdTotalInput(convertField(sbdTotalInput), keepShared)
+    setBench1rm(convertField(bench1rm), keepShared)
+    setSquat1rm(convertField(squat1rm), keepShared)
+    setDeadlift1rm(convertField(deadlift1rm), keepShared)
     setMassUnit(nextUnit)
   }
 
@@ -73,6 +138,7 @@ function ScoringPage({ onRequestAuth }) {
           convertDistance(distanceNum, distanceUnit, nextUnit),
           2,
         ),
+        { keepShared: true },
       )
     }
 
@@ -86,15 +152,54 @@ function ScoringPage({ onRequestAuth }) {
     const distanceNum = Number(distance)
     const timeSeconds = toSeconds(hours, minutes, seconds)
     const ageNum = Number(age)
+    const useSbd = scoreStrengthMode === 'sbd'
 
-    const hasStrength =
-      Number.isFinite(weightNum) &&
-      weightNum > 0 &&
-      Number.isFinite(repsNum) &&
-      repsNum >= 1 &&
-      bodyweight !== '' &&
-      Number.isFinite(bodyweightNum) &&
-      bodyweightNum > 0
+    let sbdTotal = null
+    if (useSbd) {
+      if (sbdInputMode === 'calculate') {
+        const bench1rm = calculateOneRepMax(Number(benchWeight), Number(benchReps))
+        const squat1rm = calculateOneRepMax(Number(squatWeight), Number(squatReps))
+        const deadlift1rm = calculateOneRepMax(
+          Number(deadliftWeight),
+          Number(deadliftReps),
+        )
+        const hasAll =
+          Number.isFinite(bench1rm) &&
+          bench1rm > 0 &&
+          Number.isFinite(squat1rm) &&
+          squat1rm > 0 &&
+          Number.isFinite(deadlift1rm) &&
+          deadlift1rm > 0
+        sbdTotal = hasAll
+          ? calculateSbdTotal(bench1rm, squat1rm, deadlift1rm)
+          : null
+      } else {
+        const bench = Number(bench1rm)
+        const squat = Number(squat1rm)
+        const deadlift = Number(deadlift1rm)
+        const hasAll =
+          Number.isFinite(bench) &&
+          bench > 0 &&
+          Number.isFinite(squat) &&
+          squat > 0 &&
+          Number.isFinite(deadlift) &&
+          deadlift > 0
+        sbdTotal = hasAll ? calculateSbdTotal(bench, squat, deadlift) : null
+      }
+    }
+
+    const hasStrength = useSbd
+      ? sbdTotal != null &&
+        bodyweight !== '' &&
+        Number.isFinite(bodyweightNum) &&
+        bodyweightNum > 0
+      : Number.isFinite(weightNum) &&
+        weightNum > 0 &&
+        Number.isFinite(repsNum) &&
+        repsNum >= 1 &&
+        bodyweight !== '' &&
+        Number.isFinite(bodyweightNum) &&
+        bodyweightNum > 0
 
     const hasRunning =
       Number.isFinite(distanceNum) &&
@@ -124,6 +229,7 @@ function ScoringPage({ onRequestAuth }) {
       reps: repsNum,
       bodyweight: bodyweightNum,
       lift,
+      sbdTotal: useSbd ? sbdTotal : null,
       distanceMiles: toMiles(distanceNum, distanceUnit),
       timeSeconds,
       age: ageNum,
@@ -132,6 +238,18 @@ function ScoringPage({ onRequestAuth }) {
 
     return { score, missing: null }
   }, [
+    scoreStrengthMode,
+    sbdInputMode,
+    benchWeight,
+    benchReps,
+    squatWeight,
+    squatReps,
+    deadliftWeight,
+    deadliftReps,
+    bench1rm,
+    squat1rm,
+    deadlift1rm,
+    sbdTotalInput,
     weight,
     reps,
     bodyweight,
@@ -145,11 +263,17 @@ function ScoringPage({ onRequestAuth }) {
     gender,
   ])
 
+  const showSbdRecommendation = scoreStrengthMode === 'lift'
+
   const hint = (() => {
     if (!result.missing) return null
     const parts = []
     if (result.missing.strength) {
-      parts.push('strength (weight, reps, and bodyweight)')
+      parts.push(
+        scoreStrengthMode === 'sbd'
+          ? 'SBD Total and bodyweight'
+          : 'strength (weight, reps, and bodyweight)',
+      )
     }
     if (result.missing.running) {
       parts.push('running (distance and finish time)')
@@ -161,9 +285,11 @@ function ScoringPage({ onRequestAuth }) {
   })()
 
   useEffect(() => {
-    if (result.score?.strengthScore != null) {
-      patchDefaults({ strengthScore: String(result.score.strengthScore) })
-    }
+    if (result.score?.strengthScore == null) return
+    const next = String(result.score.strengthScore)
+    queueMicrotask(() => {
+      patchDefaults({ strengthScore: next })
+    })
   }, [result.score?.strengthScore, patchDefaults])
 
   return (
@@ -182,13 +308,49 @@ function ScoringPage({ onRequestAuth }) {
         className="calc-form calc-form-wide"
         onSubmit={(event) => event.preventDefault()}
       >
+        <SharedDataNotification
+          sources={[
+            weightShared,
+            repsShared,
+            bodyweightShared,
+            benchWeightShared,
+            benchRepsShared,
+            squatWeightShared,
+            squatRepsShared,
+            deadliftWeightShared,
+            deadliftRepsShared,
+            sbdTotalShared,
+            distanceShared,
+            hoursShared,
+            minutesShared,
+            secondsShared,
+            ageShared,
+            genderShared,
+          ]}
+        />
+
         <fieldset className="score-block">
           <legend>Strength input</legend>
           <p className="optional-note">
-            Enter a recent lift. Bodyweight is required here so relative
-            strength can feed the composite score. Use lb or kg — both fields
-            stay in the same unit.
+            Prefer SBD Total when you have Bench, Squat, and Deadlift. Bodyweight
+            is required so relative strength can feed the composite score.
           </p>
+
+          <UnitToggle
+            label="Strength metric"
+            value={scoreStrengthMode}
+            options={[
+              { value: 'sbd', label: 'SBD Total' },
+              { value: 'lift', label: 'Single Lift' },
+            ]}
+            onChange={setScoreStrengthMode}
+          />
+
+          {showSbdRecommendation ? (
+            <p className="score-recommendation">
+              For the most accurate fitness scoring results, use your SBD Total.
+            </p>
+          ) : null}
 
           <UnitToggle
             label="Weight units"
@@ -197,55 +359,249 @@ function ScoringPage({ onRequestAuth }) {
             onChange={handleMassUnitChange}
           />
 
-          <label className="field">
-            <span>Weight lifted ({massUnit})</span>
-            <input
-              type="number"
-              min="1"
-              step="any"
-              placeholder="155"
-              value={weight}
-              onChange={(event) => setWeight(event.target.value)}
-            />
-          </label>
+          {scoreStrengthMode === 'sbd' ? (
+            <>
+              <UnitToggle
+                label="SBD Total input"
+                value={sbdInputMode}
+                options={[
+                  {
+                    value: 'calculate',
+                    label: 'Calculate my SBD total',
+                  },
+                  { value: 'enter', label: 'I know my SBD total' },
+                ]}
+                onChange={setSbdInputMode}
+              />
+              {sbdInputMode === 'calculate' ? (
+                <>
+                  <fieldset className="sbd-lift-block">
+                    <legend>Bench</legend>
+                    <label className="field">
+                      <span>Weight ({massUnit})</span>
+                      <SharedInputShell shared={benchWeightShared}>
+                        <input
+                          type="number"
+                          min="1"
+                          step="any"
+                          placeholder="135"
+                          value={benchWeight}
+                          onChange={(event) => setBenchWeight(event.target.value)}
+                        />
+                      </SharedInputShell>
+                    </label>
+                    <label className="field">
+                      <span>Reps</span>
+                      <SharedInputShell shared={benchRepsShared}>
+                        <input
+                          type="number"
+                          min="1"
+                          max="30"
+                          step="1"
+                          placeholder="5"
+                          value={benchReps}
+                          onChange={(event) => setBenchReps(event.target.value)}
+                        />
+                      </SharedInputShell>
+                    </label>
+                  </fieldset>
+                  <fieldset className="sbd-lift-block">
+                    <legend>Squat</legend>
+                    <label className="field">
+                      <span>Weight ({massUnit})</span>
+                      <SharedInputShell shared={squatWeightShared}>
+                        <input
+                          type="number"
+                          min="1"
+                          step="any"
+                          placeholder="185"
+                          value={squatWeight}
+                          onChange={(event) => setSquatWeight(event.target.value)}
+                        />
+                      </SharedInputShell>
+                    </label>
+                    <label className="field">
+                      <span>Reps</span>
+                      <SharedInputShell shared={squatRepsShared}>
+                        <input
+                          type="number"
+                          min="1"
+                          max="30"
+                          step="1"
+                          placeholder="5"
+                          value={squatReps}
+                          onChange={(event) => setSquatReps(event.target.value)}
+                        />
+                      </SharedInputShell>
+                    </label>
+                  </fieldset>
+                  <fieldset className="sbd-lift-block">
+                    <legend>Deadlift</legend>
+                    <label className="field">
+                      <span>Weight ({massUnit})</span>
+                      <SharedInputShell shared={deadliftWeightShared}>
+                        <input
+                          type="number"
+                          min="1"
+                          step="any"
+                          placeholder="225"
+                          value={deadliftWeight}
+                          onChange={(event) =>
+                            setDeadliftWeight(event.target.value)
+                          }
+                        />
+                      </SharedInputShell>
+                    </label>
+                    <label className="field">
+                      <span>Reps</span>
+                      <SharedInputShell shared={deadliftRepsShared}>
+                        <input
+                          type="number"
+                          min="1"
+                          max="30"
+                          step="1"
+                          placeholder="5"
+                          value={deadliftReps}
+                          onChange={(event) => setDeadliftReps(event.target.value)}
+                        />
+                      </SharedInputShell>
+                    </label>
+                  </fieldset>
+                </>
+              ) : (
+                <>
+                  <label className="field">
+                    <span>Bench 1RM ({massUnit})</span>
+                    <SharedInputShell shared={bench1rmShared}>
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        placeholder="275"
+                        value={bench1rm}
+                        onChange={(event) => setBench1rm(event.target.value)}
+                      />
+                    </SharedInputShell>
+                  </label>
+                  <label className="field">
+                    <span>Squat 1RM ({massUnit})</span>
+                    <SharedInputShell shared={squat1rmShared}>
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        placeholder="315"
+                        value={squat1rm}
+                        onChange={(event) => setSquat1rm(event.target.value)}
+                      />
+                    </SharedInputShell>
+                  </label>
+                  <label className="field">
+                    <span>Deadlift 1RM ({massUnit})</span>
+                    <SharedInputShell shared={deadlift1rmShared}>
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        placeholder="405"
+                        value={deadlift1rm}
+                        onChange={(event) => setDeadlift1rm(event.target.value)}
+                      />
+                    </SharedInputShell>
+                  </label>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <label className="field">
+                <span>Weight lifted ({massUnit})</span>
+                <SharedInputShell shared={weightShared}>
+                  <input
+                    type="number"
+                    min="1"
+                    step="any"
+                    placeholder="155"
+                    value={weight}
+                    onChange={(event) => {
+                      const next = event.target.value
+                      setWeight(next)
+                      if (lift === 'bench') setBenchWeight(next)
+                      if (lift === 'squat') setSquatWeight(next)
+                      if (lift === 'deadlift') setDeadliftWeight(next)
+                    }}
+                  />
+                </SharedInputShell>
+              </label>
 
-          <label className="field">
-            <span>Reps completed</span>
-            <input
-              type="number"
-              min="1"
-              max="30"
-              step="1"
-              placeholder="5"
-              value={reps}
-              onChange={(event) => setReps(event.target.value)}
-            />
-          </label>
+              <label className="field">
+                <span>Reps completed</span>
+                <SharedInputShell shared={repsShared}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="30"
+                    step="1"
+                    placeholder="5"
+                    value={reps}
+                    onChange={(event) => {
+                      const next = event.target.value
+                      setReps(next)
+                      if (lift === 'bench') setBenchReps(next)
+                      if (lift === 'squat') setSquatReps(next)
+                      if (lift === 'deadlift') setDeadliftReps(next)
+                    }}
+                  />
+                </SharedInputShell>
+              </label>
+
+              <label className="field">
+                <span>Lift</span>
+                <select
+                  value={lift}
+                  onChange={(event) => {
+                    const nextLift = event.target.value
+                    setLift(nextLift)
+                    if (nextLift === 'bench') {
+                      if (benchWeight !== '' || benchReps !== '') {
+                        setWeight(benchWeight)
+                        setReps(benchReps)
+                      }
+                    } else if (nextLift === 'squat') {
+                      if (squatWeight !== '' || squatReps !== '') {
+                        setWeight(squatWeight)
+                        setReps(squatReps)
+                      }
+                    } else if (nextLift === 'deadlift') {
+                      if (deadliftWeight !== '' || deadliftReps !== '') {
+                        setWeight(deadliftWeight)
+                        setReps(deadliftReps)
+                      }
+                    }
+                  }}
+                >
+                  {STRENGTH_LIFTS.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
 
           <label className="field">
             <span>Bodyweight ({massUnit})</span>
-            <input
-              type="number"
-              min="1"
-              step="any"
-              placeholder="175"
-              value={bodyweight}
-              onChange={(event) => setBodyweight(event.target.value)}
-            />
-          </label>
-
-          <label className="field">
-            <span>Lift</span>
-            <select
-              value={lift}
-              onChange={(event) => setLift(event.target.value)}
-            >
-              {STRENGTH_LIFTS.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+            <SharedInputShell shared={bodyweightShared}>
+              <input
+                type="number"
+                min="1"
+                step="any"
+                placeholder="175"
+                value={bodyweight}
+                onChange={(event) => setBodyweight(event.target.value)}
+              />
+            </SharedInputShell>
           </label>
         </fieldset>
 
@@ -265,14 +621,16 @@ function ScoringPage({ onRequestAuth }) {
 
           <label className="field">
             <span>Distance ({distanceUnit})</span>
-            <input
-              type="number"
-              min="0.1"
-              step="any"
-              placeholder="3.1"
-              value={distance}
-              onChange={(event) => setDistance(event.target.value)}
-            />
+            <SharedInputShell shared={distanceShared}>
+              <input
+                type="number"
+                min="0.1"
+                step="any"
+                placeholder="3.1"
+                value={distance}
+                onChange={(event) => setDistance(event.target.value)}
+              />
+            </SharedInputShell>
           </label>
 
           <div className="field-group" role="group" aria-label="Finish time">
@@ -280,38 +638,44 @@ function ScoringPage({ onRequestAuth }) {
             <div className="field-row">
               <label className="field field-compact">
                 <span>Hour</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="0"
-                  value={hours}
-                  onChange={(event) => setHours(event.target.value)}
-                />
+                <SharedInputShell shared={hoursShared}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    value={hours}
+                    onChange={(event) => setHours(event.target.value)}
+                  />
+                </SharedInputShell>
               </label>
               <label className="field field-compact">
                 <span>Min</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  step="1"
-                  placeholder="30"
-                  value={minutes}
-                  onChange={(event) => setMinutes(event.target.value)}
-                />
+                <SharedInputShell shared={minutesShared}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    step="1"
+                    placeholder="30"
+                    value={minutes}
+                    onChange={(event) => setMinutes(event.target.value)}
+                  />
+                </SharedInputShell>
               </label>
               <label className="field field-compact">
                 <span>Sec</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  step="1"
-                  placeholder="0"
-                  value={seconds}
-                  onChange={(event) => setSeconds(event.target.value)}
-                />
+                <SharedInputShell shared={secondsShared}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    step="1"
+                    placeholder="0"
+                    value={seconds}
+                    onChange={(event) => setSeconds(event.target.value)}
+                  />
+                </SharedInputShell>
               </label>
             </div>
           </div>
@@ -322,6 +686,8 @@ function ScoringPage({ onRequestAuth }) {
           gender={gender}
           onAgeChange={setAge}
           onGenderChange={setGender}
+          ageShared={ageShared}
+          genderShared={genderShared}
           legend="Age & gender (required for scoring)"
           note="Age and gender are required for Fitness Scoring so both percentiles use the same published age/sex reference groups."
         />
@@ -375,13 +741,21 @@ function ScoringPage({ onRequestAuth }) {
             <h2 className="result-section-title">Score breakdown</h2>
             <ul className="result-table">
               <li>
-                <span>Estimated 1RM</span>
+                <span>
+                  {result.score.strengthMetric === 'sbd'
+                    ? 'SBD Total'
+                    : 'Estimated 1RM'}
+                </span>
                 <strong>
                   {result.score.oneRepMax} {massUnit}
                 </strong>
               </li>
               <li>
-                <span>1RM / bodyweight</span>
+                <span>
+                  {result.score.strengthMetric === 'sbd'
+                    ? 'Total / bodyweight'
+                    : '1RM / bodyweight'}
+                </span>
                 <strong>{result.score.ratio.toFixed(2)}×</strong>
               </li>
               <li>

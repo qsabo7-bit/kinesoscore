@@ -56,6 +56,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [passwordRecovery, setPasswordRecovery] = useState(false)
+  const [authUrlError, setAuthUrlError] = useState('')
 
   const loadProfile = useCallback(async (nextUser) => {
     if (!nextUser) {
@@ -110,6 +112,30 @@ export function AuthProvider({ children }) {
       return undefined
     }
 
+    // Surface expired / invalid recovery links from the URL hash or query.
+    try {
+      const hashParams = new URLSearchParams(
+        window.location.hash.replace(/^#/, ''),
+      )
+      const searchParams = new URLSearchParams(window.location.search)
+      const rawError =
+        hashParams.get('error_description') ||
+        hashParams.get('error') ||
+        searchParams.get('error_description') ||
+        searchParams.get('error')
+      if (rawError) {
+        const decoded = decodeURIComponent(rawError.replace(/\+/g, ' '))
+        setAuthUrlError(decoded)
+        window.history.replaceState(
+          {},
+          document.title,
+          `${window.location.pathname}${window.location.search}`,
+        )
+      }
+    } catch {
+      // Ignore malformed URL fragments.
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
       setSession(data.session ?? null)
@@ -121,7 +147,10 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true)
+      }
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
       loadProfile(nextSession?.user ?? null)
@@ -168,9 +197,35 @@ export function AuthProvider({ children }) {
     requireConfigured()
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    setPasswordRecovery(false)
     setSession(null)
     setUser(null)
     setProfile(null)
+  }, [])
+
+  const resetPasswordForEmail = useCallback(async (email) => {
+    requireConfigured()
+    const trimmed = email.trim()
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
+      redirectTo: `${window.location.origin}/`,
+    })
+    if (error) throw error
+  }, [])
+
+  const updatePassword = useCallback(async (password) => {
+    requireConfigured()
+    const { data, error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+    setPasswordRecovery(false)
+    return data
+  }, [])
+
+  const clearPasswordRecovery = useCallback(() => {
+    setPasswordRecovery(false)
+  }, [])
+
+  const clearAuthUrlError = useCallback(() => {
+    setAuthUrlError('')
   }, [])
 
   const deleteAccount = useCallback(async () => {
@@ -179,6 +234,7 @@ export function AuthProvider({ children }) {
     if (error) throw error
 
     // Local cleanup even if the auth user was already removed server-side.
+    setPasswordRecovery(false)
     setSession(null)
     setUser(null)
     setProfile(null)
@@ -196,12 +252,19 @@ export function AuthProvider({ children }) {
       profile,
       loading,
       isConfigured: isSupabaseConfigured,
-      // Strict: Login tab visibility depends on a real session user only.
-      isAuthenticated: Boolean(session?.user ?? user),
+      // During password recovery the session exists only to update the password.
+      // Treat the user as logged out everywhere else so nav stays in guest mode.
+      isAuthenticated: Boolean(session?.user ?? user) && !passwordRecovery,
+      passwordRecovery,
+      authUrlError,
       firstName: profile?.first_name || user?.user_metadata?.first_name || '',
       signUp,
       signIn,
       signOut,
+      resetPasswordForEmail,
+      updatePassword,
+      clearPasswordRecovery,
+      clearAuthUrlError,
       deleteAccount,
       refreshProfile: () => loadProfile(user),
     }),
@@ -210,9 +273,15 @@ export function AuthProvider({ children }) {
       user,
       profile,
       loading,
+      passwordRecovery,
+      authUrlError,
       signUp,
       signIn,
       signOut,
+      resetPasswordForEmail,
+      updatePassword,
+      clearPasswordRecovery,
+      clearAuthUrlError,
       deleteAccount,
       loadProfile,
     ],

@@ -39,7 +39,7 @@ import {
  * @param {(unit: string) => void} [props.onDisplayUnitChange]
  * @param {() => void} [props.onRequestAuth]
  * @param {boolean} [props.hasResult]
- * @param {'default' | 'score' | 'bmi' | 'fitnessAge'} [props.summaryVariant]
+ * @param {'default' | 'score' | 'assessment' | 'bmi' | 'fitnessAge'} [props.summaryVariant]
  * @param {string} [props.saveLabel]
  * @param {'number' | 'duration' | 'score' | 'bmi' | 'fitnessAge'} [props.sampleKind]
  * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]

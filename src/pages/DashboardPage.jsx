@@ -30,6 +30,22 @@ function formatDate(iso) {
   }
 }
 
+/** Keep last dashboard payload so revisits don't flash empty → loaded. */
+let dashboardRecordsCache = { userId: null, records: [] }
+
+function readCachedRecords(userId) {
+  if (!userId || dashboardRecordsCache.userId !== userId) return null
+  return dashboardRecordsCache.records
+}
+
+function writeCachedRecords(userId, records) {
+  dashboardRecordsCache = { userId, records }
+}
+
+function clearCachedRecords() {
+  dashboardRecordsCache = { userId: null, records: [] }
+}
+
 function DashboardPage({ onOpenTab, onRequestAuth }) {
   const {
     user,
@@ -42,8 +58,12 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   } = useAuth()
   const { defaults } = useUserDefaults()
 
-  const [records, setRecords] = useState([])
-  const [loadingData, setLoadingData] = useState(false)
+  const cachedRecords = readCachedRecords(user?.id)
+  const [records, setRecords] = useState(() => cachedRecords ?? [])
+  const [loadingData, setLoadingData] = useState(() => {
+    if (!isAuthenticated || !user?.id) return false
+    return cachedRecords == null
+  })
   const [error, setError] = useState('')
   const [metricId, setMetricId] = useState('fpc-score')
   const [graphRange, setGraphRange] = useState('all')
@@ -53,16 +73,25 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
       setRecords([])
+      setLoadingData(false)
       return undefined
     }
 
     let cancelled = false
-    setLoadingData(true)
+    const cached = readCachedRecords(user.id)
+    if (cached) {
+      setRecords(cached)
+      setLoadingData(false)
+    } else {
+      setLoadingData(true)
+    }
     setError('')
 
     loadDashboardRecords(user.id)
       .then((rows) => {
-        if (!cancelled) setRecords(rows)
+        if (cancelled) return
+        writeCachedRecords(user.id, rows)
+        setRecords(rows)
       })
       .catch((err) => {
         if (!cancelled) {
@@ -103,6 +132,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     setBusy(true)
     setError('')
     try {
+      clearCachedRecords()
       await signOut()
       onOpenTab?.('home')
     } catch (err) {
@@ -115,6 +145,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     setBusy(true)
     setError('')
     try {
+      clearCachedRecords()
       await deleteAccount()
       onOpenTab?.('home')
     } catch (err) {
@@ -170,8 +201,10 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 
-      {loadingData ? (
-        <p className="calc-hint">Loading your performance data…</p>
+      {loadingData && !model.hasAnyData ? (
+        <p className="calc-hint dashboard-loading-hint">
+          Loading your performance data…
+        </p>
       ) : null}
 
       {!loadingData && !model.hasAnyData ? (
@@ -189,6 +222,8 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         </section>
       ) : null}
 
+      {!loadingData || model.hasAnyData ? (
+        <>
       {model.summaryCards.length ? (
         <section className="dashboard-section" aria-labelledby="dash-summary">
           <h2 id="dash-summary" className="result-section-title">
@@ -199,10 +234,60 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
               <button
                 key={card.id}
                 type="button"
-                className="dashboard-metric-card"
+                className={`dashboard-metric-card${
+                  card.isPrompt ? ' is-prompt' : ''
+                }`}
                 onClick={() => onOpenTab?.(card.tab)}
               >
                 <p className="result-label">{card.title}</p>
+                <p className="dashboard-metric-value">{card.primary}</p>
+                <p className="dashboard-metric-secondary">{card.secondary}</p>
+                {card.trend ? (
+                  <p
+                    className={`dashboard-metric-trend${
+                      card.trend.tone === 'good'
+                        ? ' is-trend-good'
+                        : card.trend.tone === 'bad'
+                          ? ' is-trend-bad'
+                          : ''
+                    }`}
+                  >
+                    {card.trend.value}
+                  </p>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {model.assessmentSummaryCards.length ? (
+        <section
+          className="dashboard-section"
+          aria-labelledby="dash-assessments"
+        >
+          <h2 id="dash-assessments" className="result-section-title">
+            Fitness assessment summary
+          </h2>
+          <div className="dashboard-card-grid">
+            {model.assessmentSummaryCards.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                className="dashboard-metric-card"
+                onClick={() => onOpenTab?.(card.tab)}
+              >
+                <p className="result-label">
+                  {card.title}
+                  {card.badge ? (
+                    <span
+                      className={`nav-badge nav-badge-${String(card.badge).toLowerCase()}`}
+                      style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }}
+                    >
+                      {card.badge}
+                    </span>
+                  ) : null}
+                </p>
                 <p className="dashboard-metric-value">{card.primary}</p>
                 <p className="dashboard-metric-secondary">{card.secondary}</p>
                 {card.trend ? (
@@ -324,6 +409,8 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           </div>
         </section>
       )}
+        </>
+      ) : null}
 
       <section
         className="dashboard-section account-card"

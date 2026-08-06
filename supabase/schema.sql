@@ -1,4 +1,4 @@
--- FPC auth support: profiles + full account deletion
+-- KinesoScore auth support: profiles + full account deletion
 -- Run in Supabase Dashboard → SQL Editor.
 
 create table if not exists public.profiles (

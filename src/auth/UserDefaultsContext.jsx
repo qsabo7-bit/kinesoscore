@@ -68,20 +68,24 @@ export function UserDefaultsProvider({ children }) {
     (patch) => {
       if (!isAuthenticated || !userId) return
 
-      setDefaults((current) => {
-        let changed = false
-        const next = { ...current }
-        for (const [key, value] of Object.entries(patch)) {
-          if (!(key in EMPTY_USER_DEFAULTS)) continue
-          const normalized = value == null ? '' : String(value)
-          if (next[key] !== normalized) {
-            next[key] = normalized
-            changed = true
+      // Always defer provider updates so callers never trip
+      // "setState while rendering a different component".
+      queueMicrotask(() => {
+        setDefaults((current) => {
+          let changed = false
+          const next = { ...current }
+          for (const [key, value] of Object.entries(patch)) {
+            if (!(key in EMPTY_USER_DEFAULTS)) continue
+            const normalized = value == null ? '' : String(value)
+            if (next[key] !== normalized) {
+              next[key] = normalized
+              changed = true
+            }
           }
-        }
-        if (!changed) return current
-        persist(next)
-        return next
+          if (!changed) return current
+          persist(next)
+          return next
+        })
       })
     },
     [isAuthenticated, userId, persist],
@@ -131,22 +135,33 @@ export function useUserDefaults() {
  * Local state seeded from shared user defaults; writes back while signed in.
  * Remounting a calculator reloads the latest shared value for that field.
  *
+ * Returns `[value, setValue, shared]` where `shared` drives SharedDataNotification:
+ * - Auto-filled on hydrate from saved/shared defaults
+ * - Clears when the user edits or empties the field
+ * - `setValue(next, { fromShared: true })` marks a programmatic shared fill
+ * - `setValue(next, { keepShared: true })` keeps the auto-fill flag (e.g. unit convert)
+ *
  * @param {keyof typeof EMPTY_USER_DEFAULTS} key
  * @param {string} [fallback]
+ * @returns {[string, Function, { isAutoFilled: boolean }]}
  */
 export function useSyncedDefault(key, fallback = '') {
   const { defaults, patchDefaults, isAuthenticated, ready, userId } =
     useUserDefaults()
   const [value, setValue] = useState(fallback)
+  const [isAutoFilled, setIsAutoFilled] = useState(false)
 
   useEffect(() => {
     if (!ready) return
 
     if (isAuthenticated) {
       const next = defaults[key]
-      setValue(next != null && next !== '' ? String(next) : fallback)
+      const hasShared = next != null && String(next) !== ''
+      setValue(hasShared ? String(next) : fallback)
+      setIsAutoFilled(hasShared)
     } else {
       setValue(fallback)
+      setIsAutoFilled(false)
     }
     // Omit `defaults` so live patches while typing do not reset the field.
     // Remounting the page re-runs this and picks up the latest shared values.
@@ -154,18 +169,37 @@ export function useSyncedDefault(key, fallback = '') {
   }, [ready, isAuthenticated, userId, key, fallback])
 
   const setSynced = useCallback(
-    (next) => {
-      setValue((prev) => {
-        const resolved = typeof next === 'function' ? next(prev) : next
-        const normalized = resolved == null ? '' : String(resolved)
-        if (isAuthenticated) {
-          patchDefaults({ [key]: normalized })
-        }
-        return normalized
-      })
+    (next, meta = {}) => {
+      const normalized =
+        typeof next === 'function'
+          ? String(next(value) ?? '')
+          : next == null
+            ? ''
+            : String(next)
+
+      setValue(normalized)
+
+      if (meta.fromShared) {
+        setIsAutoFilled(normalized !== '')
+      } else if (meta.keepShared) {
+        if (normalized === '') setIsAutoFilled(false)
+      } else {
+        setIsAutoFilled(false)
+      }
+
+      if (isAuthenticated) {
+        patchDefaults({ [key]: normalized })
+      }
     },
-    [isAuthenticated, key, patchDefaults],
+    [isAuthenticated, key, patchDefaults, value],
   )
 
-  return [value, setSynced]
+  const shared = useMemo(
+    () => ({
+      isAutoFilled: isAutoFilled && value !== '',
+    }),
+    [isAutoFilled, value],
+  )
+
+  return [value, setSynced, shared]
 }

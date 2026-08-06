@@ -1,5 +1,10 @@
 import { BRAND } from '../data/brand'
+import { militaryCalculators } from '../data/calculators'
 import { DASHBOARD_GRAPH_METRICS, ACTIVITY_META } from '../data/dashboardMetrics'
+import {
+  FITNESS_AGE_CALCULATOR_TYPE,
+  RESTING_HEART_RATE_EXERCISE_NAME,
+} from '../data/trackingTracks'
 import {
   computePerformanceSummary,
   fetchAllPerformanceRecords,
@@ -7,6 +12,8 @@ import {
   formatRecordValue,
   getTrendDisplay,
 } from './performanceRecords'
+
+const MILITARY_OVERALL_EXERCISE = 'Overall Score'
 
 function recordsForMetric(allRecords, metric) {
   return allRecords.filter(
@@ -41,7 +48,7 @@ export function buildDashboardModel(allRecords, options = {}) {
 
   const summaryCards = []
 
-  // FPC Score — surfaced as hero ring on the dashboard, not a summary card
+  // KinesoScore — surfaced as hero ring on the dashboard, not a summary card
   let fpcScore = null
   {
     const rows = byMetric['fpc-score']
@@ -124,24 +131,79 @@ export function buildDashboardModel(allRecords, options = {}) {
     }
   }
 
-  // Strength (latest across lifts)
+  // Resting heart rate (saved with Fitness Age assessments)
   {
-    const strengthRows = ascending.filter(
-      (record) => record.calculator_type === 'strength',
+    const rows = ascending.filter(
+      (record) =>
+        record.calculator_type === FITNESS_AGE_CALCULATOR_TYPE &&
+        record.exercise_name === RESTING_HEART_RATE_EXERCISE_NAME,
     )
-    const latest = latestRecord(strengthRows)
+    const latest = latestRecord(rows)
     if (latest) {
+      const previous =
+        rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
+      const delta =
+        previous == null ? null : Number(latest.result_value) - previous
+      summaryCards.push({
+        id: 'resting-hr',
+        title: 'Resting Heart Rate',
+        primary: formatRecordValue(
+          latest.result_value,
+          'number',
+          latest.result_unit || 'bpm',
+        ),
+        secondary: `Last recorded ${formatRecordDate(latest.created_at)}`,
+        trend:
+          delta == null ? null : getTrendDisplay(delta, 'number', 'bpm', false),
+        tab: 'fitness-age',
+      })
+    }
+  }
+
+  // Strength — prefer SBD Total; otherwise prompt when individual lifts exist
+  {
+    const sbdRows = byMetric['sbd-total'] || []
+    const sbdSummary = computePerformanceSummary(sbdRows, true)
+    const individualStrength = ascending.filter(
+      (record) =>
+        record.calculator_type === 'strength' &&
+        record.exercise_name !== 'SBD Total',
+    )
+
+    if (sbdSummary) {
+      const previous =
+        sbdRows.length > 1
+          ? Number(sbdRows[sbdRows.length - 2].result_value)
+          : null
+      const delta =
+        previous == null ? null : sbdSummary.latestValue - previous
+      const trend =
+        delta == null ? null : getTrendDisplay(delta, 'mass', 'lb', true)
+      const unit =
+        sbdRows[sbdRows.length - 1]?.result_unit ||
+        sbdRows[0]?.result_unit ||
+        'lb'
       summaryCards.push({
         id: 'strength',
         title: 'Strength',
-        primary: formatRecordValue(
-          latest.result_value,
-          'mass',
-          latest.result_unit || 'lb',
-        ),
-        secondary: latest.exercise_name || 'Latest lift',
+        primary: formatRecordValue(sbdSummary.latestValue, 'mass', unit),
+        secondary:
+          previous == null
+            ? `PR ${formatRecordValue(sbdSummary.personalRecord, 'mass', unit)}`
+            : `Previous ${formatRecordValue(previous, 'mass', unit)} · PR ${formatRecordValue(sbdSummary.personalRecord, 'mass', unit)}`,
+        trend,
+        tab: 'strength',
+      })
+    } else if (individualStrength.length) {
+      summaryCards.push({
+        id: 'strength',
+        title: 'Strength',
+        primary: 'SBD Total',
+        secondary:
+          'Complete an SBD Total assessment for a more accurate overall strength profile.',
         trend: null,
         tab: 'strength',
+        isPrompt: true,
       })
     }
   }
@@ -164,6 +226,35 @@ export function buildDashboardModel(allRecords, options = {}) {
     }
   }
 
+  // Fitness assessments — last Overall Score per military variant
+  const assessmentSummaryCards = militaryCalculators
+    .map((tool) => {
+      const rows = ascending.filter(
+        (record) =>
+          record.calculator_type === tool.id &&
+          record.exercise_name === MILITARY_OVERALL_EXERCISE,
+      )
+      const latest = latestRecord(rows)
+      if (!latest) return null
+
+      const previous =
+        rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
+      const delta =
+        previous == null ? null : Number(latest.result_value) - previous
+      const trend = getTrendDisplay(delta, 'number', 'points', true)
+
+      return {
+        id: tool.id,
+        title: tool.name,
+        primary: formatRecordValue(latest.result_value, 'number', 'pts'),
+        secondary: `Last taken ${formatRecordDate(latest.created_at)}`,
+        trend,
+        tab: tool.id,
+        badge: tool.badge || null,
+      }
+    })
+    .filter(Boolean)
+
   const recentActivity = [...ascending]
     .reverse()
     .slice(0, 12)
@@ -175,14 +266,14 @@ export function buildDashboardModel(allRecords, options = {}) {
         record.exercise_name ||
         record.calculator_type ||
         'Saved result'
+      const useExerciseTitle =
+        record.calculator_type === 'strength' ||
+        record.calculator_type === 'running' ||
+        record.exercise_name === RESTING_HEART_RATE_EXERCISE_NAME
       return {
         id: record.id,
         dateLabel: formatRecordDate(record.created_at),
-        title:
-          record.calculator_type === 'strength' ||
-          record.calculator_type === 'running'
-            ? record.exercise_name || title
-            : title,
+        title: useExerciseTitle ? record.exercise_name || title : title,
         valueLabel: formatRecordValue(
           record.result_value,
           valueKind,
@@ -213,6 +304,13 @@ export function buildDashboardModel(allRecords, options = {}) {
         id: 'deadlift',
         label: 'Best Deadlift',
         records: byMetric.deadlift,
+        valueKind: 'mass',
+        higherIsBetter: true,
+      },
+      {
+        id: 'sbd-total',
+        label: 'Best SBD Total',
+        records: byMetric['sbd-total'],
         valueKind: 'mass',
         higherIsBetter: true,
       },
@@ -278,6 +376,7 @@ export function buildDashboardModel(allRecords, options = {}) {
     byMetric,
     fpcScore,
     summaryCards,
+    assessmentSummaryCards,
     recentActivity,
     personalRecords,
     hasAnyData: ascending.length > 0,
