@@ -10,6 +10,19 @@ export const DEFAULT_LOCKED_PREVIEW = {
   ],
 }
 
+/** Guest CTA for the Dashboard page. */
+export const DASHBOARD_LOCKED_PREVIEW = {
+  title: 'Log in to unlock your dashboard.',
+  lead: 'Create a free account to unlock:',
+  benefits: [
+    'Personal FPC Score ring',
+    'Progress graphs across metrics',
+    'Personal records',
+    'Recent activity timeline',
+    'Saved results history',
+  ],
+}
+
 /** Guest CTA for the FPC Score calculator. */
 export const FPC_SCORE_LOCKED_PREVIEW = {
   title: 'Want to save your progress?',

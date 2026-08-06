@@ -39,7 +39,9 @@ function Header({ activeTab, onTabChange }) {
             onClick={() => onTabChange('account')}
             aria-label="Open account settings"
           >
-            Welcome, {firstName || 'Athlete'}
+            {activeTab === 'dashboard'
+              ? 'Account'
+              : `Welcome, ${firstName || 'Athlete'}`}
           </button>
         </div>
       ) : null}

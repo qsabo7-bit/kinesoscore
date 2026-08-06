@@ -74,6 +74,21 @@ export async function fetchPerformanceRecords(
 }
 
 /**
+ * All performance records for a user (ascending by created_at).
+ * @param {string} userId
+ */
+export async function fetchAllPerformanceRecords(userId) {
+  const { data, error } = await supabase
+    .from('performance_records')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data ?? []
+}
+
+/**
  * @param {string} recordId
  */
 export async function deletePerformanceRecord(recordId) {

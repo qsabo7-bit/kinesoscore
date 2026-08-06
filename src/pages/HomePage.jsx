@@ -1,4 +1,7 @@
-import { calculators } from '../data/calculators'
+import {
+  calculators,
+  DEFAULT_CALCULATOR_ID,
+} from '../data/calculators'
 import { BRAND } from '../data/brand'
 
 function HomePage({ onOpenTab }) {
@@ -13,8 +16,31 @@ function HomePage({ onOpenTab }) {
         </p>
       </section>
 
+      <section className="home-dashboard" aria-labelledby="dashboard-heading">
+        <h2 id="dashboard-heading">
+          <button
+            type="button"
+            className="home-section-link"
+            onClick={() => onOpenTab('dashboard')}
+          >
+            Dashboard
+          </button>
+        </h2>
+        <p className="home-dashboard-summary">
+          Your personal hub for FPC Score, trends, records, and recent activity.
+        </p>
+      </section>
+
       <section className="home-tools" aria-labelledby="tools-heading">
-        <h2 id="tools-heading">Tools</h2>
+        <h2 id="tools-heading">
+          <button
+            type="button"
+            className="home-section-link"
+            onClick={() => onOpenTab(DEFAULT_CALCULATOR_ID)}
+          >
+            Tools
+          </button>
+        </h2>
         <ul className="tool-list">
           {calculators.map((tool) => (
             <li key={tool.id} className="tool-item">

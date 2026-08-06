@@ -13,6 +13,7 @@ import BmiPage from './pages/BmiPage'
 import FitnessAgePage from './pages/FitnessAgePage'
 import AuthPage from './pages/AuthPage'
 import AccountPage from './pages/AccountPage'
+import DashboardPage from './pages/DashboardPage'
 import AboutPage from './pages/AboutPage'
 
 function App() {
@@ -24,7 +25,7 @@ function App() {
     if (loading) return
 
     if (isAuthenticated && activeTab === 'login') {
-      setActiveTab('home')
+      setActiveTab('dashboard')
       return
     }
 
@@ -49,9 +50,13 @@ function App() {
   } else if (activeTab === 'fitness-age') {
     content = <FitnessAgePage onRequestAuth={goToLogin} />
   } else if (activeTab === 'login') {
-    content = <AuthPage onSuccess={() => setActiveTab('home')} />
+    content = <AuthPage onSuccess={() => setActiveTab('dashboard')} />
   } else if (activeTab === 'account') {
     content = <AccountPage onOpenTab={setActiveTab} />
+  } else if (activeTab === 'dashboard') {
+    content = (
+      <DashboardPage onOpenTab={setActiveTab} onRequestAuth={goToLogin} />
+    )
   } else if (activeTab === 'about') {
     content = <AboutPage />
   } else {

@@ -58,6 +58,11 @@ export function isCalculatorTab(tabId) {
 /** Top-level navigation: Calculators grouped under one parent tab. */
 export const navTabs = [
   {
+    id: 'dashboard',
+    name: 'Dashboard',
+    status: 'ready',
+  },
+  {
     id: 'calculators',
     name: 'Calculator',
     status: 'ready',
