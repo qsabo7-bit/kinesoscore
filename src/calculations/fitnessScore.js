@@ -2,9 +2,10 @@ import { calculateOneRepMax, estimateOneRepMax } from './oneRepMax.js'
 import { compareStrengthToNorms } from './strengthComparison.js'
 import { compareRunningToNorms } from './runningComparison.js'
 import { formatOrdinal } from './percentile.js'
+import { BRAND } from '../data/brand.js'
 
 export const FITNESS_SCORE_SOURCE = {
-  name: 'FPC composite score',
+  name: `${BRAND.scoreName} composite`,
   detail:
     'Equal-weighted average of your recreational strength percentile (bodyweight-relative estimated 1RM vs gym-goer norms) and running percentile (RunRepeat race-result curves). Score = how many people out of 100 you outperform on average across both domains.',
   url: 'https://www.barbellmedicine.com/blog/strength-standards/',
@@ -91,7 +92,7 @@ export function calculateFitnessScore({
     runningScore,
     strengthPeer,
     runningPeer,
-    summary: `Your FPC Score is ${FPCScore} — about the ${ordinal} percentile across strength and running combined. That means you outperform roughly ${FPCScore} out of 100 recreational peers on average (gym-goers for strength, race finishers for running) in your age and gender group.`,
+    summary: `Your ${BRAND.scoreName} is ${FPCScore} — about the ${ordinal} percentile across strength and running combined. That means you outperform roughly ${FPCScore} out of 100 recreational peers on average (gym-goers for strength, race finishers for running) in your age and gender group.`,
     source: FITNESS_SCORE_SOURCE,
   }
 }

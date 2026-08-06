@@ -1,3 +1,5 @@
+import { BRAND } from '../../data/brand'
+
 /** Shared guest CTA copy for every calculator's locked graph preview. */
 export const DEFAULT_LOCKED_PREVIEW = {
   title: 'Want to save your progress?',
@@ -15,7 +17,7 @@ export const DASHBOARD_LOCKED_PREVIEW = {
   title: 'Log in to unlock your dashboard.',
   lead: 'Create a free account to unlock:',
   benefits: [
-    'Personal FPC Score ring',
+    `Personal ${BRAND.scoreName} ring`,
     'Progress graphs across metrics',
     'Personal records',
     'Recent activity timeline',
@@ -23,12 +25,12 @@ export const DASHBOARD_LOCKED_PREVIEW = {
   ],
 }
 
-/** Guest CTA for the FPC Score calculator. */
+/** Guest CTA for the KinesoScore calculator. */
 export const FPC_SCORE_LOCKED_PREVIEW = {
   title: 'Want to save your progress?',
   lead: 'Log in to unlock:',
   benefits: [
-    'FPC Score history',
+    `${BRAND.scoreName} history`,
     'Progress tracking',
     'Personal records',
     'Performance graphs',

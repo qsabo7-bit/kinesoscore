@@ -1,3 +1,5 @@
+import { BRAND } from './brand'
+
 /**
  * Dashboard overview metric definitions.
  * Maps UI selectors → performance_records filters + calculator deep-links.
@@ -6,11 +8,11 @@
 export const DASHBOARD_GRAPH_METRICS = [
   {
     id: 'fpc-score',
-    label: 'FPC Score',
-    calculatorType: 'FPC Score',
-    exerciseName: 'Overall FPC Score',
+    label: BRAND.scoreName,
+    calculatorType: BRAND.scoreCalculatorType,
+    exerciseName: BRAND.scoreExerciseName,
     valueKind: 'number',
-    yAxisLabel: 'FPC Score',
+    yAxisLabel: BRAND.scoreName,
     higherIsBetter: true,
     tab: 'scoring',
     unit: 'points',
@@ -19,7 +21,7 @@ export const DASHBOARD_GRAPH_METRICS = [
     id: 'fitness-age',
     label: 'Fitness Age',
     calculatorType: 'fitness_age',
-    exerciseName: 'FPC Fitness Age',
+    exerciseName: BRAND.fitnessAgeExerciseName,
     valueKind: 'number',
     yAxisLabel: 'Fitness Age',
     higherIsBetter: false,
@@ -81,8 +83,8 @@ export const DASHBOARD_GRAPH_METRICS = [
 ]
 
 export const ACTIVITY_META = {
-  'FPC Score': {
-    title: 'FPC Score',
+  [BRAND.scoreCalculatorType]: {
+    title: BRAND.scoreName,
     tab: 'scoring',
     valueKind: 'number',
   },

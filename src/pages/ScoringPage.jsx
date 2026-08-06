@@ -17,6 +17,7 @@ import {
   toMiles,
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
+import { BRAND } from '../data/brand'
 import { FPC_SCORE_LOCKED_PREVIEW } from '../components/tracking'
 import {
   FPC_SCORE_CALCULATOR_TYPE,
@@ -156,7 +157,7 @@ function ScoringPage({ onRequestAuth }) {
     if (result.missing.demographics) {
       parts.push('age and gender')
     }
-    return `Add ${parts.join(' + ')} to calculate your FPC Score.`
+    return `Add ${parts.join(' + ')} to calculate your ${BRAND.scoreName}.`
   })()
 
   useEffect(() => {
@@ -169,9 +170,9 @@ function ScoringPage({ onRequestAuth }) {
     <main className="page">
       <header className="page-header">
         <p className="page-eyebrow">Fitness Scoring</p>
-        <h1>FPC Score</h1>
+        <h1>{BRAND.scoreName}</h1>
         <p className="page-lead">
-          Combine strength and running into one balanced score. FPC Score
+          Combine strength and running into one balanced score. {BRAND.scoreName}{' '}
           averages your lifting and endurance percentiles so you can see overall
           fitness — not just one specialty.
         </p>
@@ -329,7 +330,7 @@ function ScoringPage({ onRequestAuth }) {
       {result.score ? (
         <section className="results" aria-live="polite">
           <div className="result-stat result-stat-hero">
-            <p className="result-label">FPC Score</p>
+            <p className="result-label">{BRAND.scoreName}</p>
             <p className="result-value">{result.score.FPCScore}</p>
             <p className="result-sub">
               {result.score.band} · {result.score.balance}
@@ -362,7 +363,7 @@ function ScoringPage({ onRequestAuth }) {
         resultUnit="points"
         hasResult={Boolean(result.score)}
         summaryVariant="score"
-        saveLabel="Save Score"
+        saveLabel={`Save ${BRAND.scoreName}`}
         sampleKind="score"
         lockedPreview={FPC_SCORE_LOCKED_PREVIEW}
         onRequestAuth={onRequestAuth}

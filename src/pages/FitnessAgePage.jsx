@@ -132,7 +132,7 @@ function FitnessAgePage({ onRequestAuth }) {
     <main className="page">
       <header className="page-header">
         <p className="page-eyebrow">Longevity</p>
-        <h1>FPC Fitness Age</h1>
+        <h1>Fitness Age</h1>
         <p className="page-lead">
           Estimate a transparent fitness age from age, body size, resting heart
           rate, VO₂ max, and training habits — plus optional body fat, 5K, and
@@ -330,7 +330,7 @@ function FitnessAgePage({ onRequestAuth }) {
           </div>
 
           <div className="result-stat result-stat-hero">
-            <p className="result-label">FPC Fitness Age</p>
+            <p className="result-label">Fitness Age</p>
             <p className="result-value">
               {result.fitnessAge}
               <span className="result-unit"> years</span>

@@ -30,7 +30,7 @@ function AuthPage({ onSuccess }) {
 
         const data = await signUp({ email, password, firstName })
         if (data.session) {
-          setMessage('Account created. Welcome to FPC.')
+          setMessage('Account created. Welcome to KinesoScore.')
           onSuccess?.('account')
         } else {
           setMessage(
@@ -133,7 +133,7 @@ function AuthPage({ onSuccess }) {
       </form>
 
       <p className="auth-switch">
-        {isSignup ? 'Already have an account?' : 'New to FPC?'}{' '}
+            {isSignup ? 'Already have an account?' : 'New to KinesoScore?'}{' '}
         <button
           type="button"
           className="text-link"

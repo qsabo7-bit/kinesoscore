@@ -39,14 +39,14 @@ export const SCORING_TRACKS = [
   {
     id: 'fpc-score',
     label: BRAND.scoreName,
-    exerciseName: 'Overall FPC Score',
-    yAxisLabel: 'FPC Score',
+    exerciseName: BRAND.scoreExerciseName,
+    yAxisLabel: BRAND.scoreName,
     higherIsBetter: true,
   },
 ]
 
-/** Stored in performance_records.calculator_type for scoring saves. */
-export const FPC_SCORE_CALCULATOR_TYPE = 'FPC Score'
+/** Stored in performance_records.calculator_type for scoring saves (legacy key). */
+export const FPC_SCORE_CALCULATOR_TYPE = BRAND.scoreCalculatorType
 
 export const VO2_TRACKS = [
   {
@@ -76,7 +76,7 @@ export const FITNESS_AGE_TRACKS = [
   {
     id: 'fitness-age',
     label: 'Fitness Age',
-    exerciseName: 'FPC Fitness Age',
+    exerciseName: BRAND.fitnessAgeExerciseName,
     yAxisLabel: 'Fitness Age',
     higherIsBetter: false,
   },

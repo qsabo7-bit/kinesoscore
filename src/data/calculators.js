@@ -18,7 +18,7 @@ export const calculators = [
   {
     id: 'scoring',
     name: 'Fitness Scoring',
-    description: 'Combine strength and running into one FPC Score.',
+    description: 'Combine strength and running into one KinesoScore.',
     status: 'ready',
   },
   {
@@ -42,7 +42,7 @@ export const calculators = [
   {
     id: 'fitness-age',
     name: 'Fitness Age',
-    description: 'Estimate FPC Fitness Age from VO₂, heart rate, and training.',
+    description: 'Estimate Fitness Age from VO₂, heart rate, and training.',
     status: 'ready',
   },
 ]

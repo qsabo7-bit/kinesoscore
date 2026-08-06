@@ -1,3 +1,4 @@
+import { BRAND } from '../../data/brand'
 import {
   formatRecordValue,
   getTrendDisplay,
@@ -37,22 +38,22 @@ function PerformanceSummary({
     return (
       <div
         className="performance-summary performance-summary-score"
-        aria-label="FPC Score summary"
+        aria-label={`${BRAND.scoreName} summary`}
       >
         <div className="performance-stat">
-          <p className="result-label">Current Score</p>
+          <p className="result-label">Current {BRAND.scoreName}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.latestValue, 'number')}
           </p>
         </div>
         <div className="performance-stat">
-          <p className="result-label">Best Score</p>
+          <p className="result-label">Best {BRAND.scoreName}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.personalRecord, 'number')}
           </p>
         </div>
         <div className="performance-stat">
-          <p className="result-label">Average Score</p>
+          <p className="result-label">Average {BRAND.scoreName}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.averageValue, 'number')}
           </p>

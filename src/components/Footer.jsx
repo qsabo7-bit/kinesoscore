@@ -6,7 +6,7 @@ function Footer({ onOpenTab }) {
       <div className="site-footer-main">
         <div className="site-footer-brand">
           <p className="site-footer-brand-mark">{BRAND.short}</p>
-          <p className="site-footer-brand-name">{BRAND.full}</p>
+          <p className="site-footer-brand-name">{BRAND.tagline}</p>
           <p className="site-footer-brand-lead">
             Track your strength, endurance, and fitness progress over time.
           </p>
@@ -71,7 +71,7 @@ function Footer({ onOpenTab }) {
       </div>
 
       <div className="site-footer-bar">
-        <p>© 2026 {BRAND.short}. All rights reserved.</p>
+        <p>© 2026 {BRAND.short}</p>
       </div>
     </footer>
   )

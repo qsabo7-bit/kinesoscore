@@ -1,5 +1,7 @@
+import { BRAND } from '../data/brand'
+
 /**
- * Circular FPC Score meter (0–100). Darker green as the ring fills.
+ * Circular KinesoScore meter (0–100). Darker green as the ring fills.
  */
 function FpcScoreRing({
   score,
@@ -36,7 +38,7 @@ function FpcScoreRing({
       type="button"
       className="fpc-score-ring"
       onClick={onClick}
-      aria-label={`FPC Score ${clamped}. Open FPC Score calculator.`}
+      aria-label={`${BRAND.scoreName} ${clamped}. Open ${BRAND.scoreName} calculator.`}
       style={{ '--fpc-ring-size': `${size}px` }}
     >
       <div className="fpc-score-ring-meter" aria-hidden="true">
@@ -82,7 +84,7 @@ function FpcScoreRing({
         </svg>
         <div className="fpc-score-ring-center">
           <span className="fpc-score-ring-value">{Math.round(clamped)}</span>
-          <span className="fpc-score-ring-label">FPC Score</span>
+          <span className="fpc-score-ring-label">{BRAND.scoreName}</span>
         </div>
       </div>
 

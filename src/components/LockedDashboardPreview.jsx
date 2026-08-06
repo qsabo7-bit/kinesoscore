@@ -6,6 +6,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { BRAND } from '../data/brand'
 import FpcScoreRing from './FpcScoreRing'
 import { SAMPLE_SCORE_DATA } from '../lib/performanceRecords'
 import { DASHBOARD_LOCKED_PREVIEW } from './tracking/lockedPreviewCopy'
@@ -46,7 +47,7 @@ const SAMPLE_CARDS = [
 const SAMPLE_ACTIVITY = [
   { id: '1', date: 'Aug 5', title: 'Fitness Age Assessment', value: '28 yr' },
   { id: '2', date: 'Aug 3', title: 'Bench Press', value: '225 lb' },
-  { id: '3', date: 'Jul 28', title: 'FPC Score', value: '72' },
+  { id: '3', date: 'Jul 28', title: BRAND.scoreName, value: '72' },
   { id: '4', date: 'Jul 20', title: '5K', value: '24:18' },
 ]
 
@@ -115,7 +116,7 @@ function LockedDashboardPreview({ onRequestAuth }) {
         <section className="dashboard-section">
           <h2 className="result-section-title">Progress overview</h2>
           <div className="graph-track-selector">
-            <span className="graph-track-btn is-active">FPC Score</span>
+            <span className="graph-track-btn is-active">{BRAND.scoreName}</span>
             <span className="graph-track-btn">Fitness Age</span>
             <span className="graph-track-btn">BMI</span>
             <span className="graph-track-btn">Bench</span>

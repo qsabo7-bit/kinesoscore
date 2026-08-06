@@ -13,7 +13,7 @@ import {
 import { BRAND } from './brand.js'
 
 /**
- * Public citations for Fitness Performance Calculator formulas and data.
+ * Public citations for KinesoScore formulas and data.
  * About page renders this list. Live calculator sources are included so
  * About stays aligned with peer-comparison panels.
  */
@@ -39,7 +39,7 @@ export const sources = [
     category: 'Strength percentiles',
     title: 'Recreational gym strength ladders',
     detail:
-      'Beginner → elite bodyweight ratios for squat, bench, and deadlift are drawn from large recreational gym datasets (e.g. Strength Level). FPC maps those ladders onto percentiles for everyday gym-goers — not drug-tested powerlifting meet norms (Latella et al., 2024).',
+      `Beginner → elite bodyweight ratios for squat, bench, and deadlift are drawn from large recreational gym datasets (e.g. Strength Level). ${BRAND.full} maps those ladders onto percentiles for everyday gym-goers — not drug-tested powerlifting meet norms (Latella et al., 2024).`,
     url: 'https://strengthlevel.com/strength-standards',
     linkLabel: 'Strength Level strength standards',
   },
@@ -48,7 +48,7 @@ export const sources = [
     category: 'Strength percentiles',
     title: 'Age-related strength decline',
     detail:
-      'Strength typically peaks in young adulthood and declines through midlife. FPC scales recreational bodyweight-ratio norms by age band to reflect that pattern while remaining milder than sedentary population loss curves, consistent with trained-adult aging literature.',
+      `Strength typically peaks in young adulthood and declines through midlife. ${BRAND.full} scales recreational bodyweight-ratio norms by age band to reflect that pattern while remaining milder than sedentary population loss curves, consistent with trained-adult aging literature.`,
     url: 'https://doi.org/10.1016/j.jsams.2024.07.005',
     linkLabel: 'Latella et al., 2024 (powerlifting age norms)',
   },

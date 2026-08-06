@@ -4,7 +4,7 @@ import { calculateBmi } from './bmi.js'
 export const MIN_FITNESS_AGE = 18
 
 export const FITNESS_AGE_SOURCE = {
-  name: 'FPC Fitness Age model',
+  name: 'KinesoScore Fitness Age model',
   detail:
     'A transparent composite estimate for adults 18+. Chronological age is adjusted using VO₂ max relative to an age-expected baseline, resting heart rate, BMI from height/weight, weekly training frequency, and optional body-fat, 5K, and strength inputs. Not a medical diagnosis and not based on proprietary wearable algorithms.',
   url: null,

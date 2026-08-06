@@ -1,3 +1,4 @@
+import { BRAND } from '../data/brand'
 import { DASHBOARD_GRAPH_METRICS, ACTIVITY_META } from '../data/dashboardMetrics'
 import {
   computePerformanceSummary,
@@ -56,7 +57,7 @@ export function buildDashboardModel(allRecords, options = {}) {
         primary: formatRecordValue(summary.latestValue, 'number'),
         secondary:
           previous == null
-            ? 'First saved score'
+            ? `First saved ${BRAND.scoreName}`
             : `Previous ${formatRecordValue(previous, 'number')}`,
         previous,
         trend,

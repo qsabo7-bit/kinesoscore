@@ -184,7 +184,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
             className="btn btn-primary"
             onClick={() => onOpenTab?.('scoring')}
           >
-            Open FPC Score
+            Calculate Your KinesoScore
           </button>
         </section>
       ) : null}

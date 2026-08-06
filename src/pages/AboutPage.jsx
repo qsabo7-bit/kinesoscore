@@ -8,23 +8,25 @@ function AboutPage() {
         <p className="page-eyebrow">About</p>
         <h1 className="about-brand">{BRAND.full}</h1>
         <p className="page-lead">
-          {`${BRAND.full}'s goal is to bring affordable, modern fitness calculation tools to the general population through transparent sources and clear results.`}
+          A comprehensive fitness analytics platform designed to help users
+          understand, measure, and improve their overall fitness.
         </p>
       </header>
 
       <section className="about-section">
         <h2 className="result-section-title">Our mission</h2>
         <p>
-          Strength, endurance, and metabolism calculators are often locked
-          behind paywalls, apps, or confusing spreadsheets. {BRAND.full} focuses
-          on free, simple tools anyone can use to estimate one-rep max, predict
-          race times, estimate VO₂ max and BMR, and understand how a result
-          stacks up against published data for their age and gender group.
+          {BRAND.full} combines strength, endurance, body composition,
+          performance, and long-term progress into one easy-to-understand score
+          — your {BRAND.scoreName}. Free, transparent calculators make it simple
+          to estimate one-rep max, predict race times, estimate VO₂ max and BMR,
+          track BMI and fitness age, and see how results compare with published
+          data for your age and gender group.
         </p>
         <p>
           We keep formulas and comparison datasets documented below so you can
-          see exactly what powers each estimate. Fitness Scoring combines
-          recreational strength and running percentiles into one balanced{' '}
+          see exactly what powers each estimate. Fitness Scoring balances
+          recreational strength and running percentiles into your{' '}
           {BRAND.scoreName}.
         </p>
       </section>
@@ -34,9 +36,9 @@ function AboutPage() {
           Sources & methods
         </h2>
         <p className="about-intro">
-          These are the citations behind FPC formulas and peer comparisons.
-          Percentiles mean “better than X out of 100” people in the stated
-          reference population — recreational lifters for strength, race
+          These are the citations behind {BRAND.full} formulas and peer
+          comparisons. Percentiles mean “better than X out of 100” people in the
+          stated reference population — recreational lifters for strength, race
           finishers for running, and Cooper Institute / ACSM adult norms for
           VO₂ max.
         </p>

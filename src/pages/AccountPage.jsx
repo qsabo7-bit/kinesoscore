@@ -84,7 +84,7 @@ function AccountPage({ onOpenTab }) {
         <p className="page-eyebrow">Account</p>
         <h1>Account Settings</h1>
         <p className="page-lead">
-          Manage your FPC profile, sign out, or permanently delete your
+          Manage your KinesoScore profile, sign out, or permanently delete your
           account.
         </p>
       </header>

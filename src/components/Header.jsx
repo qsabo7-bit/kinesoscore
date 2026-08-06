@@ -10,6 +10,8 @@ import { BRAND } from '../data/brand'
 function Header({ activeTab, onTabChange }) {
   const { isAuthenticated, firstName, loading } = useAuth()
   const calculatorActive = isCalculatorTab(activeTab)
+  const brandLabel =
+    activeTab === 'home' || activeTab === 'about' ? BRAND.mark : BRAND.short
 
   // Wait for session restore before deciding Login vs Welcome.
   const showLogin = !loading && !isAuthenticated
@@ -54,7 +56,7 @@ function Header({ activeTab, onTabChange }) {
           title={BRAND.full}
           aria-label={BRAND.full}
         >
-          {BRAND.short}
+          {brandLabel}
         </button>
 
         <nav className="site-nav" aria-label="Main">

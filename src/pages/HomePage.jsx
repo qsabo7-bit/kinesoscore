@@ -27,7 +27,8 @@ function HomePage({ onOpenTab }) {
           </button>
         </h2>
         <p className="home-dashboard-summary">
-          Your personal hub for FPC Score, trends, records, and recent activity.
+          Your personal hub for {BRAND.scoreName}, trends, records, and recent
+          activity.
         </p>
       </section>
 

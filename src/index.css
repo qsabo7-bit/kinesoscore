@@ -177,9 +177,9 @@ select:focus {
 
 .site-footer-brand-mark {
   font-family: var(--display);
-  font-size: 1.55rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-strong);
   line-height: 1;
@@ -291,11 +291,12 @@ a.site-footer-link:hover {
 
 .brand {
   font-family: var(--display);
-  font-size: 1.35rem;
+  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-strong);
+  white-space: nowrap;
 }
 
 .site-nav {
@@ -413,19 +414,19 @@ a.site-footer-link:hover {
   font-size: clamp(2.4rem, 8vw, 4.5rem);
   font-weight: 700;
   line-height: 0.95;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  max-width: 14ch;
+  max-width: 12ch;
 }
 
 .about-brand {
   font-family: var(--display);
   font-size: clamp(2rem, 6vw, 3.25rem);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1;
-  max-width: 16ch;
+  max-width: 12ch;
 }
 
 .home-tagline,
@@ -1530,11 +1531,14 @@ a.site-footer-link:hover {
 }
 
 .fpc-score-ring-label {
-  font-size: 0.72rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text);
+  max-width: 6.5rem;
+  text-align: center;
+  line-height: 1.15;
 }
 
 .fpc-score-ring-meta {
