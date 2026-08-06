@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
@@ -16,13 +17,13 @@ import { STRENGTH_LIFTS } from '../data/strengthNorms'
 import { STRENGTH_TRACKS } from '../data/trackingTracks'
 
 function StrengthPage({ onRequestAuth }) {
-  const [massUnit, setMassUnit] = useState('lb')
-  const [lift, setLift] = useState('bench')
-  const [weight, setWeight] = useState('')
-  const [reps, setReps] = useState('')
-  const [bodyweight, setBodyweight] = useState('')
-  const [age, setAge] = useState('')
-  const [gender, setGender] = useState('')
+  const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
+  const [lift, setLift] = useSyncedDefault('lift', 'bench')
+  const [weight, setWeight] = useSyncedDefault('liftWeight', '')
+  const [reps, setReps] = useSyncedDefault('reps', '')
+  const [bodyweight, setBodyweight] = useSyncedDefault('bodyweight', '')
+  const [age, setAge] = useSyncedDefault('age', '')
+  const [gender, setGender] = useSyncedDefault('gender', '')
 
   const handleMassUnitChange = (nextUnit) => {
     if (nextUnit === massUnit) return
@@ -199,19 +200,6 @@ function StrengthPage({ onRequestAuth }) {
             </>
           ) : null}
 
-          <CalculatorTracking
-            calculatorType="strength"
-            tracks={STRENGTH_TRACKS}
-            activeTrackId={lift}
-            resultValue={result.oneRepMax}
-            resultUnit={massUnit}
-            valueKind="mass"
-            displayUnit={massUnit}
-            onDisplayUnitChange={handleMassUnitChange}
-            hasResult
-            onRequestAuth={onRequestAuth}
-          />
-
           {result.peer ? (
             <PeerComparison
               title="Age & gender comparison"
@@ -247,6 +235,19 @@ function StrengthPage({ onRequestAuth }) {
       ) : (
         <p className="calc-hint">Enter a valid weight and reps.</p>
       )}
+
+      <CalculatorTracking
+        calculatorType="strength"
+        tracks={STRENGTH_TRACKS}
+        activeTrackId={lift}
+        resultValue={result?.oneRepMax}
+        resultUnit={massUnit}
+        valueKind="mass"
+        displayUnit={massUnit}
+        onDisplayUnitChange={handleMassUnitChange}
+        hasResult={Boolean(result)}
+        onRequestAuth={onRequestAuth}
+      />
     </main>
   )
 }

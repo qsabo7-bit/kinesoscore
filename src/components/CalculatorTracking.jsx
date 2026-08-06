@@ -5,6 +5,7 @@ import {
   computePerformanceSummary,
   deletePerformanceRecord,
   fetchPerformanceRecords,
+  filterRecordsByRange,
   recordsInMassUnit,
   savePerformanceRecord,
 } from '../lib/performanceRecords'
@@ -12,6 +13,7 @@ import FadeSwap from './FadeSwap'
 import UnitToggle from './UnitToggle'
 import {
   DEFAULT_LOCKED_PREVIEW,
+  GraphRangeToggle,
   GraphTrackSelector,
   HistoryList,
   LockedGraphPreview,
@@ -37,10 +39,11 @@ import {
  * @param {(unit: string) => void} [props.onDisplayUnitChange]
  * @param {() => void} [props.onRequestAuth]
  * @param {boolean} [props.hasResult]
- * @param {'default' | 'score'} [props.summaryVariant]
+ * @param {'default' | 'score' | 'bmi' | 'fitnessAge'} [props.summaryVariant]
  * @param {string} [props.saveLabel]
- * @param {'number' | 'duration' | 'score'} [props.sampleKind]
+ * @param {'number' | 'duration' | 'score' | 'bmi' | 'fitnessAge'} [props.sampleKind]
  * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]
+ * @param {Array<{ exerciseName: string, resultValue: number, resultUnit?: string }>} [props.companionSaves]
  */
 function CalculatorTracking({
   calculatorType,
@@ -57,6 +60,7 @@ function CalculatorTracking({
   saveLabel = 'Save Result',
   sampleKind,
   lockedPreview,
+  companionSaves = [],
 }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
   const [selectedTrackId, setSelectedTrackId] = useState(
@@ -71,6 +75,7 @@ function CalculatorTracking({
   const [localDisplayUnit, setLocalDisplayUnit] = useState(
     resultUnit === 'kg' ? 'kg' : 'lb',
   )
+  const [graphRange, setGraphRange] = useState('all')
   const touchStartX = useRef(null)
 
   const displayUnit =
@@ -133,12 +138,17 @@ function CalculatorTracking({
   }, [loadHistory])
 
   const rawSelectedRecords = recordsByTrack[selectedTrack?.id] || []
-  const selectedRecords = useMemo(() => {
+  const unitAdjustedRecords = useMemo(() => {
     if (valueKind === 'mass') {
       return recordsInMassUnit(rawSelectedRecords, displayUnit || 'lb')
     }
     return rawSelectedRecords
   }, [rawSelectedRecords, valueKind, displayUnit])
+
+  const selectedRecords = useMemo(
+    () => filterRecordsByRange(unitAdjustedRecords, graphRange),
+    [unitAdjustedRecords, graphRange],
+  )
 
   const higherIsBetter = selectedTrack?.higherIsBetter !== false
   const axisLabel =
@@ -177,6 +187,18 @@ function CalculatorTracking({
         resultUnit:
           valueKind === 'duration' ? 'sec' : resultUnit || displayUnit || null,
       })
+
+      for (const companion of companionSaves) {
+        if (!Number.isFinite(Number(companion.resultValue))) continue
+        await savePerformanceRecord({
+          userId: user.id,
+          calculatorType,
+          exerciseName: companion.exerciseName,
+          resultValue: Number(companion.resultValue),
+          resultUnit: companion.resultUnit || null,
+        })
+      }
+
       setSavedMessage(true)
       setSelectedTrackId(track.id)
       await loadHistory()
@@ -215,18 +237,18 @@ function CalculatorTracking({
 
   if (!selectedTrack) return null
 
-  // Guests: always show locked preview once a result exists (never hide the section).
-  if (!isAuthenticated) {
-    if (!hasResult) return null
-    if (authLoading) {
-      return (
-        <div className="tracking-panel">
-          <h2 className="result-section-title">Your Progress</h2>
-          <p className="calc-hint">Loading…</p>
-        </div>
-      )
-    }
+  // Wait for auth so logged-in users never flash the guest preview.
+  if (authLoading) {
+    return (
+      <div className="tracking-panel">
+        <h2 className="result-section-title">Your Progress</h2>
+        <p className="calc-hint">Loading…</p>
+      </div>
+    )
+  }
 
+  // Guests: always show the faded sample graph + login CTA on every calculator.
+  if (!isAuthenticated) {
     const preview = {
       title: lockedPreview?.title ?? DEFAULT_LOCKED_PREVIEW.title,
       lead: lockedPreview?.lead ?? DEFAULT_LOCKED_PREVIEW.lead,
@@ -250,7 +272,6 @@ function CalculatorTracking({
   }
 
   // Signed-in: always show history/graph for this calculator (even before a new calc).
-  if (authLoading) return null
   if (!tracks.length) return null
 
   return (
@@ -311,7 +332,7 @@ function CalculatorTracking({
           <p className="calc-hint">Loading your progress…</p>
         ) : (
           <FadeSwap
-            swapKey={selectedTrack.id}
+            swapKey={`${selectedTrack.id}-${graphRange}`}
             className="progress-track-panel"
           >
             <PerformanceSummary
@@ -320,15 +341,27 @@ function CalculatorTracking({
               unit={
                 valueKind === 'mass'
                   ? displayUnit
-                  : resultUnit || selectedRecords[0]?.result_unit
+                  : selectedRecords[0]?.result_unit ||
+                    unitAdjustedRecords[0]?.result_unit ||
+                    resultUnit
               }
-              variant={summaryVariant}
+              variant={
+                selectedTrack?.id === activeTrackId
+                  ? summaryVariant
+                  : 'default'
+              }
             />
             <ProgressGraph
               records={selectedRecords}
               yAxisLabel={axisLabel}
               valueKind={valueKind}
+              emptyMessage={
+                unitAdjustedRecords.length
+                  ? 'No saved results in this time range.\nTry a wider range or save a new result.'
+                  : undefined
+              }
             />
+            <GraphRangeToggle value={graphRange} onChange={setGraphRange} />
             <HistoryList
               records={selectedRecords}
               onDelete={handleDelete}

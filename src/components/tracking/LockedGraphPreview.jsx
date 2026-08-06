@@ -7,7 +7,9 @@ import {
   YAxis,
 } from 'recharts'
 import {
+  SAMPLE_BMI_DATA,
   SAMPLE_DURATION_DATA,
+  SAMPLE_FITNESS_AGE_DATA,
   SAMPLE_PROGRESS_DATA,
   SAMPLE_SCORE_DATA,
   formatRecordValue,
@@ -36,7 +38,11 @@ function LockedGraphPreview({
       ? SAMPLE_DURATION_DATA
       : resolvedSample === 'score'
         ? SAMPLE_SCORE_DATA
-        : SAMPLE_PROGRESS_DATA
+        : resolvedSample === 'bmi'
+          ? SAMPLE_BMI_DATA
+          : resolvedSample === 'fitnessAge'
+            ? SAMPLE_FITNESS_AGE_DATA
+            : SAMPLE_PROGRESS_DATA
 
   return (
     <div className="locked-graph-preview" aria-label="Progress tracking locked">

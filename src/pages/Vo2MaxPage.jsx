@@ -1,4 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
+import {
+  useSyncedDefault,
+  useUserDefaults,
+} from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
@@ -21,16 +25,17 @@ const METHODS = [
 ]
 
 function Vo2MaxPage({ onRequestAuth }) {
-  const [method, setMethod] = useState('cooper')
-  const [distanceUnit, setDistanceUnit] = useState('mi')
-  const [distance, setDistance] = useState('')
-  const [massUnit, setMassUnit] = useState('lb')
-  const [weight, setWeight] = useState('')
-  const [minutes, setMinutes] = useState('')
-  const [seconds, setSeconds] = useState('')
-  const [heartRate, setHeartRate] = useState('')
-  const [age, setAge] = useState('')
-  const [gender, setGender] = useState('')
+  const { patchDefaults } = useUserDefaults()
+  const [method, setMethod] = useSyncedDefault('vo2Method', 'cooper')
+  const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
+  const [distance, setDistance] = useSyncedDefault('cooperDistance', '')
+  const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
+  const [weight, setWeight] = useSyncedDefault('bodyweight', '')
+  const [minutes, setMinutes] = useSyncedDefault('walkMinutes', '')
+  const [seconds, setSeconds] = useSyncedDefault('walkSeconds', '')
+  const [heartRate, setHeartRate] = useSyncedDefault('endingHeartRate', '')
+  const [age, setAge] = useSyncedDefault('age', '')
+  const [gender, setGender] = useSyncedDefault('gender', '')
 
   const handleDistanceUnitChange = (nextUnit) => {
     if (nextUnit === distanceUnit) return
@@ -114,6 +119,12 @@ function Vo2MaxPage({ onRequestAuth }) {
     age,
     gender,
   ])
+
+  useEffect(() => {
+    if (result?.vo2Max != null) {
+      patchDefaults({ vo2Max: String(result.vo2Max) })
+    }
+  }, [result?.vo2Max, patchDefaults])
 
   return (
     <main className="page">
@@ -261,16 +272,6 @@ function Vo2MaxPage({ onRequestAuth }) {
             </div>
           ) : null}
 
-          <CalculatorTracking
-            calculatorType="vo2max"
-            tracks={VO2_TRACKS}
-            activeTrackId="vo2max"
-            resultValue={result.vo2Max}
-            resultUnit="ml/kg/min"
-            hasResult
-            onRequestAuth={onRequestAuth}
-          />
-
           {result.peer ? (
             <>
               <div className="result-stat">
@@ -322,6 +323,16 @@ function Vo2MaxPage({ onRequestAuth }) {
             : 'Enter a valid bodyweight, 1-mile walk time, ending heart rate, age, and gender.'}
         </p>
       )}
+
+      <CalculatorTracking
+        calculatorType="vo2max"
+        tracks={VO2_TRACKS}
+        activeTrackId="vo2max"
+        resultValue={result?.vo2Max}
+        resultUnit="ml/kg/min"
+        hasResult={Boolean(result?.vo2Max)}
+        onRequestAuth={onRequestAuth}
+      />
     </main>
   )
 }

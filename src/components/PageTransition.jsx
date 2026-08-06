@@ -1,52 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 
-const EXIT_MS = 180
-
 /**
  * Fades/slides page content when `pageKey` changes.
- * Keeps in-page updates immediate when the key is unchanged.
+ * Always renders current children — never keeps a stale page mounted.
  */
 function PageTransition({ pageKey, children }) {
-  const [renderedKey, setRenderedKey] = useState(pageKey)
-  const [rendered, setRendered] = useState(children)
   const [phase, setPhase] = useState('enter')
-  const childrenRef = useRef(children)
-  childrenRef.current = children
-
-  // Keep live updates for the current page without restarting transitions.
-  useEffect(() => {
-    if (pageKey === renderedKey) {
-      setRendered(children)
-    }
-  }, [children, pageKey, renderedKey])
+  const prevKeyRef = useRef(pageKey)
 
   useEffect(() => {
-    if (pageKey === renderedKey) return undefined
+    if (pageKey === prevKeyRef.current) return undefined
+    prevKeyRef.current = pageKey
 
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     if (reduced) {
-      setRenderedKey(pageKey)
-      setRendered(childrenRef.current)
       setPhase('enter')
       return undefined
     }
 
+    // Restart enter animation without lingering on opacity: 0.
     setPhase('exit')
-    const timer = setTimeout(() => {
-      setRenderedKey(pageKey)
-      setRendered(childrenRef.current)
+    const timer = window.setTimeout(() => {
       setPhase('enter')
-    }, EXIT_MS)
+    }, 20)
 
-    return () => clearTimeout(timer)
-  }, [pageKey, renderedKey])
+    return () => window.clearTimeout(timer)
+  }, [pageKey])
 
   return (
-    <div className={`page-transition is-${phase}`} data-page={renderedKey}>
-      {rendered}
+    <div className={`page-transition is-${phase}`} data-page={pageKey}>
+      {children}
     </div>
   )
 }

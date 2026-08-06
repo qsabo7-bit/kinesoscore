@@ -33,6 +33,18 @@ export const calculators = [
     description: 'Estimate resting metabolism and daily calorie needs.',
     status: 'ready',
   },
+  {
+    id: 'bmi',
+    name: 'BMI',
+    description: 'Calculate body mass index and WHO weight category.',
+    status: 'ready',
+  },
+  {
+    id: 'fitness-age',
+    name: 'Fitness Age',
+    description: 'Estimate FPC Fitness Age from VO₂, heart rate, and training.',
+    status: 'ready',
+  },
 ]
 
 export const DEFAULT_CALCULATOR_ID = 'strength'

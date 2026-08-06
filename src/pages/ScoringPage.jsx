@@ -1,4 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
+import {
+  useSyncedDefault,
+  useUserDefaults,
+} from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
@@ -24,18 +28,19 @@ function toSeconds(hours, minutes, seconds) {
 }
 
 function ScoringPage({ onRequestAuth }) {
-  const [massUnit, setMassUnit] = useState('lb')
-  const [distanceUnit, setDistanceUnit] = useState('mi')
-  const [weight, setWeight] = useState('')
-  const [reps, setReps] = useState('')
-  const [bodyweight, setBodyweight] = useState('')
-  const [lift, setLift] = useState('bench')
-  const [distance, setDistance] = useState('')
-  const [hours, setHours] = useState('')
-  const [minutes, setMinutes] = useState('')
-  const [seconds, setSeconds] = useState('')
-  const [age, setAge] = useState('')
-  const [gender, setGender] = useState('')
+  const { patchDefaults } = useUserDefaults()
+  const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
+  const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
+  const [weight, setWeight] = useSyncedDefault('liftWeight', '')
+  const [reps, setReps] = useSyncedDefault('reps', '')
+  const [bodyweight, setBodyweight] = useSyncedDefault('bodyweight', '')
+  const [lift, setLift] = useSyncedDefault('lift', 'bench')
+  const [distance, setDistance] = useSyncedDefault('raceDistance', '')
+  const [hours, setHours] = useSyncedDefault('raceHours', '')
+  const [minutes, setMinutes] = useSyncedDefault('raceMinutes', '')
+  const [seconds, setSeconds] = useSyncedDefault('raceSeconds', '')
+  const [age, setAge] = useSyncedDefault('age', '')
+  const [gender, setGender] = useSyncedDefault('gender', '')
 
   const handleMassUnitChange = (nextUnit) => {
     if (nextUnit === massUnit) return
@@ -153,6 +158,12 @@ function ScoringPage({ onRequestAuth }) {
     }
     return `Add ${parts.join(' + ')} to calculate your FPC Score.`
   })()
+
+  useEffect(() => {
+    if (result.score?.strengthScore != null) {
+      patchDefaults({ strengthScore: String(result.score.strengthScore) })
+    }
+  }, [result.score?.strengthScore, patchDefaults])
 
   return (
     <main className="page">

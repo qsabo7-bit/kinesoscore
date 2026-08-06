@@ -62,10 +62,72 @@ function PerformanceSummary({
           valueKind="number"
           unit="points"
           higherIsBetter
-          label="Improvement Over Time"
+          label="Change"
         />
         <div className="performance-stat">
           <p className="result-label">Number of Tests</p>
+          <p className="performance-stat-value">{summary.totalAttempts}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (variant === 'bmi') {
+    return (
+      <div className="performance-summary" aria-label="BMI summary">
+        <div className="performance-stat">
+          <p className="result-label">Current BMI</p>
+          <p className="performance-stat-value">
+            {formatRecordValue(summary.latestValue, 'number')}
+          </p>
+        </div>
+        <div className="performance-stat">
+          <p className="result-label">Lowest BMI</p>
+          <p className="performance-stat-value">
+            {formatRecordValue(summary.minValue, 'number')}
+          </p>
+        </div>
+        <div className="performance-stat">
+          <p className="result-label">Highest BMI</p>
+          <p className="performance-stat-value">
+            {formatRecordValue(summary.maxValue, 'number')}
+          </p>
+        </div>
+        <TrendStat
+          delta={summary.improvementSinceFirst}
+          valueKind="number"
+          unit="BMI"
+          higherIsBetter={false}
+          label="Change Over Time"
+        />
+      </div>
+    )
+  }
+
+  if (variant === 'fitnessAge') {
+    return (
+      <div className="performance-summary" aria-label="Fitness Age summary">
+        <div className="performance-stat">
+          <p className="result-label">Current Fitness Age</p>
+          <p className="performance-stat-value">
+            {formatRecordValue(summary.latestValue, 'number', 'yr')}
+          </p>
+        </div>
+        <div className="performance-stat">
+          <p className="result-label">Best Fitness Age</p>
+          <p className="performance-stat-value">
+            {formatRecordValue(summary.personalRecord, 'number', 'yr')}
+          </p>
+        </div>
+        <TrendStat
+          delta={summary.improvementSinceFirst}
+          valueKind="number"
+          unit="yr"
+          higherIsBetter={false}
+          label="Change"
+        />
+        <div className="performance-stat">
+          <p className="result-label">Number of Assessments</p>
           <p className="performance-stat-value">{summary.totalAttempts}</p>
         </div>
       </div>
@@ -106,10 +168,11 @@ function PerformanceSummary({
         <p className="performance-stat-value">{summary.totalAttempts}</p>
       </div>
       <TrendStat
-        delta={summary.improvement}
+        delta={summary.improvementSinceFirst}
         valueKind={valueKind}
         unit={displayUnit}
         higherIsBetter={summary.higherIsBetter}
+        label="Change"
       />
     </div>
   )

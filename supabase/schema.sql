@@ -98,6 +98,38 @@ create policy "Users can delete own performance records"
   on public.performance_records for delete
   using (auth.uid() = user_id);
 
+-- ---------------------------------------------------------------------------
+-- Shared calculator defaults (age, weight, height, units, etc.)
+-- ---------------------------------------------------------------------------
+create table if not exists public.user_defaults (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  defaults jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.user_defaults enable row level security;
+
+drop policy if exists "Users can read own defaults" on public.user_defaults;
+create policy "Users can read own defaults"
+  on public.user_defaults for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "Users can insert own defaults" on public.user_defaults;
+create policy "Users can insert own defaults"
+  on public.user_defaults for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update own defaults" on public.user_defaults;
+create policy "Users can update own defaults"
+  on public.user_defaults for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete own defaults" on public.user_defaults;
+create policy "Users can delete own defaults"
+  on public.user_defaults for delete
+  using (auth.uid() = user_id);
+
 -- Deletes the signed-in auth user (cascades to profiles / related rows).
 create or replace function public.delete_own_account()
 returns void
@@ -113,6 +145,7 @@ begin
   end if;
 
   delete from public.performance_records where user_id = uid;
+  delete from public.user_defaults where user_id = uid;
   delete from public.profiles where id = uid;
   delete from auth.users where id = uid;
 end;

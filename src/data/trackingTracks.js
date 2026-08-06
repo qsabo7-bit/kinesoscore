@@ -57,3 +57,27 @@ export const VO2_TRACKS = [
     higherIsBetter: true,
   },
 ]
+
+export const BMI_CALCULATOR_TYPE = 'bmi'
+
+export const BMI_TRACKS = [
+  {
+    id: 'bmi',
+    label: 'BMI',
+    exerciseName: 'BMI',
+    yAxisLabel: 'BMI',
+    higherIsBetter: false,
+  },
+]
+
+export const FITNESS_AGE_CALCULATOR_TYPE = 'fitness_age'
+
+export const FITNESS_AGE_TRACKS = [
+  {
+    id: 'fitness-age',
+    label: 'Fitness Age',
+    exerciseName: 'FPC Fitness Age',
+    yAxisLabel: 'Fitness Age',
+    higherIsBetter: false,
+  },
+]

@@ -9,6 +9,8 @@ import RunningPage from './pages/RunningPage'
 import ScoringPage from './pages/ScoringPage'
 import Vo2MaxPage from './pages/Vo2MaxPage'
 import BmrPage from './pages/BmrPage'
+import BmiPage from './pages/BmiPage'
+import FitnessAgePage from './pages/FitnessAgePage'
 import AuthPage from './pages/AuthPage'
 import AccountPage from './pages/AccountPage'
 import AboutPage from './pages/AboutPage'
@@ -41,7 +43,11 @@ function App() {
   } else if (activeTab === 'vo2max') {
     content = <Vo2MaxPage onRequestAuth={goToLogin} />
   } else if (activeTab === 'bmr') {
-    content = <BmrPage />
+    content = <BmrPage onRequestAuth={goToLogin} />
+  } else if (activeTab === 'bmi') {
+    content = <BmiPage onRequestAuth={goToLogin} />
+  } else if (activeTab === 'fitness-age') {
+    content = <FitnessAgePage onRequestAuth={goToLogin} />
   } else if (activeTab === 'login') {
     content = <AuthPage onSuccess={() => setActiveTab('home')} />
   } else if (activeTab === 'account') {

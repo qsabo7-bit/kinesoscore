@@ -10,6 +10,36 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient'
 
 const AuthContext = createContext(null)
 
+/** Once true, skip further profiles API calls until a full page reload. */
+let profilesTableUnavailable = false
+
+function profileFromUser(nextUser) {
+  return {
+    id: nextUser.id,
+    first_name:
+      nextUser.user_metadata?.first_name?.trim() ||
+      nextUser.email?.split('@')[0] ||
+      'Athlete',
+    email: nextUser.email,
+    created_at: nextUser.created_at,
+  }
+}
+
+/** Missing table / schema-cache miss (common before SQL setup is run). */
+function isMissingProfilesTable(error) {
+  if (!error) return false
+  const code = String(error.code || '')
+  const status = Number(error.status || error.statusCode || 0)
+  const message = String(error.message || '')
+  return (
+    code === 'PGRST205' ||
+    code === '42P01' ||
+    status === 404 ||
+    /Could not find the table .*profiles/i.test(message) ||
+    /relation .*profiles.* does not exist/i.test(message)
+  )
+}
+
 async function fetchProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
@@ -33,6 +63,11 @@ export function AuthProvider({ children }) {
       return
     }
 
+    if (profilesTableUnavailable) {
+      setProfile(profileFromUser(nextUser))
+      return
+    }
+
     try {
       const data = await fetchProfile(nextUser.id)
       if (data) {
@@ -40,10 +75,7 @@ export function AuthProvider({ children }) {
         return
       }
 
-      const firstName =
-        nextUser.user_metadata?.first_name?.trim() ||
-        nextUser.email?.split('@')[0] ||
-        'Athlete'
+      const firstName = profileFromUser(nextUser).first_name
 
       const { data: created, error } = await supabase
         .from('profiles')
@@ -58,16 +90,12 @@ export function AuthProvider({ children }) {
       if (error) throw error
       setProfile(created)
     } catch (error) {
-      console.error('Failed to load profile', error)
-      setProfile({
-        id: nextUser.id,
-        first_name:
-          nextUser.user_metadata?.first_name?.trim() ||
-          nextUser.email?.split('@')[0] ||
-          'Athlete',
-        email: nextUser.email,
-        created_at: nextUser.created_at,
-      })
+      if (isMissingProfilesTable(error)) {
+        profilesTableUnavailable = true
+      } else {
+        console.error('Failed to load profile', error)
+      }
+      setProfile(profileFromUser(nextUser))
     }
   }, [])
 

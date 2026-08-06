@@ -1,5 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useAuth } from '../auth/AuthContext'
+import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import UnitToggle from '../components/UnitToggle'
+import { LockedGraphPreview } from '../components/tracking'
 import {
   ACTIVITY_LEVELS,
   calculateBmr,
@@ -10,14 +13,15 @@ import {
   MASS_UNITS,
 } from '../calculations'
 
-function BmrPage() {
-  const [massUnit, setMassUnit] = useState('lb')
-  const [heightUnit, setHeightUnit] = useState('in')
-  const [weight, setWeight] = useState('')
-  const [height, setHeight] = useState('')
-  const [age, setAge] = useState('')
-  const [gender, setGender] = useState('male')
-  const [activityId, setActivityId] = useState('')
+function BmrPage({ onRequestAuth }) {
+  const { isAuthenticated, loading: authLoading } = useAuth()
+  const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
+  const [heightUnit, setHeightUnit] = useSyncedDefault('heightUnit', 'in')
+  const [weight, setWeight] = useSyncedDefault('bodyweight', '')
+  const [height, setHeight] = useSyncedDefault('height', '')
+  const [age, setAge] = useSyncedDefault('age', '')
+  const [gender, setGender] = useSyncedDefault('gender', 'male')
+  const [activityId, setActivityId] = useSyncedDefault('activityId', '')
 
   const handleMassUnitChange = (nextUnit) => {
     if (nextUnit === massUnit) return
@@ -217,6 +221,18 @@ function BmrPage() {
           Enter a valid weight, height, age, and sex.
         </p>
       )}
+
+      {!authLoading && !isAuthenticated ? (
+        <div className="tracking-panel">
+          <h2 className="result-section-title">Your Progress</h2>
+          <LockedGraphPreview
+            onRequestAuth={onRequestAuth}
+            yAxisLabel="kcal/day"
+            valueKind="number"
+            sampleKind="number"
+          />
+        </div>
+      ) : null}
     </main>
   )
 }

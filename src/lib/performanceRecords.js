@@ -139,6 +139,46 @@ export function recordsInMassUnit(records, displayUnit) {
 }
 
 /**
+ * Filter chronological records to a trailing time window.
+ * @param {PerformanceRecord[]} records
+ * @param {'1w' | '1m' | '3m' | '6m' | '1y' | 'all'} rangeId
+ */
+export function filterRecordsByRange(records, rangeId = 'all') {
+  if (!records?.length || !rangeId || rangeId === 'all') {
+    return records ?? []
+  }
+
+  const now = new Date()
+  const start = new Date(now)
+
+  switch (rangeId) {
+    case '1w':
+      start.setDate(start.getDate() - 7)
+      break
+    case '1m':
+      start.setMonth(start.getMonth() - 1)
+      break
+    case '3m':
+      start.setMonth(start.getMonth() - 3)
+      break
+    case '6m':
+      start.setMonth(start.getMonth() - 6)
+      break
+    case '1y':
+      start.setFullYear(start.getFullYear() - 1)
+      break
+    default:
+      return records
+  }
+
+  const cutoff = start.getTime()
+  return records.filter((record) => {
+    const stamped = new Date(record.created_at).getTime()
+    return Number.isFinite(stamped) && stamped >= cutoff
+  })
+}
+
+/**
  * @param {PerformanceRecord[]} records chronological ascending
  * @param {boolean} higherIsBetter
  */
@@ -149,9 +189,9 @@ export function computePerformanceSummary(records, higherIsBetter = true) {
   const latest = records[records.length - 1]
   const first = records[0]
   const previous = records.length > 1 ? records[records.length - 2] : null
-  const personalRecord = higherIsBetter
-    ? Math.max(...values)
-    : Math.min(...values)
+  const minValue = Math.min(...values)
+  const maxValue = Math.max(...values)
+  const personalRecord = higherIsBetter ? maxValue : minValue
   const averageValue =
     Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) /
     10
@@ -168,6 +208,8 @@ export function computePerformanceSummary(records, higherIsBetter = true) {
 
   return {
     personalRecord,
+    minValue,
+    maxValue,
     latestValue: Number(latest.result_value),
     latestUnit: latest.result_unit,
     latestDate: latest.created_at,
@@ -257,4 +299,22 @@ export const SAMPLE_SCORE_DATA = [
   { dateLabel: 'May', value: 45 },
   { dateLabel: 'Jul', value: 48 },
   { dateLabel: 'Aug', value: 52 },
+]
+
+/** Sample BMI curve for the locked guest preview. */
+export const SAMPLE_BMI_DATA = [
+  { dateLabel: 'Jan', value: 25.2 },
+  { dateLabel: 'Mar', value: 24.8 },
+  { dateLabel: 'May', value: 24.4 },
+  { dateLabel: 'Jul', value: 24.1 },
+  { dateLabel: 'Aug', value: 23.7 },
+]
+
+/** Sample Fitness Age curve (lower is better). */
+export const SAMPLE_FITNESS_AGE_DATA = [
+  { dateLabel: 'Jan', value: 36 },
+  { dateLabel: 'Mar', value: 35 },
+  { dateLabel: 'May', value: 34 },
+  { dateLabel: 'Jul', value: 33 },
+  { dateLabel: 'Aug', value: 32 },
 ]

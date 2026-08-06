@@ -21,3 +21,25 @@ export const FPC_SCORE_LOCKED_PREVIEW = {
     'Performance graphs',
   ],
 }
+
+export const BMI_LOCKED_PREVIEW = {
+  title: 'Want to save your BMI?',
+  lead: 'Log in to unlock:',
+  benefits: [
+    'BMI history',
+    'Progress graphs',
+    'Lowest / highest tracking',
+    'Change over time',
+  ],
+}
+
+export const FITNESS_AGE_LOCKED_PREVIEW = {
+  title: 'Want to track Fitness Age?',
+  lead: 'Log in to unlock:',
+  benefits: [
+    'Fitness Age history',
+    'Best (lowest) age',
+    'Progress graphs',
+    'Assessment history',
+  ],
+}

@@ -869,6 +869,24 @@ a.site-footer-link:hover {
   font-weight: 600;
 }
 
+.calc-disclaimer {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.result-table-note {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--text);
+  opacity: 0.85;
+}
+
 .calc-hint {
   font-size: 0.95rem;
   opacity: 0.8;
@@ -1149,6 +1167,51 @@ a.site-footer-link:hover {
 
 .performance-stat-value.is-trend-good {
   color: var(--accent);
+}
+
+.graph-range-toggle {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.graph-range-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.graph-range-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.graph-range-btn {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: transparent;
+  transition:
+    background var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease-soft);
+}
+
+.graph-range-btn:hover {
+  color: var(--text-strong);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.graph-range-btn.is-active {
+  color: var(--text-strong);
+  border-color: var(--accent);
+  background: var(--accent-muted);
 }
 
 .progress-chart-wrap {

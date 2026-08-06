@@ -1,4 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
+import {
+  useSyncedDefault,
+  useUserDefaults,
+} from '../auth/UserDefaultsContext'
+import { splitDurationParts } from '../lib/userDefaults'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
@@ -22,13 +27,14 @@ function toSeconds(hours, minutes, seconds) {
 }
 
 function RunningPage({ onRequestAuth }) {
-  const [distanceUnit, setDistanceUnit] = useState('mi')
-  const [distance, setDistance] = useState('')
-  const [hours, setHours] = useState('')
-  const [minutes, setMinutes] = useState('')
-  const [seconds, setSeconds] = useState('')
-  const [age, setAge] = useState('')
-  const [gender, setGender] = useState('')
+  const { patchDefaults } = useUserDefaults()
+  const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
+  const [distance, setDistance] = useSyncedDefault('raceDistance', '')
+  const [hours, setHours] = useSyncedDefault('raceHours', '')
+  const [minutes, setMinutes] = useSyncedDefault('raceMinutes', '')
+  const [seconds, setSeconds] = useSyncedDefault('raceSeconds', '')
+  const [age, setAge] = useSyncedDefault('age', '')
+  const [gender, setGender] = useSyncedDefault('gender', '')
 
   const handleDistanceUnitChange = (nextUnit) => {
     if (nextUnit === distanceUnit) return
@@ -95,6 +101,28 @@ function RunningPage({ onRequestAuth }) {
       peer,
     }
   }, [distance, distanceUnit, hours, minutes, seconds, age, gender])
+
+  // Carry equivalent (or exact) 5K time into Fitness Age defaults.
+  useEffect(() => {
+    if (!result) return
+
+    let fiveKSeconds = null
+    if (result.trackId === '5k' && result.trackTimeSeconds != null) {
+      fiveKSeconds = result.trackTimeSeconds
+    } else {
+      const predicted = result.predictions?.find((race) => race.id === '5k')
+      if (predicted?.timeSeconds != null) fiveKSeconds = predicted.timeSeconds
+    }
+
+    const parts = splitDurationParts(fiveKSeconds)
+    if (!parts) return
+
+    patchDefaults({
+      fiveKHours: parts.hours,
+      fiveKMinutes: parts.minutes,
+      fiveKSeconds: parts.seconds,
+    })
+  }, [result, patchDefaults])
 
   return (
     <main className="page">
@@ -193,17 +221,6 @@ function RunningPage({ onRequestAuth }) {
             </div>
           ) : null}
 
-          <CalculatorTracking
-            calculatorType="running"
-            tracks={RUNNING_TRACKS}
-            activeTrackId={result.trackId}
-            resultValue={result.trackTimeSeconds}
-            resultUnit="sec"
-            valueKind="duration"
-            hasResult={Boolean(result.trackTimeSeconds)}
-            onRequestAuth={onRequestAuth}
-          />
-
           <div className="result-table-wrap">
             <h2 className="result-section-title">Predicted race times</h2>
             <ul className="result-table">
@@ -253,6 +270,17 @@ function RunningPage({ onRequestAuth }) {
       ) : (
         <p className="calc-hint">Enter a valid distance and finish time.</p>
       )}
+
+      <CalculatorTracking
+        calculatorType="running"
+        tracks={RUNNING_TRACKS}
+        activeTrackId={result?.trackId ?? '5k'}
+        resultValue={result?.trackTimeSeconds}
+        resultUnit="sec"
+        valueKind="duration"
+        hasResult={Boolean(result?.trackTimeSeconds)}
+        onRequestAuth={onRequestAuth}
+      />
     </main>
   )
 }

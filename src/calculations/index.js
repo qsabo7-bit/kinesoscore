@@ -34,6 +34,19 @@ export {
   TDEE_ACTIVITY_SOURCE,
 } from './bmr.js'
 export {
+  BMI_DISCLAIMER,
+  BMI_SOURCE,
+  calculateBmi,
+  getBmiCategory,
+} from './bmi.js'
+export {
+  FITNESS_AGE_SOURCE,
+  MIN_FITNESS_AGE,
+  calculateFitnessAge,
+  expectedFiveKSeconds,
+  expectedVo2ForAge,
+} from './fitnessAge.js'
+export {
   calculateCooperVo2,
   calculateRockportVo2,
   compareVo2ToNorms,
