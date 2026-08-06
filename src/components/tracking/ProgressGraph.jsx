@@ -7,14 +7,26 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { formatRecordDate, formatRecordValue } from '../lib/performanceRecords'
+import {
+  formatRecordDate,
+  formatRecordValue,
+} from '../../lib/performanceRecords'
 
-function ProgressChart({ records, yAxisLabel = 'Result' }) {
+function ProgressGraph({
+  records,
+  yAxisLabel = 'Result',
+  valueKind = 'number',
+  timeFormat = 'clock',
+  emptyMessage = 'No saved results yet.\nComplete this calculator and save your first result.',
+}) {
   if (!records?.length) {
     return (
       <p className="progress-empty">
-        No saved results yet. Complete this calculator and save your first
-        result.
+        {emptyMessage.split('\n').map((line) => (
+          <span key={line} className="progress-empty-line">
+            {line}
+          </span>
+        ))}
       </p>
     )
   }
@@ -26,12 +38,17 @@ function ProgressChart({ records, yAxisLabel = 'Result' }) {
     unit: record.result_unit,
   }))
 
+  const formatTick = (value) =>
+    valueKind === 'duration'
+      ? formatRecordValue(value, 'duration', null, timeFormat)
+      : String(Math.round(Number(value) * 10) / 10)
+
   return (
     <div className="progress-chart-wrap">
       <ResponsiveContainer width="100%" height={260}>
         <LineChart
           data={chartData}
-          margin={{ top: 12, right: 12, left: 4, bottom: 4 }}
+          margin={{ top: 12, right: 12, left: 8, bottom: 4 }}
         >
           <CartesianGrid stroke="rgba(242, 247, 244, 0.08)" vertical={false} />
           <XAxis
@@ -44,7 +61,8 @@ function ProgressChart({ records, yAxisLabel = 'Result' }) {
             tick={{ fill: '#b8c4bc', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
-            width={52}
+            width={valueKind === 'duration' ? 56 : 52}
+            tickFormatter={formatTick}
             label={{
               value: yAxisLabel,
               angle: -90,
@@ -62,7 +80,12 @@ function ProgressChart({ records, yAxisLabel = 'Result' }) {
             }}
             labelStyle={{ color: '#b8c4bc' }}
             formatter={(value, _name, item) => [
-              formatRecordValue(value, item.payload.unit),
+              formatRecordValue(
+                value,
+                valueKind,
+                valueKind === 'duration' ? null : item.payload.unit,
+                timeFormat,
+              ),
               'Result',
             ]}
           />
@@ -80,4 +103,4 @@ function ProgressChart({ records, yAxisLabel = 'Result' }) {
   )
 }
 
-export default ProgressChart
+export default ProgressGraph

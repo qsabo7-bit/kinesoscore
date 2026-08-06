@@ -1,61 +1,164 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import { MASS_UNITS } from '../calculations'
 import {
+  computePerformanceSummary,
   deletePerformanceRecord,
   fetchPerformanceRecords,
-  formatRecordDate,
-  formatRecordValue,
+  recordsInMassUnit,
   savePerformanceRecord,
 } from '../lib/performanceRecords'
-import ProgressChart from './ProgressChart'
+import UnitToggle from './UnitToggle'
+import {
+  DEFAULT_LOCKED_PREVIEW,
+  GraphTrackSelector,
+  HistoryList,
+  LockedGraphPreview,
+  PerformanceSummary,
+  ProgressGraph,
+  SaveResultButton,
+} from './tracking'
 
 /**
- * Save CTA + (for signed-in users only) progress graph and deletable history.
- * Logged-out users never see graphs, empty placeholders, or delete controls.
+ * Universal result tracking for every calculator.
+ *
+ * Logged in: Save + summary + graph + history (filtered by calculator_type + exercise_name)
+ * Logged out: Locked graph preview after a result is available
+ *
+ * @param {object} props
+ * @param {string} props.calculatorType - performance_records.calculator_type
+ * @param {Array<{id: string, label: string, exerciseName: string, yAxisLabel?: string, higherIsBetter?: boolean}>} props.tracks
+ * @param {string} [props.activeTrackId]
+ * @param {number | null | undefined} props.resultValue
+ * @param {string} [props.resultUnit]
+ * @param {'mass' | 'duration' | 'number'} [props.valueKind]
+ * @param {string} [props.displayUnit]
+ * @param {(unit: string) => void} [props.onDisplayUnitChange]
+ * @param {() => void} [props.onRequestAuth]
+ * @param {boolean} [props.hasResult]
+ * @param {'default' | 'score'} [props.summaryVariant]
+ * @param {string} [props.saveLabel]
  */
 function CalculatorTracking({
   calculatorType,
+  tracks,
+  activeTrackId,
   resultValue,
   resultUnit,
-  yAxisLabel = 'Result',
+  valueKind = 'number',
+  displayUnit: controlledDisplayUnit,
+  onDisplayUnitChange,
   onRequestAuth,
-  enabled = true,
+  hasResult = false,
+  summaryVariant = 'default',
+  saveLabel = 'Save Result',
 }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
-  const [records, setRecords] = useState([])
+  const [selectedTrackId, setSelectedTrackId] = useState(
+    activeTrackId || tracks[0]?.id,
+  )
+  const [recordsByTrack, setRecordsByTrack] = useState({})
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [savedMessage, setSavedMessage] = useState(false)
   const [error, setError] = useState('')
+  const [localDisplayUnit, setLocalDisplayUnit] = useState(
+    resultUnit === 'kg' ? 'kg' : 'lb',
+  )
+  const touchStartX = useRef(null)
 
-  const canSave =
-    enabled && Number.isFinite(Number(resultValue)) && !authLoading
+  const displayUnit =
+    valueKind === 'mass'
+      ? (controlledDisplayUnit ?? localDisplayUnit)
+      : resultUnit
+
+  const setDisplayUnit = (unit) => {
+    if (onDisplayUnitChange) onDisplayUnitChange(unit)
+    else setLocalDisplayUnit(unit)
+  }
+
+  const trackIds = tracks.map((track) => track.id).join('|')
+
+  useEffect(() => {
+    if (!activeTrackId) return
+    if (tracks.some((track) => track.id === activeTrackId)) {
+      setSelectedTrackId(activeTrackId)
+    }
+  }, [activeTrackId, trackIds, tracks])
+
+  useEffect(() => {
+    if (valueKind === 'mass' && (resultUnit === 'lb' || resultUnit === 'kg')) {
+      if (!controlledDisplayUnit) setLocalDisplayUnit(resultUnit)
+    }
+  }, [resultUnit, valueKind, controlledDisplayUnit])
+
+  const selectedTrack =
+    tracks.find((track) => track.id === selectedTrackId) || tracks[0]
 
   const loadHistory = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      setRecords([])
+    if (!isAuthenticated || !user || !tracks.length) {
+      setRecordsByTrack({})
       return
     }
 
     setLoadingHistory(true)
     setError('')
     try {
-      const data = await fetchPerformanceRecords(user.id, calculatorType)
-      setRecords(data)
+      const entries = await Promise.all(
+        tracks.map(async (track) => {
+          const rows = await fetchPerformanceRecords(
+            user.id,
+            calculatorType,
+            track.exerciseName,
+          )
+          return [track.id, rows]
+        }),
+      )
+      setRecordsByTrack(Object.fromEntries(entries))
     } catch (err) {
       setError(err.message || 'Could not load your progress.')
     } finally {
       setLoadingHistory(false)
     }
-  }, [isAuthenticated, user, calculatorType])
+  }, [isAuthenticated, user, calculatorType, tracks])
 
   useEffect(() => {
     loadHistory()
   }, [loadHistory])
 
+  const rawSelectedRecords = recordsByTrack[selectedTrack?.id] || []
+  const selectedRecords = useMemo(() => {
+    if (valueKind === 'mass') {
+      return recordsInMassUnit(rawSelectedRecords, displayUnit || 'lb')
+    }
+    return rawSelectedRecords
+  }, [rawSelectedRecords, valueKind, displayUnit])
+
+  const higherIsBetter = selectedTrack?.higherIsBetter !== false
+  const axisLabel =
+    valueKind === 'duration'
+      ? selectedTrack?.yAxisLabel || 'Time'
+      : valueKind === 'mass'
+        ? `${selectedTrack?.yAxisLabel || 'Result'} (${displayUnit})`
+        : selectedTrack?.yAxisLabel || 'Result'
+
+  const summary = useMemo(
+    () => computePerformanceSummary(selectedRecords, higherIsBetter),
+    [selectedRecords, higherIsBetter],
+  )
+
+  const canSave =
+    hasResult &&
+    isAuthenticated &&
+    Number.isFinite(Number(resultValue)) &&
+    Boolean(activeTrackId)
+
   const handleSave = async () => {
-    if (!user) return
+    if (!user || !canSave) return
+    const track = tracks.find((item) => item.id === activeTrackId)
+    if (!track) return
+
     setSaving(true)
     setError('')
     setSavedMessage(false)
@@ -64,10 +167,13 @@ function CalculatorTracking({
       await savePerformanceRecord({
         userId: user.id,
         calculatorType,
+        exerciseName: track.exerciseName,
         resultValue: Number(resultValue),
-        resultUnit: resultUnit || null,
+        resultUnit:
+          valueKind === 'duration' ? 'sec' : resultUnit || displayUnit || null,
       })
       setSavedMessage(true)
+      setSelectedTrackId(track.id)
       await loadHistory()
     } catch (err) {
       setError(err.message || 'Could not save this result.')
@@ -81,7 +187,13 @@ function CalculatorTracking({
     setError('')
     try {
       await deletePerformanceRecord(recordId)
-      setRecords((current) => current.filter((item) => item.id !== recordId))
+      setRecordsByTrack((current) => {
+        const next = { ...current }
+        for (const key of Object.keys(next)) {
+          next[key] = next[key].filter((item) => item.id !== recordId)
+        }
+        return next
+      })
     } catch (err) {
       setError(err.message || 'Could not delete that result.')
     } finally {
@@ -89,85 +201,125 @@ function CalculatorTracking({
     }
   }
 
-  if (!canSave) return null
+  const selectByOffset = (offset) => {
+    if (tracks.length < 2) return
+    const index = tracks.findIndex((track) => track.id === selectedTrackId)
+    const next = (index + offset + tracks.length) % tracks.length
+    setSelectedTrackId(tracks[next].id)
+  }
 
-  // Logged-out: calculator still works; only show the login incentive.
+  if (!selectedTrack) return null
+
+  // Guests: always show locked preview once a result exists (never hide the section).
   if (!isAuthenticated) {
+    if (!hasResult) return null
+    if (authLoading) {
+      return (
+        <div className="tracking-panel">
+          <h2 className="result-section-title">Your Progress</h2>
+          <p className="calc-hint">Loading…</p>
+        </div>
+      )
+    }
+
     return (
-      <div className="tracking-panel tracking-panel-guest">
-        <p className="tracking-cta">
-          Want to save your progress?{' '}
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => onRequestAuth?.()}
-          >
-            Log in!
-          </button>
-        </p>
+      <div className="tracking-panel">
+        <h2 className="result-section-title">Your Progress</h2>
+        <LockedGraphPreview
+          onRequestAuth={onRequestAuth}
+          yAxisLabel={axisLabel}
+          valueKind={valueKind}
+          title={DEFAULT_LOCKED_PREVIEW.title}
+          lead={DEFAULT_LOCKED_PREVIEW.lead}
+          benefits={DEFAULT_LOCKED_PREVIEW.benefits}
+        />
       </div>
     )
   }
 
-  // Logged-in: save + progress graph + history (never shown to guests).
+  // Signed-in: show tracking whenever there is a current result or prior history.
+  if (authLoading) return null
+  if (!hasResult && !tracks.length) return null
+
   return (
     <div className="tracking-panel">
-      <div className="save-result-row">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          {saving ? 'Saving…' : 'Save Result'}
-        </button>
-        {savedMessage ? (
-          <p className="feedback feedback-success">
-            Result saved to your progress.
-          </p>
-        ) : null}
-      </div>
+      {canSave ? (
+        <SaveResultButton
+          onSave={handleSave}
+          saving={saving}
+          savedMessage={savedMessage}
+          label={saveLabel}
+        />
+      ) : null}
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 
-      <section className="progress-section" aria-labelledby="progress-heading">
-        <h2 id="progress-heading" className="result-section-title">
-          Your Progress
-        </h2>
+      <section
+        className="progress-section"
+        aria-labelledby={`${calculatorType}-progress-heading`}
+        onTouchStart={(event) => {
+          touchStartX.current = event.changedTouches[0]?.clientX ?? null
+        }}
+        onTouchEnd={(event) => {
+          if (touchStartX.current == null) return
+          const endX = event.changedTouches[0]?.clientX
+          if (endX == null) return
+          const delta = endX - touchStartX.current
+          if (Math.abs(delta) < 48) return
+          selectByOffset(delta < 0 ? 1 : -1)
+          touchStartX.current = null
+        }}
+      >
+        <div className="progress-controls">
+          <h2
+            id={`${calculatorType}-progress-heading`}
+            className="result-section-title"
+          >
+            Your Progress
+          </h2>
+
+          {valueKind === 'mass' ? (
+            <UnitToggle
+              label="Graph units"
+              value={displayUnit || 'lb'}
+              options={MASS_UNITS}
+              onChange={setDisplayUnit}
+            />
+          ) : null}
+
+        </div>
+
+        <GraphTrackSelector
+          tracks={tracks}
+          activeId={selectedTrack.id}
+          onChange={setSelectedTrackId}
+        />
 
         {loadingHistory ? (
           <p className="calc-hint">Loading your progress…</p>
         ) : (
           <>
-            <ProgressChart records={records} yAxisLabel={yAxisLabel} />
-
-            {records.length > 0 ? (
-              <ul className="progress-history-list">
-                {[...records].reverse().map((record) => (
-                  <li key={record.id} className="progress-history-item">
-                    <div>
-                      <p className="progress-history-value">
-                        {formatRecordValue(
-                          record.result_value,
-                          record.result_unit,
-                        )}
-                      </p>
-                      <p className="progress-history-meta">
-                        {formatRecordDate(record.created_at)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-danger-ghost"
-                      onClick={() => handleDelete(record.id)}
-                      disabled={deletingId === record.id}
-                    >
-                      {deletingId === record.id ? 'Deleting…' : 'Delete'}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            <PerformanceSummary
+              summary={summary}
+              valueKind={valueKind}
+              unit={
+                valueKind === 'mass'
+                  ? displayUnit
+                  : resultUnit || selectedRecords[0]?.result_unit
+              }
+              variant={summaryVariant}
+            />
+            <ProgressGraph
+              records={selectedRecords}
+              yAxisLabel={axisLabel}
+              valueKind={valueKind}
+            />
+            <HistoryList
+              records={selectedRecords}
+              onDelete={handleDelete}
+              deletingId={deletingId}
+              valueKind={valueKind}
+            />
           </>
         )}
       </section>

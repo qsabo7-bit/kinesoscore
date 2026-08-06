@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
 import UnitToggle from '../components/UnitToggle'
@@ -9,15 +10,18 @@ import {
   DISTANCE_UNITS,
   formatConverted,
   formatDuration,
+  matchNearestRace,
   predictCommonRaces,
+  predictRaceTime,
   toMiles,
 } from '../calculations'
+import { RUNNING_TRACKS } from '../data/trackingTracks'
 
 function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
 }
 
-function RunningPage() {
+function RunningPage({ onRequestAuth }) {
   const [distanceUnit, setDistanceUnit] = useState('mi')
   const [distance, setDistance] = useState('3.1')
   const [hours, setHours] = useState('0')
@@ -68,8 +72,25 @@ function RunningPage() {
       ? compareRunningToNorms(distanceMiles, timeSeconds, ageNum, gender)
       : null
 
+    const matchedRace = matchNearestRace(distanceMiles)
+    // Near a standard race: store the entered time. Otherwise Riegel-normalize.
+    const nearRace =
+      matchedRace &&
+      Math.abs(distanceMiles - matchedRace.miles) / matchedRace.miles <= 0.03
+    const trackTimeSeconds = matchedRace
+      ? nearRace
+        ? Math.round(timeSeconds)
+        : predictRaceTime(distanceMiles, timeSeconds, matchedRace.miles)
+      : null
+
     return {
       paceLabel: `${formatDuration(paceSeconds)} / ${distanceUnit}`,
+      trackId: matchedRace?.id ?? null,
+      trackTimeSeconds,
+      trackLabel: matchedRace?.name ?? null,
+      trackTimeLabel: trackTimeSeconds
+        ? formatDuration(trackTimeSeconds)
+        : null,
       predictions,
       peer,
     }
@@ -158,6 +179,26 @@ function RunningPage() {
             <p className="result-label">Average pace</p>
             <p className="result-value result-value-sm">{result.paceLabel}</p>
           </div>
+
+          {result.trackLabel && result.trackTimeLabel ? (
+            <div className="result-stat">
+              <p className="result-label">Tracking as {result.trackLabel}</p>
+              <p className="result-value result-value-sm">
+                {result.trackTimeLabel}
+              </p>
+            </div>
+          ) : null}
+
+          <CalculatorTracking
+            calculatorType="running"
+            tracks={RUNNING_TRACKS}
+            activeTrackId={result.trackId}
+            resultValue={result.trackTimeSeconds}
+            resultUnit="sec"
+            valueKind="duration"
+            hasResult={Boolean(result.trackTimeSeconds)}
+            onRequestAuth={onRequestAuth}
+          />
 
           <div className="result-table-wrap">
             <h2 className="result-section-title">Predicted race times</h2>

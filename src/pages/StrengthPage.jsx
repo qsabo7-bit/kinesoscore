@@ -13,13 +13,14 @@ import {
   MASS_UNITS,
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
+import { STRENGTH_TRACKS } from '../data/trackingTracks'
 
 function StrengthPage({ onRequestAuth }) {
   const [massUnit, setMassUnit] = useState('lb')
-  const [weight, setWeight] = useState('185')
+  const [lift, setLift] = useState('bench')
+  const [weight, setWeight] = useState('225')
   const [reps, setReps] = useState('5')
   const [bodyweight, setBodyweight] = useState('')
-  const [lift, setLift] = useState('deadlift')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('')
 
@@ -56,7 +57,6 @@ function StrengthPage({ onRequestAuth }) {
       return null
     }
 
-    // Display 1RM is rounded; ratio uses the unrounded Epley value so lb/kg match.
     const oneRepMax = calculateOneRepMax(weightNum, repsNum)
     const rawOneRepMax = estimateOneRepMax(weightNum, repsNum)
 
@@ -103,9 +103,9 @@ function StrengthPage({ onRequestAuth }) {
         <p className="page-eyebrow">Strength</p>
         <h1>One-Rep Max</h1>
         <p className="page-lead">
-          Estimate your 1RM with the Epley formula. Add bodyweight for a
-          relative-strength ratio, then optionally compare with recreational
-          lifters in your age, gender, and bodyweight category.
+          Choose your exercise, then estimate 1RM with the Epley formula. Add
+          bodyweight for a relative-strength ratio, then optionally compare with
+          recreational lifters in your age and gender group.
         </p>
       </header>
 
@@ -118,7 +118,21 @@ function StrengthPage({ onRequestAuth }) {
         />
 
         <label className="field">
-          <span>Weight lifted ({massUnit})</span>
+          <span>Exercise</span>
+          <select
+            value={lift}
+            onChange={(event) => setLift(event.target.value)}
+          >
+            {STRENGTH_LIFTS.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="field">
+          <span>Weight ({massUnit})</span>
           <input
             type="number"
             min="1"
@@ -129,7 +143,7 @@ function StrengthPage({ onRequestAuth }) {
         </label>
 
         <label className="field">
-          <span>Reps completed</span>
+          <span>Reps</span>
           <input
             type="number"
             min="1"
@@ -154,22 +168,9 @@ function StrengthPage({ onRequestAuth }) {
           gender={gender}
           onAgeChange={setAge}
           onGenderChange={setGender}
-          note="Add bodyweight, lift, age, and gender to estimate your percentile among recreational lifters / average gym-goers. Bodyweight stays in sync with the field above."
+          note="Add bodyweight, age, and gender to estimate your percentile among recreational lifters / average gym-goers. Bodyweight stays in sync with the field above. Comparison uses the exercise selected above."
         >
           {renderBodyweightField()}
-          <label className="field">
-            <span>Lift</span>
-            <select
-              value={lift}
-              onChange={(event) => setLift(event.target.value)}
-            >
-              {STRENGTH_LIFTS.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
         </DemographicFields>
       </form>
 
@@ -196,6 +197,19 @@ function StrengthPage({ onRequestAuth }) {
             </>
           ) : null}
 
+          <CalculatorTracking
+            calculatorType="strength"
+            tracks={STRENGTH_TRACKS}
+            activeTrackId={lift}
+            resultValue={result.oneRepMax}
+            resultUnit={massUnit}
+            valueKind="mass"
+            displayUnit={massUnit}
+            onDisplayUnitChange={handleMassUnitChange}
+            hasResult
+            onRequestAuth={onRequestAuth}
+          />
+
           {result.peer ? (
             <PeerComparison
               title="Age & gender comparison"
@@ -210,7 +224,7 @@ function StrengthPage({ onRequestAuth }) {
                   value: `${result.peer.genderLabel}, ages ${result.peer.ageLabel}`,
                 },
                 {
-                  label: 'Lift',
+                  label: 'Exercise',
                   value:
                     STRENGTH_LIFTS.find((item) => item.id === result.peer.lift)
                       ?.name ?? result.peer.lift,
@@ -227,14 +241,6 @@ function StrengthPage({ onRequestAuth }) {
               source={result.peer.source}
             />
           ) : null}
-
-          <CalculatorTracking
-            calculatorType="strength"
-            resultValue={result.oneRepMax}
-            resultUnit={massUnit}
-            yAxisLabel={`1RM (${massUnit})`}
-            onRequestAuth={onRequestAuth}
-          />
         </section>
       ) : (
         <p className="calc-hint">Enter a valid weight and reps.</p>

@@ -47,7 +47,7 @@ export function compareStrengthToNorms(ratio, age, gender, lift = 'deadlift') {
     percentile: betterThanPercent,
     percentileLabel: ordinal,
     betterThanPercent,
-    summary: `You are stronger than about ${betterThanPercent} out of 100 recreational lifters in your age, gender, and bodyweight category for this lift (${ordinal} percentile).`,
+    summary: `You are stronger than about ${betterThanPercent} out of 100 recreational gym-goers in your age, gender, and bodyweight category for this lift (${ordinal} percentile).`,
     ageLabel: band.label,
     genderLabel: formatGender(gender),
     gender,

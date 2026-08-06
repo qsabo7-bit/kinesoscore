@@ -34,7 +34,9 @@ function DemographicFields({
             value={gender}
             onChange={(event) => onGenderChange(event.target.value)}
           >
-            <option value="">Prefer not to say</option>
+            <option value="" disabled>
+              Select
+            </option>
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>

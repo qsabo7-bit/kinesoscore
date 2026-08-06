@@ -5,11 +5,37 @@
  */
 
 export const RACE_DISTANCES_MILES = [
+  { id: 'mile', name: 'Mile', miles: 1 },
+  { id: 'mile-1-5', name: '1.5 Mile', miles: 1.5 },
+  { id: 'mile-2', name: '2 Mile', miles: 2 },
   { id: '5k', name: '5K', miles: 3.10686 },
+  { id: 'mile-5', name: '5 Mile', miles: 5 },
   { id: '10k', name: '10K', miles: 6.21371 },
+  { id: 'mile-10', name: '10 Mile', miles: 10 },
   { id: 'half', name: 'Half Marathon', miles: 13.1094 },
   { id: 'marathon', name: 'Marathon', miles: 26.2188 },
 ]
+
+/**
+ * Map an entered race distance to the nearest standard race.
+ * @param {number} distanceMiles
+ */
+export function matchNearestRace(distanceMiles) {
+  if (!Number.isFinite(distanceMiles) || distanceMiles <= 0) return null
+
+  let best = RACE_DISTANCES_MILES[0]
+  let bestDelta = Math.abs(distanceMiles - best.miles)
+
+  for (const race of RACE_DISTANCES_MILES) {
+    const delta = Math.abs(distanceMiles - race.miles)
+    if (delta < bestDelta) {
+      best = race
+      bestDelta = delta
+    }
+  }
+
+  return best
+}
 
 /**
  * Predict time for a target distance from a known race result.
@@ -53,6 +79,44 @@ export function formatDuration(totalSeconds) {
   }
 
   return `${m}:${String(s).padStart(2, '0')}`
+}
+
+/**
+ * Format seconds as "22 min 05 sec" (or with hours when needed).
+ * @param {number} totalSeconds
+ */
+export function formatDurationWords(totalSeconds) {
+  const seconds = Math.max(0, Math.round(totalSeconds))
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  const secPart = `${String(s).padStart(2, '0')} sec`
+
+  if (h > 0) {
+    return `${h} hr ${m} min ${secPart}`
+  }
+
+  return `${m} min ${secPart}`
+}
+
+/**
+ * @param {number} totalSeconds
+ * @param {'clock' | 'words'} [format]
+ */
+export function formatRaceTime(totalSeconds, format = 'clock') {
+  return format === 'words'
+    ? formatDurationWords(totalSeconds)
+    : formatDuration(totalSeconds)
+}
+
+/**
+ * Friendly duration for improvement copy, e.g. "45 sec" or "1:05".
+ * @param {number} totalSeconds
+ */
+export function formatFriendlyDuration(totalSeconds) {
+  const seconds = Math.max(0, Math.round(Math.abs(totalSeconds)))
+  if (seconds < 60) return `${seconds} sec`
+  return formatDuration(seconds)
 }
 
 /**

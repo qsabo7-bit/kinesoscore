@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
 import UnitToggle from '../components/UnitToggle'
@@ -12,13 +13,14 @@ import {
   formatConverted,
   MASS_UNITS,
 } from '../calculations'
+import { VO2_TRACKS } from '../data/trackingTracks'
 
 const METHODS = [
   { value: 'cooper', label: 'Cooper 12-min' },
   { value: 'rockport', label: 'Rockport walk' },
 ]
 
-function Vo2MaxPage() {
+function Vo2MaxPage({ onRequestAuth }) {
   const [method, setMethod] = useState('cooper')
   const [distanceUnit, setDistanceUnit] = useState('mi')
   const [distance, setDistance] = useState('1.5')
@@ -253,6 +255,16 @@ function Vo2MaxPage() {
               </p>
             </div>
           ) : null}
+
+          <CalculatorTracking
+            calculatorType="vo2max"
+            tracks={VO2_TRACKS}
+            activeTrackId="vo2max"
+            resultValue={result.vo2Max}
+            resultUnit="ml/kg/min"
+            hasResult
+            onRequestAuth={onRequestAuth}
+          />
 
           {result.peer ? (
             <>

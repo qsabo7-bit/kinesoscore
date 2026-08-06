@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './auth/AuthContext'
+import Footer from './components/Footer'
 import Header from './components/Header'
 import HomePage from './pages/HomePage'
 import StrengthPage from './pages/StrengthPage'
@@ -14,13 +15,13 @@ import AboutPage from './pages/AboutPage'
 function App() {
   const { isAuthenticated, loading } = useAuth()
   const [activeTab, setActiveTab] = useState('home')
+  const goToLogin = () => setActiveTab('login')
 
-  // Keep auth pages in sync with session changes (login, logout, delete, refresh).
   useEffect(() => {
     if (loading) return
 
     if (isAuthenticated && activeTab === 'login') {
-      setActiveTab('account')
+      setActiveTab('home')
       return
     }
 
@@ -31,17 +32,17 @@ function App() {
 
   let content
   if (activeTab === 'strength') {
-    content = <StrengthPage onRequestAuth={() => setActiveTab('login')} />
+    content = <StrengthPage onRequestAuth={goToLogin} />
   } else if (activeTab === 'running') {
-    content = <RunningPage />
+    content = <RunningPage onRequestAuth={goToLogin} />
   } else if (activeTab === 'scoring') {
-    content = <ScoringPage />
+    content = <ScoringPage onRequestAuth={goToLogin} />
   } else if (activeTab === 'vo2max') {
-    content = <Vo2MaxPage />
+    content = <Vo2MaxPage onRequestAuth={goToLogin} />
   } else if (activeTab === 'bmr') {
     content = <BmrPage />
   } else if (activeTab === 'login') {
-    content = <AuthPage onSuccess={() => setActiveTab('account')} />
+    content = <AuthPage onSuccess={() => setActiveTab('home')} />
   } else if (activeTab === 'account') {
     content = <AccountPage onOpenTab={setActiveTab} />
   } else if (activeTab === 'about') {
@@ -53,7 +54,8 @@ function App() {
   return (
     <div className="app">
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
-      {content}
+      <div className="app-content">{content}</div>
+      <Footer onOpenTab={setActiveTab} />
     </div>
   )
 }

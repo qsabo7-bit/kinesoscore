@@ -9,6 +9,10 @@ export { compareStrengthToNorms } from './strengthComparison.js'
 export {
   calculatePace,
   formatDuration,
+  formatDurationWords,
+  formatFriendlyDuration,
+  formatRaceTime,
+  matchNearestRace,
   predictCommonRaces,
   predictRaceTime,
   RACE_DISTANCES_MILES,

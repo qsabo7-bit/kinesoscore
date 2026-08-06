@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
 import UnitToggle from '../components/UnitToggle'
@@ -12,12 +13,16 @@ import {
   toMiles,
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
+import {
+  FPC_SCORE_CALCULATOR_TYPE,
+  SCORING_TRACKS,
+} from '../data/trackingTracks'
 
 function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
 }
 
-function ScoringPage() {
+function ScoringPage({ onRequestAuth }) {
   const [massUnit, setMassUnit] = useState('lb')
   const [distanceUnit, setDistanceUnit] = useState('mi')
   const [weight, setWeight] = useState('185')
@@ -326,6 +331,18 @@ function ScoringPage() {
               {result.score.runningScore}
             </p>
           </div>
+
+          <CalculatorTracking
+            calculatorType={FPC_SCORE_CALCULATOR_TYPE}
+            tracks={SCORING_TRACKS}
+            activeTrackId="fpc-score"
+            resultValue={result.score.FPCScore}
+            resultUnit="points"
+            hasResult
+            summaryVariant="score"
+            saveLabel="Save Score"
+            onRequestAuth={onRequestAuth}
+          />
 
           <div className="result-table-wrap">
             <h2 className="result-section-title">Score breakdown</h2>

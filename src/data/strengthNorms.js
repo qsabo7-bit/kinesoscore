@@ -1,62 +1,79 @@
 /**
- * Recreational relative-strength norms (1RM ÷ bodyweight) by age, sex, and lift.
+ * Recreational relative-strength norms (estimated 1RM ÷ bodyweight) by age, sex,
+ * and lift — used for strength percentiles inside FPC Score and peer comparison.
  *
- * Tuned for typical gym-goers / “average Joe” recreational lifters — not
- * competitive powerlifters. Anchors follow common recreational strength
- * standards (beginner → novice → intermediate → advanced → elite) used by
- * tools like Strength Level and discussed in recreational coaching references
- * such as Barbell Medicine’s strength-standards guidance.
+ * Reference population: typical recreational gym-goers / average adults who train
+ * with free weights, not competitive powerlifters and not the fully sedentary
+ * general population.
  *
- * Percentile anchors:
- *   p5  ≈ beginner
- *   p25 ≈ novice
- *   p50 ≈ intermediate (about average among recreational lifters)
- *   p75 ≈ advanced
- *   p95 ≈ elite recreational
+ * How percentiles are anchored (young-adult 18–29 baselines):
+ *   p5  ≈ beginner / early training (Strength Level–style “beginner”)
+ *   p25 ≈ novice / casual regular (roughly Strength Level “novice”)
+ *   p50 ≈ typical recreational trainee after consistent practice
+ *   p75 ≈ dedicated intermediate gym-goer
+ *   p95 ≈ advanced recreational (well below competitive powerlifting norms)
  *
- * Age scaling follows published recreational age adjustments (strength peaks
- * in young adulthood and declines with each decade).
+ * Scientific / practical basis:
+ * - Relative strength (load ÷ body mass) is the standard way to compare strength
+ *   across body sizes in exercise science and coaching practice.
+ * - 1RM is estimated with the Epley equation from a submaximal set.
+ * - Young-adult ratio ladders are aligned with widely published recreational
+ *   standards (Strength Level crowd-sourced gym data; Barbell Medicine’s
+ *   recreational year-1 guidance: squat ~1–1.5×, bench ~0.7–1.1×, deadlift
+ *   ~1.25–1.75× bodyweight for typical trainees).
+ * - p50 is set near the middle of those recreational ranges — not competitive
+ *   meet medians — so an ordinary gym member lands near average, not near the
+ *   bottom of the chart.
+ * - Age scaling follows documented age-related strength decline in adults
+ *   (~0.5–1% per year through midlife in general populations; slower with
+ *   continued training). See e.g. Latella et al. powerlifting age norms
+ *   (J Sci Med Sport, 2024) and reviews of age-related strength loss.
  */
 
 export const STRENGTH_NORM_SOURCE = {
   name: 'Recreational strength standards by age & gender',
   detail:
-    'Compared with typical recreational lifters / average gym-goers in your age and gender group (bodyweight-relative 1RM). Not competitive powerlifting data.',
+    'Compared with typical recreational gym-goers in your age and gender group using bodyweight-relative estimated 1RM. Anchors follow recreational beginner→elite ladders (Strength Level–style gym standards and Barbell Medicine recreational guidance), not competitive powerlifting meet data. Age bands scale for documented midlife strength decline.',
   url: 'https://www.barbellmedicine.com/blog/strength-standards/',
 }
 
 export const STRENGTH_LIFTS = [
-  { id: 'deadlift', name: 'Deadlift' },
+  { id: 'bench', name: 'Bench Press' },
   { id: 'squat', name: 'Squat' },
-  { id: 'bench', name: 'Bench press' },
+  { id: 'deadlift', name: 'Deadlift' },
 ]
 
-/** Young-adult (18–29) recreational bodyweight ratios by lift and sex. */
+/**
+ * Young-adult (18–29) recreational bodyweight ratios by lift and sex.
+ * Tuned so p50 ≈ ordinary consistent gym trainee, not dedicated intermediate.
+ */
 const BASE_RATIOS = {
   deadlift: {
-    male: { p5: 1.0, p25: 1.5, p50: 2.0, p75: 2.5, p95: 3.0 },
-    female: { p5: 0.5, p25: 0.9, p50: 1.35, p75: 1.75, p95: 2.25 },
+    male: { p5: 0.75, p25: 1.1, p50: 1.45, p75: 1.9, p95: 2.4 },
+    female: { p5: 0.5, p25: 0.8, p50: 1.15, p75: 1.55, p95: 2.0 },
   },
   squat: {
-    male: { p5: 0.75, p25: 1.25, p50: 1.75, p75: 2.25, p95: 2.75 },
-    female: { p5: 0.45, p25: 0.8, p50: 1.2, p75: 1.6, p95: 2.1 },
+    male: { p5: 0.6, p25: 0.95, p50: 1.25, p75: 1.7, p95: 2.2 },
+    female: { p5: 0.4, p25: 0.65, p50: 0.95, p75: 1.3, p95: 1.75 },
   },
   bench: {
-    male: { p5: 0.5, p25: 0.75, p50: 1.15, p75: 1.5, p95: 1.9 },
-    female: { p5: 0.25, p25: 0.4, p50: 0.7, p75: 1.0, p95: 1.35 },
+    male: { p5: 0.4, p25: 0.65, p50: 0.9, p75: 1.25, p95: 1.6 },
+    female: { p5: 0.2, p25: 0.35, p50: 0.55, p75: 0.8, p95: 1.1 },
   },
 }
 
 /**
  * Age multipliers applied to the 18–29 recreational baselines.
+ * Peak strength in young adulthood; gradual decline thereafter for recreational
+ * trainees (milder than sedentary population curves).
  */
 const AGE_BANDS = [
   { minAge: 12, maxAge: 17, factor: 0.88, label: '12–17' },
   { minAge: 18, maxAge: 29, factor: 1.0, label: '18–29' },
-  { minAge: 30, maxAge: 39, factor: 0.98, label: '30–39' },
-  { minAge: 40, maxAge: 49, factor: 0.92, label: '40–49' },
-  { minAge: 50, maxAge: 59, factor: 0.83, label: '50–59' },
-  { minAge: 60, maxAge: 110, factor: 0.72, label: '60+' },
+  { minAge: 30, maxAge: 39, factor: 0.97, label: '30–39' },
+  { minAge: 40, maxAge: 49, factor: 0.91, label: '40–49' },
+  { minAge: 50, maxAge: 59, factor: 0.82, label: '50–59' },
+  { minAge: 60, maxAge: 110, factor: 0.7, label: '60+' },
 ]
 
 function scaleRatios(ratios, factor) {

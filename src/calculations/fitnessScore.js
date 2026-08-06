@@ -6,7 +6,7 @@ import { formatOrdinal } from './percentile.js'
 export const FITNESS_SCORE_SOURCE = {
   name: 'FPC composite score',
   detail:
-    'Equal-weighted average of your recreational strength percentile and running percentile (RunRepeat race-result curves). Score = how many people out of 100 you outperform on average across both domains.',
+    'Equal-weighted average of your recreational strength percentile (bodyweight-relative estimated 1RM vs gym-goer norms) and running percentile (RunRepeat race-result curves). Score = how many people out of 100 you outperform on average across both domains.',
   url: 'https://www.barbellmedicine.com/blog/strength-standards/',
 }
 

@@ -4,13 +4,20 @@ create table if not exists public.performance_records (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   calculator_type text not null,
+  exercise_name text,
   result_value numeric not null,
   result_unit text,
   created_at timestamptz not null default now()
 );
 
+alter table public.performance_records
+  add column if not exists exercise_name text;
+
 create index if not exists performance_records_user_calc_idx
   on public.performance_records (user_id, calculator_type, created_at desc);
+
+create index if not exists performance_records_user_calc_exercise_idx
+  on public.performance_records (user_id, calculator_type, exercise_name, created_at desc);
 
 alter table public.performance_records enable row level security;
 

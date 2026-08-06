@@ -30,7 +30,7 @@ export const sources = [
     id: 'recreational-strength',
     category: 'Strength percentiles',
     title: STRENGTH_NORM_SOURCE.name,
-    detail: `${STRENGTH_NORM_SOURCE.detail} Standards follow common recreational beginner → elite bodyweight-ratio ladders (similar to Strength Level–style gym standards) with age scaling for older adults.`,
+    detail: `${STRENGTH_NORM_SOURCE.detail} Median (50th percentile) targets sit near Barbell Medicine’s recreational year-1 bodyweight-ratio ranges so ordinary gym trainees score near average, not near the bottom.`,
     url: STRENGTH_NORM_SOURCE.url,
     linkLabel: 'Barbell Medicine strength standards (recreational context)',
   },
@@ -39,9 +39,18 @@ export const sources = [
     category: 'Strength percentiles',
     title: 'Recreational gym strength ladders',
     detail:
-      'Beginner, novice, intermediate, advanced, and elite recreational bodyweight ratios for squat, bench, and deadlift are widely published for everyday lifters. FPC uses that recreational framing — not competitive powerlifting meet data — when estimating strength percentiles.',
+      'Beginner → elite bodyweight ratios for squat, bench, and deadlift are drawn from large recreational gym datasets (e.g. Strength Level). FPC maps those ladders onto percentiles for everyday gym-goers — not drug-tested powerlifting meet norms (Latella et al., 2024).',
     url: 'https://strengthlevel.com/strength-standards',
     linkLabel: 'Strength Level strength standards',
+  },
+  {
+    id: 'strength-age-decline',
+    category: 'Strength percentiles',
+    title: 'Age-related strength decline',
+    detail:
+      'Strength typically peaks in young adulthood and declines through midlife. FPC scales recreational bodyweight-ratio norms by age band to reflect that pattern while remaining milder than sedentary population loss curves, consistent with trained-adult aging literature.',
+    url: 'https://doi.org/10.1016/j.jsams.2024.07.005',
+    linkLabel: 'Latella et al., 2024 (powerlifting age norms)',
   },
   {
     id: 'riegel',
