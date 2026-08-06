@@ -23,12 +23,12 @@ const METHODS = [
 function Vo2MaxPage({ onRequestAuth }) {
   const [method, setMethod] = useState('cooper')
   const [distanceUnit, setDistanceUnit] = useState('mi')
-  const [distance, setDistance] = useState('1.5')
+  const [distance, setDistance] = useState('')
   const [massUnit, setMassUnit] = useState('lb')
-  const [weight, setWeight] = useState('160')
-  const [minutes, setMinutes] = useState('15')
-  const [seconds, setSeconds] = useState('0')
-  const [heartRate, setHeartRate] = useState('120')
+  const [weight, setWeight] = useState('')
+  const [minutes, setMinutes] = useState('')
+  const [seconds, setSeconds] = useState('')
+  const [heartRate, setHeartRate] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('')
 
@@ -150,6 +150,7 @@ function Vo2MaxPage({ onRequestAuth }) {
                 type="number"
                 min="0.1"
                 step="any"
+                placeholder="1.5"
                 value={distance}
                 onChange={(event) => setDistance(event.target.value)}
               />
@@ -179,6 +180,7 @@ function Vo2MaxPage({ onRequestAuth }) {
                 type="number"
                 min="1"
                 step="any"
+                placeholder="175"
                 value={weight}
                 onChange={(event) => setWeight(event.target.value)}
               />
@@ -194,6 +196,7 @@ function Vo2MaxPage({ onRequestAuth }) {
                     min="0"
                     max="59"
                     step="1"
+                    placeholder="16"
                     value={minutes}
                     onChange={(event) => setMinutes(event.target.value)}
                   />
@@ -205,6 +208,7 @@ function Vo2MaxPage({ onRequestAuth }) {
                     min="0"
                     max="59"
                     step="1"
+                    placeholder="0"
                     value={seconds}
                     onChange={(event) => setSeconds(event.target.value)}
                   />
@@ -219,6 +223,7 @@ function Vo2MaxPage({ onRequestAuth }) {
                 min="40"
                 max="220"
                 step="1"
+                placeholder="120"
                 value={heartRate}
                 onChange={(event) => setHeartRate(event.target.value)}
               />

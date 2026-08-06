@@ -18,8 +18,8 @@ import { STRENGTH_TRACKS } from '../data/trackingTracks'
 function StrengthPage({ onRequestAuth }) {
   const [massUnit, setMassUnit] = useState('lb')
   const [lift, setLift] = useState('bench')
-  const [weight, setWeight] = useState('225')
-  const [reps, setReps] = useState('5')
+  const [weight, setWeight] = useState('')
+  const [reps, setReps] = useState('')
   const [bodyweight, setBodyweight] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('')
@@ -90,7 +90,7 @@ function StrengthPage({ onRequestAuth }) {
         type="number"
         min="1"
         step="any"
-        placeholder="—"
+        placeholder="175"
         value={bodyweight}
         onChange={(event) => setBodyweight(event.target.value)}
       />
@@ -137,6 +137,7 @@ function StrengthPage({ onRequestAuth }) {
             type="number"
             min="1"
             step="any"
+            placeholder="135"
             value={weight}
             onChange={(event) => setWeight(event.target.value)}
           />
@@ -149,6 +150,7 @@ function StrengthPage({ onRequestAuth }) {
             min="1"
             max="30"
             step="1"
+            placeholder="5"
             value={reps}
             onChange={(event) => setReps(event.target.value)}
           />

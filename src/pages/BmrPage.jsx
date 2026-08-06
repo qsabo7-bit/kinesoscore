@@ -13,9 +13,9 @@ import {
 function BmrPage() {
   const [massUnit, setMassUnit] = useState('lb')
   const [heightUnit, setHeightUnit] = useState('in')
-  const [weight, setWeight] = useState('160')
-  const [height, setHeight] = useState('70')
-  const [age, setAge] = useState('30')
+  const [weight, setWeight] = useState('')
+  const [height, setHeight] = useState('')
+  const [age, setAge] = useState('')
   const [gender, setGender] = useState('male')
   const [activityId, setActivityId] = useState('')
 
@@ -54,6 +54,7 @@ function BmrPage() {
       !Number.isFinite(ageNum) ||
       weightNum <= 0 ||
       heightNum <= 0 ||
+      ageNum < 15 ||
       !gender
     ) {
       return null
@@ -104,6 +105,7 @@ function BmrPage() {
             type="number"
             min="1"
             step="any"
+            placeholder="175"
             value={weight}
             onChange={(event) => setWeight(event.target.value)}
           />
@@ -115,6 +117,7 @@ function BmrPage() {
             type="number"
             min="1"
             step="any"
+            placeholder="70"
             value={height}
             onChange={(event) => setHeight(event.target.value)}
           />
@@ -128,6 +131,7 @@ function BmrPage() {
               min="15"
               max="100"
               step="1"
+              placeholder="30"
               value={age}
               onChange={(event) => setAge(event.target.value)}
             />

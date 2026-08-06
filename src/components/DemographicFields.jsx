@@ -22,7 +22,7 @@ function DemographicFields({
             min="12"
             max="100"
             step="1"
-            placeholder="—"
+            placeholder="30"
             value={age}
             onChange={(event) => onAgeChange(event.target.value)}
           />

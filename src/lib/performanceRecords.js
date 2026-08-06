@@ -232,28 +232,29 @@ export function formatImprovementLabel(
   return getTrendDisplay(improvement, valueKind, unit, higherIsBetter).value
 }
 
-/** Demo points for the locked guest preview chart. */
+/** Demo points for the locked guest preview chart (typical recreational range). */
 export const SAMPLE_PROGRESS_DATA = [
-  { dateLabel: 'Jan', value: 185 },
-  { dateLabel: 'Mar', value: 205 },
-  { dateLabel: 'May', value: 225 },
-  { dateLabel: 'Jul', value: 245 },
-  { dateLabel: 'Aug', value: 275 },
+  { dateLabel: 'Jan', value: 135 },
+  { dateLabel: 'Mar', value: 145 },
+  { dateLabel: 'May', value: 155 },
+  { dateLabel: 'Jul', value: 160 },
+  { dateLabel: 'Aug', value: 170 },
 ]
 
+/** Sample race times in seconds (~32:00 → ~28:00 5K). */
 export const SAMPLE_DURATION_DATA = [
-  { dateLabel: 'Jan', value: 1600 },
-  { dateLabel: 'Mar', value: 1520 },
-  { dateLabel: 'May', value: 1480 },
-  { dateLabel: 'Jul', value: 1420 },
-  { dateLabel: 'Aug', value: 1380 },
+  { dateLabel: 'Jan', value: 1920 },
+  { dateLabel: 'Mar', value: 1860 },
+  { dateLabel: 'May', value: 1800 },
+  { dateLabel: 'Jul', value: 1740 },
+  { dateLabel: 'Aug', value: 1680 },
 ]
 
 /** Sample FPC Score curve (0–100 scale) for the locked guest preview. */
 export const SAMPLE_SCORE_DATA = [
-  { dateLabel: 'Jan', value: 42 },
-  { dateLabel: 'Mar', value: 48 },
-  { dateLabel: 'May', value: 55 },
-  { dateLabel: 'Jul', value: 61 },
-  { dateLabel: 'Aug', value: 68 },
+  { dateLabel: 'Jan', value: 38 },
+  { dateLabel: 'Mar', value: 42 },
+  { dateLabel: 'May', value: 45 },
+  { dateLabel: 'Jul', value: 48 },
+  { dateLabel: 'Aug', value: 52 },
 ]

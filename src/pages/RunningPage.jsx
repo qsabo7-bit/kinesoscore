@@ -23,10 +23,10 @@ function toSeconds(hours, minutes, seconds) {
 
 function RunningPage({ onRequestAuth }) {
   const [distanceUnit, setDistanceUnit] = useState('mi')
-  const [distance, setDistance] = useState('3.1')
-  const [hours, setHours] = useState('0')
-  const [minutes, setMinutes] = useState('24')
-  const [seconds, setSeconds] = useState('0')
+  const [distance, setDistance] = useState('')
+  const [hours, setHours] = useState('')
+  const [minutes, setMinutes] = useState('')
+  const [seconds, setSeconds] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('')
 
@@ -122,6 +122,7 @@ function RunningPage({ onRequestAuth }) {
             type="number"
             min="0.1"
             step="any"
+            placeholder="3.1"
             value={distance}
             onChange={(event) => setDistance(event.target.value)}
           />
@@ -136,6 +137,7 @@ function RunningPage({ onRequestAuth }) {
                 type="number"
                 min="0"
                 step="1"
+                placeholder="0"
                 value={hours}
                 onChange={(event) => setHours(event.target.value)}
               />
@@ -147,6 +149,7 @@ function RunningPage({ onRequestAuth }) {
                 min="0"
                 max="59"
                 step="1"
+                placeholder="30"
                 value={minutes}
                 onChange={(event) => setMinutes(event.target.value)}
               />
@@ -158,6 +161,7 @@ function RunningPage({ onRequestAuth }) {
                 min="0"
                 max="59"
                 step="1"
+                placeholder="0"
                 value={seconds}
                 onChange={(event) => setSeconds(event.target.value)}
               />
