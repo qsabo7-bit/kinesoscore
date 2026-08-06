@@ -1,8 +1,20 @@
 function UnitToggle({ label, value, options, onChange }) {
+  const activeIndex = Math.max(
+    0,
+    options.findIndex((option) => option.value === value),
+  )
+
   return (
     <div className="unit-toggle" role="group" aria-label={label}>
       <span className="unit-toggle-label">{label}</span>
-      <div className="unit-toggle-options">
+      <div
+        className="unit-toggle-options"
+        style={{
+          '--toggle-count': options.length,
+          '--toggle-index': activeIndex,
+        }}
+      >
+        <span className="unit-toggle-thumb" aria-hidden="true" />
         {options.map((option) => {
           const isActive = value === option.value
 

@@ -248,3 +248,12 @@ export const SAMPLE_DURATION_DATA = [
   { dateLabel: 'Jul', value: 1420 },
   { dateLabel: 'Aug', value: 1380 },
 ]
+
+/** Sample FPC Score curve (0–100 scale) for the locked guest preview. */
+export const SAMPLE_SCORE_DATA = [
+  { dateLabel: 'Jan', value: 42 },
+  { dateLabel: 'Mar', value: 48 },
+  { dateLabel: 'May', value: 55 },
+  { dateLabel: 'Jul', value: 61 },
+  { dateLabel: 'Aug', value: 68 },
+]

@@ -9,6 +9,14 @@
   --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --sans: 'Manrope', 'Segoe UI', sans-serif;
 
+  /* Motion tokens — tune these to speed up/slow down UI transitions */
+  --motion-fast: 160ms;
+  --motion-base: 280ms;
+  --motion-enter: 320ms;
+  --motion-slide: 14px;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
   color: var(--text);
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, #1a2e24 0%, transparent 55%),
@@ -111,6 +119,42 @@ select:focus {
 
 .app-content {
   flex: 1 0 auto;
+}
+
+.page-transition {
+  will-change: opacity, transform;
+  transition:
+    opacity var(--motion-base) var(--motion-ease),
+    transform var(--motion-enter) var(--motion-ease);
+}
+
+.page-transition.is-enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition.is-exit {
+  opacity: 0;
+  transform: translateY(calc(var(--motion-slide) * -0.55));
+}
+
+.fade-swap {
+  display: grid;
+  gap: 0.95rem;
+  will-change: opacity, transform;
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-soft),
+    transform var(--motion-base) var(--motion-ease);
+}
+
+.fade-swap.is-enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-swap.is-exit {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .site-footer {
@@ -266,10 +310,18 @@ a.site-footer-link:hover {
   text-transform: uppercase;
   color: var(--text);
   border-bottom: 2px solid transparent;
+  transition:
+    color var(--motion-fast) var(--motion-ease-soft),
+    border-color var(--motion-base) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .nav-tab:hover {
   color: var(--text-strong);
+}
+
+.nav-tab:active {
+  transform: translateY(1px);
 }
 
 .nav-tab.is-active {
@@ -286,6 +338,7 @@ a.site-footer-link:hover {
   flex-wrap: wrap;
   gap: 0.4rem;
   padding-top: 0.15rem;
+  animation: sub-nav-in var(--motion-enter) var(--motion-ease) both;
 }
 
 .sub-nav-tab {
@@ -300,11 +353,20 @@ a.site-footer-link:hover {
   color: var(--text);
   background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
   border: 1px solid var(--border);
+  transition:
+    color var(--motion-fast) var(--motion-ease-soft),
+    border-color var(--motion-base) var(--motion-ease),
+    background var(--motion-base) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
-.sub-nav-tab:hover {
+.sub-nav-tab:hover:not(:disabled) {
   color: var(--text-strong);
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.sub-nav-tab:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .sub-nav-tab.is-active {
@@ -392,6 +454,10 @@ a.site-footer-link:hover {
 .tool-item {
   padding: 1.25rem 0;
   border-bottom: 1px solid var(--border);
+  transition:
+    background var(--motion-base) var(--motion-ease-soft),
+    transform var(--motion-fast) var(--motion-ease),
+    padding var(--motion-base) var(--motion-ease-soft);
 }
 
 .tool-item h3 {
@@ -412,10 +478,18 @@ a.site-footer-link:hover {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-soft),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .tool-link:hover {
   text-decoration: underline;
+  opacity: 0.9;
+}
+
+.tool-link:active {
+  transform: translateY(1px);
 }
 
 .tool-status {
@@ -470,11 +544,33 @@ a.site-footer-link:hover {
 }
 
 .unit-toggle-options {
-  display: inline-flex;
+  --toggle-count: 2;
+  --toggle-index: 0;
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+  overflow: hidden;
+}
+
+.unit-toggle-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: calc(100% / var(--toggle-count));
+  background: var(--accent);
+  transform: translateX(calc(100% * var(--toggle-index)));
+  transition: transform var(--motion-base) var(--motion-ease);
+  pointer-events: none;
 }
 
 .unit-toggle-btn {
+  position: relative;
+  z-index: 1;
   min-width: 3rem;
   padding: 0.45rem 0.75rem;
   font-size: 0.8rem;
@@ -482,16 +578,17 @@ a.site-footer-link:hover {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text);
+  background: transparent;
+  transition: color var(--motion-fast) var(--motion-ease-soft);
 }
 
 .unit-toggle-btn.is-active {
   color: var(--bg);
-  background: var(--accent);
+  background: transparent;
 }
 
 .unit-toggle-btn:not(.is-active):hover {
   color: var(--text-strong);
-  background: var(--accent-muted);
 }
 
 .score-block {
@@ -711,6 +808,11 @@ a.site-footer-link:hover {
   border-top: 1px solid var(--border);
 }
 
+.results-followup {
+  border-top: none;
+  padding-top: 0.5rem;
+}
+
 .result-stat {
   display: grid;
   gap: 0.25rem;
@@ -806,15 +908,21 @@ a.site-footer-link:hover {
   text-transform: uppercase;
   border: 1px solid transparent;
   transition:
-    background 160ms ease,
-    color 160ms ease,
-    border-color 160ms ease,
-    opacity 160ms ease;
+    background var(--motion-fast) var(--motion-ease-soft),
+    color var(--motion-fast) var(--motion-ease-soft),
+    border-color var(--motion-fast) var(--motion-ease-soft),
+    opacity var(--motion-fast) var(--motion-ease-soft),
+    transform var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-base) var(--motion-ease);
 }
 
 .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
 }
 
 .btn-primary {
@@ -824,6 +932,8 @@ a.site-footer-link:hover {
 
 .btn-primary:hover:not(:disabled) {
   background: #a6ffcb;
+  box-shadow: 0 6px 18px rgba(125, 255, 179, 0.18);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
@@ -920,6 +1030,8 @@ a.site-footer-link:hover {
 
 .tracking-panel {
   grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
   margin-top: 0.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--border);
@@ -968,9 +1080,10 @@ a.site-footer-link:hover {
   border: 1px solid var(--border);
   background: transparent;
   transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
+    background var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease-soft),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .graph-track-btn:hover {
@@ -978,10 +1091,18 @@ a.site-footer-link:hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
 
+.graph-track-btn:active {
+  transform: translateY(1px);
+}
+
 .graph-track-btn.is-active {
   color: var(--text-strong);
   border-color: var(--accent);
   background: var(--accent-muted);
+}
+
+.progress-track-panel {
+  min-height: 12rem;
 }
 
 .performance-summary {
@@ -998,6 +1119,10 @@ a.site-footer-link:hover {
   padding: 0.85rem 0.9rem;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-elevated) 75%, transparent);
+  transition:
+    border-color var(--motion-base) var(--motion-ease-soft),
+    background var(--motion-base) var(--motion-ease-soft),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .performance-stat-value {
@@ -1044,9 +1169,13 @@ a.site-footer-link:hover {
   border: 1px solid var(--border);
   overflow: hidden;
   min-height: 280px;
+  width: 100%;
+  min-width: 0;
 }
 
 .locked-graph-sample {
+  width: 100%;
+  min-height: 260px;
   padding: 0.75rem 0.25rem 0;
   filter: blur(2.5px) saturate(0.85);
   opacity: 0.45;
@@ -1178,5 +1307,39 @@ a.site-footer-link:hover {
 
   .performance-summary-score {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .tool-item:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes sub-nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .page-transition,
+  .fade-swap,
+  .sub-nav,
+  .btn,
+  .tool-item {
+    transform: none !important;
   }
 }

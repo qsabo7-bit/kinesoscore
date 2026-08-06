@@ -1,7 +1,10 @@
 export { default as GraphTrackSelector } from './GraphTrackSelector'
 export { default as HistoryList } from './HistoryList'
 export { default as LockedGraphPreview } from './LockedGraphPreview'
-export { DEFAULT_LOCKED_PREVIEW } from './lockedPreviewCopy'
+export {
+  DEFAULT_LOCKED_PREVIEW,
+  FPC_SCORE_LOCKED_PREVIEW,
+} from './lockedPreviewCopy'
 export { default as PerformanceSummary } from './PerformanceSummary'
 export { default as ProgressGraph } from './ProgressGraph'
 export { default as SaveResultButton } from './SaveResultButton'

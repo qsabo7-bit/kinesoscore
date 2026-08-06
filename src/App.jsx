@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from './auth/AuthContext'
 import Footer from './components/Footer'
 import Header from './components/Header'
+import PageTransition from './components/PageTransition'
 import HomePage from './pages/HomePage'
 import StrengthPage from './pages/StrengthPage'
 import RunningPage from './pages/RunningPage'
@@ -54,7 +55,9 @@ function App() {
   return (
     <div className="app">
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
-      <div className="app-content">{content}</div>
+      <div className="app-content">
+        <PageTransition pageKey={activeTab}>{content}</PageTransition>
+      </div>
       <Footer onOpenTab={setActiveTab} />
     </div>
   )

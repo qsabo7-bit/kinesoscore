@@ -8,6 +8,7 @@ import {
   recordsInMassUnit,
   savePerformanceRecord,
 } from '../lib/performanceRecords'
+import FadeSwap from './FadeSwap'
 import UnitToggle from './UnitToggle'
 import {
   DEFAULT_LOCKED_PREVIEW,
@@ -38,6 +39,8 @@ import {
  * @param {boolean} [props.hasResult]
  * @param {'default' | 'score'} [props.summaryVariant]
  * @param {string} [props.saveLabel]
+ * @param {'number' | 'duration' | 'score'} [props.sampleKind]
+ * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]
  */
 function CalculatorTracking({
   calculatorType,
@@ -52,6 +55,8 @@ function CalculatorTracking({
   hasResult = false,
   summaryVariant = 'default',
   saveLabel = 'Save Result',
+  sampleKind,
+  lockedPreview,
 }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
   const [selectedTrackId, setSelectedTrackId] = useState(
@@ -222,6 +227,12 @@ function CalculatorTracking({
       )
     }
 
+    const preview = {
+      title: lockedPreview?.title ?? DEFAULT_LOCKED_PREVIEW.title,
+      lead: lockedPreview?.lead ?? DEFAULT_LOCKED_PREVIEW.lead,
+      benefits: lockedPreview?.benefits ?? DEFAULT_LOCKED_PREVIEW.benefits,
+    }
+
     return (
       <div className="tracking-panel">
         <h2 className="result-section-title">Your Progress</h2>
@@ -229,17 +240,18 @@ function CalculatorTracking({
           onRequestAuth={onRequestAuth}
           yAxisLabel={axisLabel}
           valueKind={valueKind}
-          title={DEFAULT_LOCKED_PREVIEW.title}
-          lead={DEFAULT_LOCKED_PREVIEW.lead}
-          benefits={DEFAULT_LOCKED_PREVIEW.benefits}
+          sampleKind={sampleKind}
+          title={preview.title}
+          lead={preview.lead}
+          benefits={preview.benefits}
         />
       </div>
     )
   }
 
-  // Signed-in: show tracking whenever there is a current result or prior history.
+  // Signed-in: always show history/graph for this calculator (even before a new calc).
   if (authLoading) return null
-  if (!hasResult && !tracks.length) return null
+  if (!tracks.length) return null
 
   return (
     <div className="tracking-panel">
@@ -298,7 +310,10 @@ function CalculatorTracking({
         {loadingHistory ? (
           <p className="calc-hint">Loading your progress…</p>
         ) : (
-          <>
+          <FadeSwap
+            swapKey={selectedTrack.id}
+            className="progress-track-panel"
+          >
             <PerformanceSummary
               summary={summary}
               valueKind={valueKind}
@@ -320,7 +335,7 @@ function CalculatorTracking({
               deletingId={deletingId}
               valueKind={valueKind}
             />
-          </>
+          </FadeSwap>
         )}
       </section>
     </div>

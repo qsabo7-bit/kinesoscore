@@ -9,3 +9,15 @@ export const DEFAULT_LOCKED_PREVIEW = {
     'History',
   ],
 }
+
+/** Guest CTA for the FPC Score calculator. */
+export const FPC_SCORE_LOCKED_PREVIEW = {
+  title: 'Want to save your progress?',
+  lead: 'Log in to unlock:',
+  benefits: [
+    'FPC Score history',
+    'Progress tracking',
+    'Personal records',
+    'Performance graphs',
+  ],
+}

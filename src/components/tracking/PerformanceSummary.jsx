@@ -3,7 +3,7 @@ import {
   getTrendDisplay,
 } from '../../lib/performanceRecords'
 
-function TrendStat({ delta, valueKind, unit, higherIsBetter }) {
+function TrendStat({ delta, valueKind, unit, higherIsBetter, label }) {
   const trend = getTrendDisplay(delta, valueKind, unit, higherIsBetter)
   const toneClass =
     trend.tone === 'bad'
@@ -14,7 +14,7 @@ function TrendStat({ delta, valueKind, unit, higherIsBetter }) {
 
   return (
     <div className="performance-stat">
-      <p className="result-label">{trend.label}</p>
+      <p className="result-label">{label || trend.label}</p>
       <p
         className={`performance-stat-value performance-stat-value-sm${toneClass}`}
       >
@@ -62,9 +62,10 @@ function PerformanceSummary({
           valueKind="number"
           unit="points"
           higherIsBetter
+          label="Improvement Over Time"
         />
         <div className="performance-stat">
-          <p className="result-label">Total Tests</p>
+          <p className="result-label">Number of Tests</p>
           <p className="performance-stat-value">{summary.totalAttempts}</p>
         </div>
       </div>

@@ -13,6 +13,7 @@ import {
   toMiles,
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
+import { FPC_SCORE_LOCKED_PREVIEW } from '../components/tracking'
 import {
   FPC_SCORE_CALCULATOR_TYPE,
   SCORING_TRACKS,
@@ -331,19 +332,27 @@ function ScoringPage({ onRequestAuth }) {
               {result.score.runningScore}
             </p>
           </div>
+        </section>
+      ) : (
+        <p className="calc-hint">{hint}</p>
+      )}
 
-          <CalculatorTracking
-            calculatorType={FPC_SCORE_CALCULATOR_TYPE}
-            tracks={SCORING_TRACKS}
-            activeTrackId="fpc-score"
-            resultValue={result.score.FPCScore}
-            resultUnit="points"
-            hasResult
-            summaryVariant="score"
-            saveLabel="Save Score"
-            onRequestAuth={onRequestAuth}
-          />
+      <CalculatorTracking
+        calculatorType={FPC_SCORE_CALCULATOR_TYPE}
+        tracks={SCORING_TRACKS}
+        activeTrackId="fpc-score"
+        resultValue={result.score?.FPCScore}
+        resultUnit="points"
+        hasResult={Boolean(result.score)}
+        summaryVariant="score"
+        saveLabel="Save Score"
+        sampleKind="score"
+        lockedPreview={FPC_SCORE_LOCKED_PREVIEW}
+        onRequestAuth={onRequestAuth}
+      />
 
+      {result.score ? (
+        <section className="results results-followup" aria-live="polite">
           <div className="result-table-wrap">
             <h2 className="result-section-title">Score breakdown</h2>
             <ul className="result-table">
@@ -406,9 +415,7 @@ function ScoringPage({ onRequestAuth }) {
             source={result.score.source}
           />
         </section>
-      ) : (
-        <p className="calc-hint">{hint}</p>
-      )}
+      ) : null}
     </main>
   )
 }

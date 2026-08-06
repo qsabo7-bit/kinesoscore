@@ -9,6 +9,7 @@ import {
 import {
   SAMPLE_DURATION_DATA,
   SAMPLE_PROGRESS_DATA,
+  SAMPLE_SCORE_DATA,
   formatRecordValue,
 } from '../../lib/performanceRecords'
 import { DEFAULT_LOCKED_PREVIEW } from './lockedPreviewCopy'
@@ -17,12 +18,25 @@ function LockedGraphPreview({
   onRequestAuth,
   yAxisLabel = 'Result',
   valueKind = 'number',
+  sampleKind,
   title = DEFAULT_LOCKED_PREVIEW.title,
   lead = DEFAULT_LOCKED_PREVIEW.lead,
   benefits = DEFAULT_LOCKED_PREVIEW.benefits,
 }) {
+  const resolvedSample =
+    sampleKind ||
+    (valueKind === 'duration'
+      ? 'duration'
+      : valueKind === 'score'
+        ? 'score'
+        : 'number')
+
   const sampleData =
-    valueKind === 'duration' ? SAMPLE_DURATION_DATA : SAMPLE_PROGRESS_DATA
+    resolvedSample === 'duration'
+      ? SAMPLE_DURATION_DATA
+      : resolvedSample === 'score'
+        ? SAMPLE_SCORE_DATA
+        : SAMPLE_PROGRESS_DATA
 
   return (
     <div className="locked-graph-preview" aria-label="Progress tracking locked">
@@ -47,6 +61,7 @@ function LockedGraphPreview({
               axisLine={false}
               tickLine={false}
               width={52}
+              domain={resolvedSample === 'score' ? [0, 100] : ['auto', 'auto']}
               tickFormatter={(value) =>
                 formatRecordValue(
                   value,
