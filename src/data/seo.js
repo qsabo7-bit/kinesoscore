@@ -150,9 +150,9 @@ export const PAGE_SEO = {
   'fitness-age': {
     tab: 'fitness-age',
     path: '/fitness-age',
-    title: 'Fitness Age Calculator | Performance Age Analytics | KinesoScore',
+    title: 'Fitness Age Calculator | VO₂ Cardiorespiratory Age | KinesoScore',
     description:
-      'Estimate fitness age from VO₂ max, resting heart rate, training habits, and body metrics with transparent KinesoScore analytics.',
+      'Estimate KinesoScore™ Fitness Age by comparing VO₂ max with age- and sex-based fitness reference values. Higher cardiorespiratory fitness can mean a younger fitness age.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [

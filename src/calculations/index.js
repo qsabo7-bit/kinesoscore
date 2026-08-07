@@ -45,11 +45,16 @@ export {
   getBmiCategory,
 } from './bmi.js'
 export {
+  FITNESS_AGE_MODEL,
   FITNESS_AGE_SOURCE,
+  MAX_FITNESS_AGE,
   MIN_FITNESS_AGE,
   calculateFitnessAge,
+  estimateVo2FromFiveK,
   expectedFiveKSeconds,
   expectedVo2ForAge,
+  invertVo2ToFitnessAge,
+  medianVo2ForAge,
 } from './fitnessAge.js'
 export {
   calculateCooperVo2,

@@ -41,11 +41,11 @@ export const BMI_SEO = {
 export const FITNESS_AGE_SEO = {
   title: 'About this fitness age calculator',
   paragraphs: [
-    'This fitness age calculator estimates a performance-based “fitness age” from metrics such as VO₂ max, resting heart rate, training habits, and body measures.',
-    'It is a transparent analytics estimate for tracking trends — lower fitness age generally indicates stronger cardiorespiratory and training markers relative to chronological age.',
+    'KinesoScore™ Fitness Age estimates your cardiovascular fitness age by comparing your VO₂ max against age- and sex-based fitness reference values. Higher cardiorespiratory fitness can correspond to a younger fitness age.',
+    'The estimate is driven by VO₂ max, chronological age, and biological sex. Resting heart rate may refine the result slightly. A running time may be used only to estimate VO₂ when VO₂ is not available. Body composition, BMI, body fat, and training frequency are not used.',
   ],
   disclaimer:
-    'Fitness age is not medical advice and does not replace clinical evaluation. Results are for educational and training insight only.',
+    'Fitness age is an educational estimate, not medical advice, and does not replace clinical evaluation.',
 }
 
 export const MILITARY_SEO = {

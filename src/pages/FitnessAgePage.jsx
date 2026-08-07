@@ -2,17 +2,8 @@ import { useMemo } from 'react'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import SeoIntro from '../components/SeoIntro'
-import UnitToggle from '../components/UnitToggle'
 import { FITNESS_AGE_SEO } from '../data/seoCopy'
-import {
-  calculateFitnessAge,
-  convertHeight,
-  convertMass,
-  formatConverted,
-  HEIGHT_UNITS,
-  MASS_UNITS,
-  MIN_FITNESS_AGE,
-} from '../calculations'
+import { calculateFitnessAge, MIN_FITNESS_AGE } from '../calculations'
 import { FITNESS_AGE_LOCKED_PREVIEW } from '../components/tracking/lockedPreviewCopy'
 import {
   FITNESS_AGE_CALCULATOR_TYPE,
@@ -34,18 +25,10 @@ function toSeconds(hours, minutes, seconds) {
 }
 
 function FitnessAgePage({ onRequestAuth, onOpenTab }) {
-  const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
-  const [heightUnit, setHeightUnit] = useSyncedDefault('heightUnit', 'in')
   const [age, setAge] = useSyncedDefault('age', '')
-  const [weight, setWeight] = useSyncedDefault('bodyweight', '')
-  const [height, setHeight] = useSyncedDefault('height', '')
+  const [gender, setGender] = useSyncedDefault('gender', '')
   const [restingHr, setRestingHr] = useSyncedDefault('restingHr', '')
   const [vo2Max, setVo2Max] = useSyncedDefault('vo2Max', '')
-  const [weeklySessions, setWeeklySessions] = useSyncedDefault(
-    'weeklySessions',
-    '',
-  )
-  const [bodyFat, setBodyFat] = useSyncedDefault('bodyFat', '')
   const [strengthScore, setStrengthScore] = useSyncedDefault(
     'strengthScore',
     '',
@@ -54,38 +37,10 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
   const [minutes, setMinutes] = useSyncedDefault('fiveKMinutes', '')
   const [seconds, setSeconds] = useSyncedDefault('fiveKSeconds', '')
 
-  const handleMassUnitChange = (nextUnit) => {
-    if (nextUnit === massUnit) return
-
-    const weightNum = Number(weight)
-    if (Number.isFinite(weightNum) && weightNum > 0) {
-      setWeight(formatConverted(convertMass(weightNum, massUnit, nextUnit), 1))
-    }
-
-    setMassUnit(nextUnit)
-  }
-
-  const handleHeightUnitChange = (nextUnit) => {
-    if (nextUnit === heightUnit) return
-
-    const heightNum = Number(height)
-    if (Number.isFinite(heightNum) && heightNum > 0) {
-      setHeight(
-        formatConverted(convertHeight(heightNum, heightUnit, nextUnit), 1),
-      )
-    }
-
-    setHeightUnit(nextUnit)
-  }
-
   const result = useMemo(() => {
     const ageNum = Number(age)
-    const weightNum = Number(weight)
-    const heightNum = Number(height)
-    const rhrNum = Number(restingHr)
-    const vo2Num = Number(vo2Max)
-    const sessionsNum = Number(weeklySessions)
-    const bfNum = bodyFat === '' ? undefined : Number(bodyFat)
+    const rhrNum = restingHr === '' ? undefined : Number(restingHr)
+    const vo2Num = vo2Max === '' ? undefined : Number(vo2Max)
     const strengthNum =
       strengthScore === '' ? undefined : Number(strengthScore)
     const fiveKSeconds = toSeconds(hours, minutes, seconds)
@@ -93,38 +48,28 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
     if (
       !Number.isFinite(ageNum) ||
       ageNum < MIN_FITNESS_AGE ||
-      !Number.isFinite(weightNum) ||
-      !Number.isFinite(heightNum) ||
-      !Number.isFinite(rhrNum) ||
-      !Number.isFinite(vo2Num) ||
-      !Number.isFinite(sessionsNum)
+      (gender !== 'male' && gender !== 'female')
     ) {
       return null
     }
 
+    const hasVo2 = Number.isFinite(vo2Num)
+    const hasFiveK = fiveKSeconds != null
+    if (!hasVo2 && !hasFiveK) return null
+
     return calculateFitnessAge({
       age: ageNum,
-      weight: weightNum,
-      massUnit,
-      height: heightNum,
-      heightUnit,
+      gender,
       restingHr: rhrNum,
-      vo2Max: vo2Num,
-      weeklySessions: sessionsNum,
-      bodyFatPercent: bfNum,
-      fiveKSeconds: fiveKSeconds ?? undefined,
+      vo2Max: hasVo2 ? vo2Num : undefined,
+      fiveKSeconds: hasFiveK ? fiveKSeconds : undefined,
       strengthScore: strengthNum,
     })
   }, [
     age,
-    weight,
-    massUnit,
-    height,
-    heightUnit,
+    gender,
     restingHr,
     vo2Max,
-    weeklySessions,
-    bodyFat,
     strengthScore,
     hours,
     minutes,
@@ -137,10 +82,11 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
         <p className="page-eyebrow">Longevity</p>
         <h1>Fitness Age</h1>
         <p className="page-lead">
-          Estimate a transparent fitness age from age, body size, resting heart
-          rate, VO₂ max, and training habits — plus optional body fat, 5K, and
-          strength inputs. Lower fitness age is better. Results are only accurate
-          for ages {MIN_FITNESS_AGE} and up.
+          Estimate Fitness Age from VO₂ max and biological sex using age–sex
+          fitness norms — the age of an average person with comparable
+          cardiorespiratory fitness. Optional resting heart rate and KinesoScore
+          strength apply only small capped modifiers. Lower fitness age is
+          better. Adults {MIN_FITNESS_AGE}+.
         </p>
       </header>
 
@@ -178,55 +124,18 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
             />
           </label>
 
-          <UnitToggle
-            label="Weight units"
-            value={massUnit}
-            options={MASS_UNITS}
-            onChange={handleMassUnitChange}
-          />
-
-          <UnitToggle
-            label="Height units"
-            value={heightUnit}
-            options={HEIGHT_UNITS}
-            onChange={handleHeightUnitChange}
-          />
-
           <label className="field">
-            <span>Bodyweight ({massUnit})</span>
-            <input
-              type="number"
-              min="1"
-              step="any"
-              placeholder="175"
-              value={weight}
-              onChange={(event) => setWeight(event.target.value)}
-            />
-          </label>
-
-          <label className="field">
-            <span>Height ({heightUnit})</span>
-            <input
-              type="number"
-              min="1"
-              step="any"
-              placeholder="70"
-              value={height}
-              onChange={(event) => setHeight(event.target.value)}
-            />
-          </label>
-
-          <label className="field">
-            <span>Resting heart rate (bpm)</span>
-            <input
-              type="number"
-              min="30"
-              max="120"
-              step="1"
-              placeholder="60"
-              value={restingHr}
-              onChange={(event) => setRestingHr(event.target.value)}
-            />
+            <span>Gender</span>
+            <select
+              value={gender}
+              onChange={(event) => setGender(event.target.value)}
+            >
+              <option value="" disabled>
+                Select
+              </option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
           </label>
 
           <label className="field">
@@ -243,15 +152,15 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
           </label>
 
           <label className="field">
-            <span>Weekly exercise sessions</span>
+            <span>Resting heart rate (bpm, optional)</span>
             <input
               type="number"
-              min="0"
-              max="14"
+              min="30"
+              max="120"
               step="1"
-              placeholder="3"
-              value={weeklySessions}
-              onChange={(event) => setWeeklySessions(event.target.value)}
+              placeholder="60"
+              value={restingHr}
+              onChange={(event) => setRestingHr(event.target.value)}
             />
           </label>
         </fieldset>
@@ -259,25 +168,13 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
         <fieldset className="optional-fields">
           <legend>Optional inputs</legend>
           <p className="optional-note">
-            These refine Strength, Body Composition, and Training Consistency.
-            Leave blank if you do not have them.
+            5K is used only when VO₂ is blank (never stacked with VO₂). Strength
+            modifier uses a KinesoScore strength percentile when available. Body
+            fat, BMI, and weekly training frequency do not affect Fitness Age.
           </p>
 
           <label className="field">
-            <span>Body fat percentage</span>
-            <input
-              type="number"
-              min="1"
-              max="70"
-              step="any"
-              placeholder="18"
-              value={bodyFat}
-              onChange={(event) => setBodyFat(event.target.value)}
-            />
-          </label>
-
-          <label className="field">
-            <span>Strength score (0–100)</span>
+            <span>KinesoScore strength percentile (0–100)</span>
             <input
               type="number"
               min="0"
@@ -290,7 +187,9 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
           </label>
 
           <div className="field-group" role="group" aria-label="Optional 5K time">
-            <span className="field-group-label">5K time (optional)</span>
+            <span className="field-group-label">
+              5K time (used only if VO₂ is blank)
+            </span>
             <div className="field-row">
               <label className="field field-compact">
                 <span>Hour</span>
@@ -377,9 +276,9 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
         </section>
       ) : (
         <p className="calc-hint">
-          Enter age ({MIN_FITNESS_AGE}+), height, weight, resting heart rate,
-          VO₂ max, and weekly exercise frequency. Fitness Age is only calculated
-          for adults {MIN_FITNESS_AGE} and older.
+          Enter age ({MIN_FITNESS_AGE}+), gender, and either a VO₂ max estimate
+          or a 5K time. Fitness Age is only calculated for adults{' '}
+          {MIN_FITNESS_AGE} and older.
         </p>
       )}
 

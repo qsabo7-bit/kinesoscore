@@ -65,7 +65,8 @@ export const calculators = [
   {
     id: 'fitness-age',
     name: 'Fitness Age',
-    description: 'Estimate Fitness Age from VO₂, heart rate, and training.',
+    description:
+      'Estimate cardiovascular fitness age from VO₂ max and age–sex norms.',
     status: 'ready',
     category: 'performance',
   },
