@@ -64,7 +64,8 @@ function AccountPage({ onOpenTab }) {
           <p className="page-eyebrow">Account</p>
           <h1>Account Settings</h1>
           <p className="page-lead">
-            Log in to view your profile and account controls.
+            Create an account or log in to manage your profile and saved
+            progress.
           </p>
         </header>
         <button
@@ -72,7 +73,7 @@ function AccountPage({ onOpenTab }) {
           className="btn btn-primary"
           onClick={() => onOpenTab?.('login')}
         >
-          Go to Login
+          Log In
         </button>
       </main>
     )

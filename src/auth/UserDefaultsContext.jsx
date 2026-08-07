@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react'
 import { useAuth } from './AuthContext'
+import { isEstimated5kDefaultKey } from '../lib/runningTracking'
 import {
   EMPTY_USER_DEFAULTS,
   clearLocalDefaults,
@@ -25,6 +26,12 @@ export function UserDefaultsProvider({ children }) {
   const [defaults, setDefaults] = useState(EMPTY_USER_DEFAULTS)
   const [ready, setReady] = useState(false)
   const saveTimerRef = useRef(null)
+  /** Shared across fiveKHours/Minutes/Seconds so a partial edit blocks all three. */
+  const estimated5kEditedRef = useRef(false)
+
+  useEffect(() => {
+    estimated5kEditedRef.current = false
+  }, [userId, isAuthenticated])
 
   useEffect(() => {
     let cancelled = false
@@ -64,9 +71,28 @@ export function UserDefaultsProvider({ children }) {
     [userId],
   )
 
+  const isEstimated5kEdited = useCallback(
+    () => estimated5kEditedRef.current,
+    [],
+  )
+
+  const markEstimated5kEdited = useCallback(() => {
+    estimated5kEditedRef.current = true
+  }, [])
+
+  /**
+   * @param {Record<string, string>} patch
+   * @param {{ source?: 'estimated5k-sync' }} [meta]
+   *   `estimated5k-sync` = from saved running history (save/delete/mount hydrate).
+   *   Clears the manual-edit lock so dependent fields pick up the new values.
+   */
   const patchDefaults = useCallback(
-    (patch) => {
+    (patch, meta = {}) => {
       if (!isAuthenticated || !userId) return
+
+      if (meta.source === 'estimated5k-sync') {
+        estimated5kEditedRef.current = false
+      }
 
       // Always defer provider updates so callers never trip
       // "setState while rendering a different component".
@@ -92,7 +118,12 @@ export function UserDefaultsProvider({ children }) {
   )
 
   const clearDefaults = useCallback(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = null
+    }
     if (userId) clearLocalDefaults(userId)
+    estimated5kEditedRef.current = false
     setDefaults(EMPTY_USER_DEFAULTS)
   }, [userId])
 
@@ -104,6 +135,8 @@ export function UserDefaultsProvider({ children }) {
       userId,
       patchDefaults,
       clearDefaults,
+      isEstimated5kEdited,
+      markEstimated5kEdited,
     }),
     [
       defaults,
@@ -113,6 +146,8 @@ export function UserDefaultsProvider({ children }) {
       userId,
       patchDefaults,
       clearDefaults,
+      isEstimated5kEdited,
+      markEstimated5kEdited,
     ],
   )
 
@@ -135,6 +170,10 @@ export function useUserDefaults() {
  * Local state seeded from shared user defaults; writes back while signed in.
  * Remounting a calculator reloads the latest shared value for that field.
  *
+ * Estimated 5K keys (`fiveKHours` / `Minutes` / `Seconds`) also follow external
+ * `estimated5k-sync` patches from saved running history, unless the user is
+ * mid-edit (then only a clear-to-blank from "no valid runs" applies).
+ *
  * Returns `[value, setValue, shared]` where `shared` drives SharedDataNotification:
  * - Auto-filled on hydrate from saved/shared defaults
  * - Clears when the user edits or empties the field
@@ -146,27 +185,54 @@ export function useUserDefaults() {
  * @returns {[string, Function, { isAutoFilled: boolean }]}
  */
 export function useSyncedDefault(key, fallback = '') {
-  const { defaults, patchDefaults, isAuthenticated, ready, userId } =
-    useUserDefaults()
+  const {
+    defaults,
+    patchDefaults,
+    isAuthenticated,
+    ready,
+    userId,
+    isEstimated5kEdited,
+    markEstimated5kEdited,
+  } = useUserDefaults()
   const [value, setValue] = useState(fallback)
   const [isAutoFilled, setIsAutoFilled] = useState(false)
+  const isFiveK = isEstimated5kDefaultKey(key)
 
   useEffect(() => {
     if (!ready) return
 
-    if (isAuthenticated) {
-      const next = defaults[key]
-      const hasShared = next != null && String(next) !== ''
-      setValue(hasShared ? String(next) : fallback)
-      setIsAutoFilled(hasShared)
-    } else {
+    if (!isAuthenticated) {
       setValue(fallback)
       setIsAutoFilled(false)
+      return
     }
-    // Omit `defaults` so live patches while typing do not reset the field.
-    // Remounting the page re-runs this and picks up the latest shared values.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
-  }, [ready, isAuthenticated, userId, key, fallback])
+
+    const next = defaults[key]
+    const nextStr = next == null ? '' : String(next)
+    const hasShared = nextStr !== ''
+
+    if (isFiveK) {
+      // Mid-edit: keep local values unless history cleared (no valid saved run).
+      if (isEstimated5kEdited() && hasShared) return
+      setValue(hasShared ? nextStr : fallback)
+      setIsAutoFilled(hasShared)
+      return
+    }
+
+    // Non-fiveK: hydrate on ready/user/key only (ignore live default patches).
+    setValue(hasShared ? nextStr : fallback)
+    setIsAutoFilled(hasShared)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fiveK watches defaults[key]; others intentionally omit
+  }, [
+    ready,
+    isAuthenticated,
+    userId,
+    key,
+    fallback,
+    isFiveK,
+    isFiveK ? defaults[key] : null,
+    isEstimated5kEdited,
+  ])
 
   const setSynced = useCallback(
     (next, meta = {}) => {
@@ -185,13 +251,21 @@ export function useSyncedDefault(key, fallback = '') {
         if (normalized === '') setIsAutoFilled(false)
       } else {
         setIsAutoFilled(false)
+        if (isFiveK) markEstimated5kEdited()
       }
 
       if (isAuthenticated) {
         patchDefaults({ [key]: normalized })
       }
     },
-    [isAuthenticated, key, patchDefaults, value],
+    [
+      isAuthenticated,
+      key,
+      patchDefaults,
+      value,
+      isFiveK,
+      markEstimated5kEdited,
+    ],
   )
 
   const shared = useMemo(

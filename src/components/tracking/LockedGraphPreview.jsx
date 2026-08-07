@@ -44,8 +44,15 @@ function LockedGraphPreview({
             ? SAMPLE_FITNESS_AGE_DATA
             : SAMPLE_PROGRESS_DATA
 
+  const requestAuth = (mode) => {
+    onRequestAuth?.(mode)
+  }
+
   return (
-    <div className="locked-graph-preview" aria-label="Progress tracking locked">
+    <div
+      className="locked-graph-preview"
+      aria-label="Progress tracking locked. Create an account to save results."
+    >
       <div className="locked-graph-sample" aria-hidden="true">
         <ResponsiveContainer width="100%" height={260}>
           <LineChart
@@ -108,10 +115,20 @@ function LockedGraphPreview({
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => onRequestAuth?.()}
+            onClick={() => requestAuth('signup')}
           >
-            Log In
+            Create Account
           </button>
+          <p className="locked-graph-login">
+            Already have an account?{' '}
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => requestAuth('login')}
+            >
+              Log in
+            </button>
+          </p>
         </div>
       </div>
     </div>

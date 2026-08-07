@@ -88,12 +88,14 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
     }
   }, [selectedRace, hours, minutes, seconds, age, gender])
 
-  // Keep myKinesoScore autofill aligned with latest valid saved run (or cleared).
+  // Estimated 5K autofill from saved runs only (never live race inputs).
   const syncEstimated5kAutofillFromSaves = useCallback(async () => {
     if (!user?.id) return
     try {
       const rows = await fetchPerformanceRecords(user.id, 'running')
-      patchDefaults(estimated5kAutofillPatch(rows))
+      patchDefaults(estimated5kAutofillPatch(rows), {
+        source: 'estimated5k-sync',
+      })
     } catch {
       /* Keep current defaults if history cannot be refreshed. */
     }

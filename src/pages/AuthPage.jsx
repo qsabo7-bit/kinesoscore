@@ -5,7 +5,12 @@ import { friendlyAuthError } from '../lib/authErrors'
 const RESET_SENT_MESSAGE =
   "If an account exists for this email, we've sent password reset instructions."
 
-function AuthPage({ onSuccess, initialMessage = '' }) {
+function normalizeAuthMode(mode) {
+  if (mode === 'signup' || mode === 'forgot' || mode === 'login') return mode
+  return 'login'
+}
+
+function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
   const {
     signIn,
     signUp,
@@ -14,7 +19,7 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
     authUrlError,
     clearAuthUrlError,
   } = useAuth()
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState(() => normalizeAuthMode(initialMode))
   const [firstName, setFirstName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,6 +36,10 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
 
   const isSignup = mode === 'signup'
   const isForgot = mode === 'forgot'
+
+  useEffect(() => {
+    setMode(normalizeAuthMode(initialMode))
+  }, [initialMode])
 
   useEffect(() => {
     if (initialMessage) {
@@ -130,8 +139,8 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
   const lead = isForgot
     ? 'Enter your email and we’ll send reset instructions if an account exists.'
     : isSignup
-      ? 'Save calculator results and track improvement over time.'
-      : 'Sign in to access your saved progress and account dashboard.'
+      ? 'Create a free account to save calculator results and track improvement over time.'
+      : 'Welcome back. Sign in to access your saved progress and dashboard.'
 
   return (
     <main className="page auth-page">

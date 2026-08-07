@@ -31,9 +31,21 @@ export function excludeStoredEstimated5kRecords(records) {
   return (records || []).filter((record) => !isStoredEstimated5kRecord(record))
 }
 
+/** Shared default keys for Estimated 5K autofill (from saved runs only). */
+export const ESTIMATED_5K_DEFAULT_KEYS = [
+  'fiveKHours',
+  'fiveKMinutes',
+  'fiveKSeconds',
+]
+
+export function isEstimated5kDefaultKey(key) {
+  return ESTIMATED_5K_DEFAULT_KEYS.includes(key)
+}
+
 /**
  * Defaults patch for myKinesoScore / Fitness Age Estimated 5K autofill.
  * Clears fields when no valid actual running save remains.
+ * Source must be saved running rows — never live form typing.
  */
 export function estimated5kAutofillPatch(runningRecords) {
   const estimatedSeconds = getLatestEstimated5kSeconds(runningRecords)

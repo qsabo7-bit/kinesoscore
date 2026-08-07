@@ -22,6 +22,8 @@ import DashboardPage from './pages/DashboardPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AboutPage from './pages/AboutPage'
 import FitnessScorePage from './pages/FitnessScorePage'
+import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 import { pathForTab, resolveSeoRoute } from './data/seo'
 import {
   getAuthIntent,
@@ -51,10 +53,21 @@ function App() {
   } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromLocation)
   const [authNotice, setAuthNotice] = useState('')
+  const [authMode, setAuthMode] = useState('login')
   const openedRecovery = useRef(false)
   const handledEmailConfirm = useRef(false)
   const skipNextUrlPush = useRef(false)
-  const goToLogin = () => setActiveTab('login')
+
+  const handleTabChange = (tab) => {
+    if (tab === 'login') setAuthMode('login')
+    setActiveTab(tab)
+  }
+
+  /** Guest CTAs: default to signup; pass 'login' for returning users. */
+  const requestAuth = (mode = 'signup') => {
+    setAuthMode(mode === 'login' ? 'login' : 'signup')
+    setActiveTab('login')
+  }
 
   // Keep browser URL aligned with the active tab for canonical SEO paths.
   useEffect(() => {
@@ -115,6 +128,7 @@ function App() {
       setActiveTab('dashboard')
     } else {
       setAuthNotice(EMAIL_CONFIRMED_MESSAGE)
+      setAuthMode('login')
       setActiveTab('login')
     }
 
@@ -129,6 +143,7 @@ function App() {
 
   useEffect(() => {
     if (authUrlError && !passwordRecovery) {
+      setAuthMode('login')
       setActiveTab('login')
     }
   }, [authUrlError, passwordRecovery])
@@ -165,63 +180,76 @@ function App() {
           if (options.staySignedIn) {
             setActiveTab('dashboard')
           } else {
+            setAuthMode('login')
             setActiveTab('login')
           }
         }}
         onRequestLogin={() => {
           clearPasswordRecovery?.()
+          setAuthMode('login')
           setActiveTab('login')
         }}
       />
     )
   } else if (renderTab === 'strength') {
     content = (
-      <StrengthPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <StrengthPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'running') {
     content = (
-      <RunningPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <RunningPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'scoring') {
     content = (
-      <ScoringPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <ScoringPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'vo2max') {
     content = (
-      <Vo2MaxPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <Vo2MaxPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'bmr') {
-    content = <BmrPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    content = (
+      <BmrPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
+    )
   } else if (renderTab === 'bmi') {
-    content = <BmiPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    content = (
+      <BmiPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
+    )
   } else if (renderTab === 'fitness-age') {
     content = (
-      <FitnessAgePage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <FitnessAgePage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'air-force-pfra') {
     content = (
-      <AirForcePfraPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <AirForcePfraPage
+        onRequestAuth={requestAuth}
+        onOpenTab={handleTabChange}
+      />
     )
   } else if (renderTab === 'air-force-pfa') {
     content = (
-      <AirForcePfaPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <AirForcePfaPage
+        onRequestAuth={requestAuth}
+        onOpenTab={handleTabChange}
+      />
     )
   } else if (renderTab === 'army-aft') {
     content = (
-      <ArmyAftPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <ArmyAftPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'marine-pft') {
     content = (
-      <MarinePftPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <MarinePftPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'navy-prt') {
     content = (
-      <NavyPrtPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+      <NavyPrtPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
   } else if (renderTab === 'login') {
     content = (
       <AuthPage
         initialMessage={authNotice}
+        initialMode={authMode}
         onSuccess={() => {
           setAuthNotice('')
           setActiveTab('dashboard')
@@ -229,22 +257,29 @@ function App() {
       />
     )
   } else if (renderTab === 'account') {
-    content = <AccountPage onOpenTab={setActiveTab} />
+    content = <AccountPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'dashboard') {
     content = (
-      <DashboardPage onOpenTab={setActiveTab} onRequestAuth={goToLogin} />
+      <DashboardPage
+        onOpenTab={handleTabChange}
+        onRequestAuth={requestAuth}
+      />
     )
   } else if (renderTab === 'about') {
-    content = <AboutPage onOpenTab={setActiveTab} />
+    content = <AboutPage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'privacy') {
+    content = <PrivacyPage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'terms') {
+    content = <TermsPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'fitness-score') {
-    content = <FitnessScorePage onOpenTab={setActiveTab} />
+    content = <FitnessScorePage onOpenTab={handleTabChange} />
   } else {
-    content = <HomePage onOpenTab={setActiveTab} />
+    content = <HomePage onOpenTab={handleTabChange} />
   }
 
   return (
     <div className="app">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header activeTab={activeTab} onTabChange={handleTabChange} />
       <div className="app-content">
         <PageTransition pageKey={activeTab}>{content}</PageTransition>
       </div>

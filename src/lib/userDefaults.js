@@ -79,6 +79,9 @@ export function splitDurationParts(totalSeconds) {
 
 let defaultsTableUnavailable = false
 
+/** After account deletion, ignore late debounce writes for that user id. */
+const blockedLocalWriteUserIds = new Set()
+
 function storageKey(userId) {
   return `${DEFAULTS_STORAGE_PREFIX}${userId}`
 }
@@ -97,6 +100,7 @@ export function readLocalDefaults(userId) {
 
 export function writeLocalDefaults(userId, defaults) {
   if (!userId || typeof localStorage === 'undefined') return
+  if (blockedLocalWriteUserIds.has(userId)) return
   try {
     localStorage.setItem(storageKey(userId), JSON.stringify(defaults))
   } catch {
@@ -106,6 +110,7 @@ export function writeLocalDefaults(userId, defaults) {
 
 export function clearLocalDefaults(userId) {
   if (!userId || typeof localStorage === 'undefined') return
+  blockedLocalWriteUserIds.add(userId)
   try {
     localStorage.removeItem(storageKey(userId))
   } catch {
@@ -132,6 +137,9 @@ function isMissingDefaultsTable(error) {
  * @returns {Promise<Record<string, string>>}
  */
 export async function fetchUserDefaults(userId) {
+  // A living session may load defaults again (e.g. failed delete never cleared).
+  blockedLocalWriteUserIds.delete(userId)
+
   const local = readLocalDefaults(userId)
   if (defaultsTableUnavailable) return local
 
@@ -161,6 +169,8 @@ export async function fetchUserDefaults(userId) {
  * @param {Record<string, string>} defaults
  */
 export async function saveUserDefaults(userId, defaults) {
+  if (blockedLocalWriteUserIds.has(userId)) return
+
   writeLocalDefaults(userId, defaults)
   if (defaultsTableUnavailable) return
 

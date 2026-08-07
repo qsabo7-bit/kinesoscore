@@ -7,7 +7,7 @@ import { pathForTab } from '../data/seo'
  * @param {{ before?: string, tab: string, label: string, after?: string }} [relatedNote]
  *   Optional closing note with an inline calculator link.
  * @param {Array<{ question: string, answer: string }>} [faqs]
- * @param {boolean} [collapseFaqs] When true, FAQs render as collapsed <details>.
+ * @param {boolean} [collapseFaqs=true] FAQs render as collapsed <details> by default.
  */
 function SeoIntro({
   title,
@@ -16,7 +16,7 @@ function SeoIntro({
   faqs = [],
   relatedNote = null,
   disclaimer,
-  collapseFaqs = false,
+  collapseFaqs = true,
   onNavigate,
 }) {
   const faqList = Array.isArray(faqs) ? faqs.filter((f) => f?.question && f?.answer) : []

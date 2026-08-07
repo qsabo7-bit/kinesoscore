@@ -2,8 +2,8 @@ import { BRAND } from '../../data/brand'
 
 /** Shared guest CTA copy for every calculator's locked graph preview. */
 export const DEFAULT_LOCKED_PREVIEW = {
-  title: 'Want to save your progress?',
-  lead: 'Log in to unlock:',
+  title: 'Save your progress',
+  lead: 'Create a free account to unlock:',
   benefits: [
     'Progress tracking',
     'Performance graphs',
@@ -14,8 +14,8 @@ export const DEFAULT_LOCKED_PREVIEW = {
 
 /** Guest CTA for the Dashboard page. */
 export const DASHBOARD_LOCKED_PREVIEW = {
-  title: 'Log in to unlock your dashboard.',
-  lead: 'Create a free account to unlock:',
+  title: 'Track your fitness progress',
+  lead: 'Create a free account to unlock your dashboard:',
   benefits: [
     `Personal ${BRAND.scoreName} ring`,
     'Progress graphs across metrics',
@@ -27,8 +27,8 @@ export const DASHBOARD_LOCKED_PREVIEW = {
 
 /** Guest CTA for the KinesoScore calculator. */
 export const FPC_SCORE_LOCKED_PREVIEW = {
-  title: 'Want to save your progress?',
-  lead: 'Log in to unlock:',
+  title: `Save your ${BRAND.scoreName}`,
+  lead: 'Create a free account to unlock:',
   benefits: [
     `${BRAND.scoreName} history`,
     'Progress tracking',
@@ -38,8 +38,8 @@ export const FPC_SCORE_LOCKED_PREVIEW = {
 }
 
 export const BMI_LOCKED_PREVIEW = {
-  title: 'Want to save your BMI?',
-  lead: 'Log in to unlock:',
+  title: 'Save your BMI history',
+  lead: 'Create a free account to unlock:',
   benefits: [
     'BMI history',
     'Progress graphs',
@@ -49,8 +49,8 @@ export const BMI_LOCKED_PREVIEW = {
 }
 
 export const FITNESS_AGE_LOCKED_PREVIEW = {
-  title: 'Want to track Fitness Age?',
-  lead: 'Log in to unlock:',
+  title: 'Track Fitness Age over time',
+  lead: 'Create a free account to unlock:',
   benefits: [
     'Fitness Age history',
     'Best (lowest) age',

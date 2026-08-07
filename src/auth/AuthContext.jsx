@@ -20,6 +20,8 @@ import {
   passwordRecoveryRedirectTo,
   signupConfirmRedirectTo,
 } from '../lib/authRedirects'
+import { clearCachedDashboardRecords } from '../lib/dashboardRecordsCache'
+import { clearLocalDefaults } from '../lib/userDefaults'
 import { isSupabaseConfigured, supabase } from '../supabaseClient'
 
 const AuthContext = createContext(null)
@@ -185,25 +187,44 @@ export function AuthProvider({ children }) {
       // Ignore malformed URL fragments.
     }
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return
-      setSession(data.session ?? null)
-      setUser(data.session?.user ?? null)
+    supabase.auth
+      .getSession()
+      .then(async ({ data, error }) => {
+        if (!mounted) return
 
-      if (!recoveryFinishedRef.current) {
-        if (getAuthIntent() === 'recovery') {
-          enterRecovery()
-        } else if (getAuthIntent() === 'signup') {
-          enterSignupConfirm()
+        if (error) {
+          console.error('Failed to restore session', error)
+          setSession(null)
+          setUser(null)
+          await loadProfile(null)
+          return
         }
-      }
 
-      clearAuthCallbackFromUrl()
+        setSession(data.session ?? null)
+        setUser(data.session?.user ?? null)
 
-      loadProfile(data.session?.user ?? null).finally(() => {
+        if (!recoveryFinishedRef.current) {
+          if (getAuthIntent() === 'recovery') {
+            enterRecovery()
+          } else if (getAuthIntent() === 'signup') {
+            enterSignupConfirm()
+          }
+        }
+
+        clearAuthCallbackFromUrl()
+
+        await loadProfile(data.session?.user ?? null)
+      })
+      .catch((error) => {
+        console.error('Failed to restore session', error)
+        if (!mounted) return
+        setSession(null)
+        setUser(null)
+        setProfile(null)
+      })
+      .finally(() => {
         if (mounted) setLoading(false)
       })
-    })
 
     const {
       data: { subscription },
@@ -289,6 +310,7 @@ export function AuthProvider({ children }) {
     requireConfigured()
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    clearCachedDashboardRecords()
     clearAuthIntent()
     setPasswordRecovery(false)
     setEmailJustConfirmed(false)
@@ -336,8 +358,14 @@ export function AuthProvider({ children }) {
 
   const deleteAccount = useCallback(async () => {
     requireConfigured()
+    const userId = user?.id ?? session?.user?.id ?? null
+
     const { error } = await supabase.rpc('delete_own_account')
     if (error) throw error
+
+    // Server wipe succeeded — drop all client-side personal caches for this user.
+    if (userId) clearLocalDefaults(userId)
+    clearCachedDashboardRecords()
 
     finishRecovery()
     setEmailJustConfirmed(false)
@@ -349,7 +377,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Session may already be invalid after account deletion.
     }
-  }, [finishRecovery])
+  }, [finishRecovery, user, session])
 
   const value = useMemo(
     () => ({

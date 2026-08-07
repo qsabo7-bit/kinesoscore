@@ -9,7 +9,7 @@ import { DEFAULT_LOCKED_PREVIEW } from '../../components/tracking/lockedPreviewC
 
 const ARMY_LOCKED_PREVIEW = {
   ...DEFAULT_LOCKED_PREVIEW,
-  title: 'Want to save your progress? Log-in!',
+  title: 'Save your assessment progress',
 }
 
 function ArmyAftPage({ onRequestAuth, onOpenTab }) {

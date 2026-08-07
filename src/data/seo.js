@@ -1,4 +1,4 @@
-import { BRAND } from './brand'
+import { BRAND } from './brand.js'
 
 /**
  * SEO / sharing configuration for KinesoScore.
@@ -20,7 +20,13 @@ export const SITE = {
 }
 
 export function getSiteOrigin() {
-  const fromEnv = String(import.meta.env.VITE_SITE_URL || '').trim().replace(/\/$/, '')
+  const env =
+    typeof import.meta !== 'undefined' && import.meta.env
+      ? import.meta.env
+      : undefined
+  const fromEnv = String(env?.VITE_SITE_URL || '')
+    .trim()
+    .replace(/\/$/, '')
   if (fromEnv) return fromEnv
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin
@@ -50,13 +56,19 @@ export const PAGE_SEO = {
     ogType: 'website',
     breadcrumb: [{ name: 'Home', path: '/' }],
   },
+  /**
+   * Nav / breadcrumb entry that currently renders the Strength calculator.
+   * Kept as a useful URL, but not indexed separately — canonical points at /strength.
+   */
   calculators: {
     tab: 'calculators',
     path: '/calculators',
     title: 'Fitness Calculators | 1RM, Running, VO₂, Military Tests | KinesoScore',
     description:
       'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, myKinesoScore™, and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
-    robots: 'index,follow',
+    robots: 'noindex,follow',
+    /** Consolidate duplicate Strength UI under the dedicated strength URL. */
+    canonicalPath: '/strength',
     ogType: 'website',
     breadcrumb: [
       { name: 'Home', path: '/' },
@@ -255,6 +267,32 @@ export const PAGE_SEO = {
     breadcrumb: [
       { name: 'Home', path: '/' },
       { name: 'About', path: '/about' },
+    ],
+  },
+  privacy: {
+    tab: 'privacy',
+    path: '/privacy',
+    title: 'Privacy Policy | KinesoScore',
+    description:
+      'KinesoScore Privacy Policy — how we handle account data, saved fitness results, and Supabase authentication for our educational fitness calculators.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Privacy Policy', path: '/privacy' },
+    ],
+  },
+  terms: {
+    tab: 'terms',
+    path: '/terms',
+    title: 'Terms of Service | KinesoScore',
+    description:
+      'KinesoScore Terms of Service — educational fitness calculators, account use, and important limits: estimates only, not medical advice or official military scores.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Terms of Service', path: '/terms' },
     ],
   },
   dashboard: {

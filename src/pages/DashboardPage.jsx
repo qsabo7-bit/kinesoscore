@@ -19,6 +19,11 @@ import {
   loadDashboardRecords,
 } from '../lib/dashboardData'
 import {
+  clearCachedDashboardRecords,
+  readCachedDashboardRecords,
+  writeCachedDashboardRecords,
+} from '../lib/dashboardRecordsCache'
+import {
   filterRecordsByRange,
   recordsInMassUnit,
 } from '../lib/performanceRecords'
@@ -48,22 +53,6 @@ function formatDate(iso) {
 
 const RECENT_ACTIVITY_PREVIEW = 5
 
-/** Keep last dashboard payload so revisits don't flash empty → loaded. */
-let dashboardRecordsCache = { userId: null, records: [] }
-
-function readCachedRecords(userId) {
-  if (!userId || dashboardRecordsCache.userId !== userId) return null
-  return dashboardRecordsCache.records
-}
-
-function writeCachedRecords(userId, records) {
-  dashboardRecordsCache = { userId, records }
-}
-
-function clearCachedRecords() {
-  dashboardRecordsCache = { userId: null, records: [] }
-}
-
 function DashboardPage({ onOpenTab, onRequestAuth }) {
   const {
     user,
@@ -76,7 +65,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   } = useAuth()
   const { defaults } = useUserDefaults()
 
-  const cachedRecords = readCachedRecords(user?.id)
+  const cachedRecords = readCachedDashboardRecords(user?.id)
   const [records, setRecords] = useState(() => cachedRecords ?? [])
   const [loadingData, setLoadingData] = useState(() => {
     if (!isAuthenticated || !user?.id) return false
@@ -104,7 +93,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     }
 
     let cancelled = false
-    const cached = readCachedRecords(user.id)
+    const cached = readCachedDashboardRecords(user.id)
     if (cached) {
       setRecords(cached)
       setLoadingData(false)
@@ -116,7 +105,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     loadDashboardRecords(user.id)
       .then((rows) => {
         if (cancelled) return
-        writeCachedRecords(user.id, rows)
+        writeCachedDashboardRecords(user.id, rows)
         setRecords(rows)
       })
       .catch((err) => {
@@ -234,7 +223,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     setBusy(true)
     setError('')
     try {
-      clearCachedRecords()
+      clearCachedDashboardRecords()
       await signOut()
       onOpenTab?.('home')
     } catch (err) {
@@ -247,7 +236,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     setBusy(true)
     setError('')
     try {
-      clearCachedRecords()
+      clearCachedDashboardRecords()
       await deleteAccount()
       onOpenTab?.('home')
     } catch (err) {
@@ -272,7 +261,10 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     return (
       <main className="page dashboard-page dashboard-page-locked">
         <LockedDashboardPreview
-          onRequestAuth={() => onRequestAuth?.() || onOpenTab?.('login')}
+          onRequestAuth={(mode) => {
+            if (onRequestAuth) onRequestAuth(mode)
+            else onOpenTab?.('login')
+          }}
         />
       </main>
     )

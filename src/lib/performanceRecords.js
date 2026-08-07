@@ -3,6 +3,7 @@ import {
   formatFriendlyDuration,
   formatRaceTime,
 } from '../calculations/running.js'
+import { clearCachedDashboardRecords } from './dashboardRecordsCache'
 import { supabase } from '../supabaseClient'
 
 /**
@@ -44,6 +45,8 @@ export async function savePerformanceRecord({
     .single()
 
   if (error) throw error
+  // Dashboard keeps an in-memory snapshot; drop it so the next visit refetches.
+  clearCachedDashboardRecords()
   return data
 }
 
@@ -98,6 +101,7 @@ export async function deletePerformanceRecord(recordId) {
     .eq('id', recordId)
 
   if (error) throw error
+  clearCachedDashboardRecords()
 }
 
 export function formatRecordDate(iso) {

@@ -1,5 +1,9 @@
-import { useMemo } from 'react'
-import { useSyncedDefault } from '../auth/UserDefaultsContext'
+import { useEffect, useMemo } from 'react'
+import { useAuth } from '../auth/AuthContext'
+import {
+  useSyncedDefault,
+  useUserDefaults,
+} from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import SeoIntro from '../components/SeoIntro'
 import { pathForTab } from '../data/seo'
@@ -12,6 +16,8 @@ import {
   FITNESS_AGE_TRACKS,
   RESTING_HEART_RATE_EXERCISE_NAME,
 } from '../data/trackingTracks'
+import { fetchPerformanceRecords } from '../lib/performanceRecords'
+import { estimated5kAutofillPatch } from '../lib/runningTracking'
 
 function toSeconds(hours, minutes, seconds) {
   if (hours === '' && minutes === '' && seconds === '') return null
@@ -27,6 +33,8 @@ function toSeconds(hours, minutes, seconds) {
 }
 
 function FitnessAgePage({ onRequestAuth, onOpenTab }) {
+  const { isAuthenticated, user } = useAuth()
+  const { patchDefaults, isEstimated5kEdited } = useUserDefaults()
   const [age, setAge] = useSyncedDefault('age', '')
   const [gender, setGender] = useSyncedDefault('gender', '')
   const [restingHr, setRestingHr] = useSyncedDefault('restingHr', '')
@@ -38,6 +46,27 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
   const [hours, setHours] = useSyncedDefault('fiveKHours', '')
   const [minutes, setMinutes] = useSyncedDefault('fiveKMinutes', '')
   const [seconds, setSeconds] = useSyncedDefault('fiveKSeconds', '')
+
+  // Seed Estimated 5K from latest saved run (or clear). Skip if user is mid-edit.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return undefined
+
+    let cancelled = false
+    fetchPerformanceRecords(user.id, 'running')
+      .then((rows) => {
+        if (cancelled || isEstimated5kEdited()) return
+        patchDefaults(estimated5kAutofillPatch(rows), {
+          source: 'estimated5k-sync',
+        })
+      })
+      .catch(() => {
+        /* Leave defaults unchanged if history cannot be loaded. */
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, user?.id, patchDefaults, isEstimated5kEdited])
 
   const handleToolLink = (event, tab) => {
     if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {

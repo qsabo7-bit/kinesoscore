@@ -1151,6 +1151,18 @@ a.site-footer-link:hover {
     margin-bottom: 1.1rem;
     padding: 0.9rem 0 1rem;
   }
+
+  .seo-intro-body p {
+    font-size: 0.92rem;
+    margin-top: 0.5rem;
+  }
+
+  .seo-intro-faq summary {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.2rem 0;
+  }
 }
 
 .result-table-note {
@@ -1635,6 +1647,12 @@ a.site-footer-link:hover {
   font-weight: 700;
 }
 
+.locked-graph-login {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
 .dashboard-page-locked {
   padding-top: 1.25rem;
 }
@@ -2074,6 +2092,180 @@ a.site-footer-link:hover {
 
   .dashboard-activity-date {
     grid-column: 1 / -1;
+  }
+}
+
+/* Mobile UX (~375px): compact chrome, tap targets, no overflow --------------- */
+@media (max-width: 640px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: min(920px, 100% - 1.25rem);
+    padding-top: 0.85rem;
+    overflow-x: clip;
+  }
+
+  .site-header {
+    gap: 0.5rem;
+    padding: 0.3rem 0 0.7rem;
+  }
+
+  .site-header-top {
+    gap: 0.55rem 0.75rem;
+  }
+
+  .account-welcome-link {
+    min-height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0;
+  }
+
+  .site-nav {
+    gap: 0.15rem;
+  }
+
+  .nav-tab {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .sub-nav-categorized {
+    gap: 0.6rem;
+  }
+
+  .sub-nav-category {
+    gap: 0.3rem;
+    padding-top: 0.25rem;
+  }
+
+  .sub-nav-category-label {
+    font-size: 0.62rem;
+  }
+
+  /* Horizontal scroll keeps calculator nav short instead of wrapping tall. */
+  .sub-nav-category-tools {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    gap: 0.35rem;
+    padding-bottom: 0.1rem;
+  }
+
+  .sub-nav-tab {
+    flex: 0 0 auto;
+    min-height: 2.5rem;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.72rem;
+  }
+
+  .page {
+    padding-top: 1.35rem;
+  }
+
+  /* Calculator pages: educational blocks after inputs so forms are reachable. */
+  .page:has(> .calc-form) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page:has(> .calc-form) > .seo-intro {
+    order: 20;
+  }
+
+  .page-header h1 {
+    font-size: clamp(2rem, 10.5vw, 2.85rem);
+  }
+
+  .page-lead {
+    font-size: 0.95rem;
+  }
+
+  .calc-form {
+    margin-top: 1.15rem;
+    gap: 0.85rem;
+  }
+
+  .strength-mode-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    gap: 0.35rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  /* Keep hour / minute / second on one row. */
+  .field-row:has(.field-compact) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
+  input,
+  select {
+    min-height: 2.75rem;
+    font-size: 16px;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .btn {
+    min-height: 2.75rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .unit-toggle-btn {
+    min-height: 2.5rem;
+    min-width: 2.75rem;
+  }
+
+  .graph-track-selector,
+  .graph-range-options {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    gap: 0.35rem;
+    padding-bottom: 0.1rem;
+    max-width: 100%;
+  }
+
+  .graph-track-btn,
+  .graph-range-btn {
+    flex: 0 0 auto;
+    min-height: 2.5rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .progress-controls {
+    align-items: stretch;
+  }
+
+  .progress-chart-wrap,
+  .tracking-panel,
+  .result-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .performance-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .locked-graph-card {
+    width: min(20.5rem, 100%);
+    padding: 1.15rem 1rem;
   }
 }
 

@@ -52,6 +52,17 @@ function setJsonLd(id, data) {
   el.textContent = JSON.stringify(data)
 }
 
+/** Drop legacy/static JSON-LD blocks that lack stable ids (avoids duplicates). */
+function pruneAnonymousJsonLd() {
+  document.head
+    .querySelectorAll('script[type="application/ld+json"]')
+    .forEach((el) => {
+      if (!el.id || !String(el.id).startsWith('kinesoscore-jsonld-')) {
+        el.remove()
+      }
+    })
+}
+
 /**
  * Apply document-level SEO for the active App tab / path.
  * Invisible to the UI — updates title, meta, social tags, and JSON-LD only.
@@ -66,10 +77,13 @@ export function applyDocumentSeo(tabOrPath) {
         page: PAGE_SEO[tabOrPath] || PAGE_SEO.home,
       }
 
-  const url = absoluteUrl(page.path)
+  const canonicalPath = page.canonicalPath || page.path
+  const url = absoluteUrl(canonicalPath)
   const image = absoluteUrl(SITE.defaultImagePath)
   const title = page.title
   const description = page.description
+
+  pruneAnonymousJsonLd()
 
   document.title = title
 

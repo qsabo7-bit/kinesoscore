@@ -84,10 +84,14 @@ const SAMPLE_ACTIVITY = [
 function LockedDashboardPreview({ onRequestAuth }) {
   const { title, lead, benefits } = DASHBOARD_LOCKED_PREVIEW
 
+  const requestAuth = (mode) => {
+    onRequestAuth?.(mode)
+  }
+
   return (
     <div
       className="locked-dashboard-preview"
-      aria-label="Dashboard locked. Log in to unlock your fitness progress."
+      aria-label="Dashboard locked. Create an account to unlock your fitness progress."
     >
       <div className="locked-dashboard-sample" aria-hidden="true">
         <header className="page-header dashboard-hero has-score-ring">
@@ -227,10 +231,20 @@ function LockedDashboardPreview({ onRequestAuth }) {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => onRequestAuth?.()}
+            onClick={() => requestAuth('signup')}
           >
-            Log In
+            Create Account
           </button>
+          <p className="locked-graph-login">
+            Already have an account?{' '}
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => requestAuth('login')}
+            >
+              Log in
+            </button>
+          </p>
         </div>
       </div>
     </div>

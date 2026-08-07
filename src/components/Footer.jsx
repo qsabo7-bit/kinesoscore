@@ -1,6 +1,21 @@
 import { BRAND } from '../data/brand'
+import { pathForTab } from '../data/seo'
 
 function Footer({ onOpenTab }) {
+  const handleLink = (event, tab) => {
+    if (
+      !onOpenTab ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return
+    }
+    event.preventDefault()
+    onOpenTab(tab)
+  }
+
   return (
     <footer className="site-footer">
       <div className="site-footer-main">
@@ -16,22 +31,22 @@ function Footer({ onOpenTab }) {
           <p className="site-footer-heading">Navigate</p>
           <ul className="site-footer-list">
             <li>
-              <button
-                type="button"
+              <a
                 className="site-footer-link"
-                onClick={() => onOpenTab?.('home')}
+                href={pathForTab('home')}
+                onClick={(event) => handleLink(event, 'home')}
               >
                 Home
-              </button>
+              </a>
             </li>
             <li>
-              <button
-                type="button"
+              <a
                 className="site-footer-link"
-                onClick={() => onOpenTab?.('about')}
+                href={pathForTab('about')}
+                onClick={(event) => handleLink(event, 'about')}
               >
                 About
-              </button>
+              </a>
             </li>
           </ul>
         </div>
@@ -54,17 +69,23 @@ function Footer({ onOpenTab }) {
         <div className="site-footer-col">
           <p className="site-footer-heading">Legal</p>
           <ul className="site-footer-list">
-            <li className="site-footer-legal-row">
-              <span className="site-footer-link is-disabled" aria-disabled="true">
+            <li>
+              <a
+                className="site-footer-link"
+                href={pathForTab('privacy')}
+                onClick={(event) => handleLink(event, 'privacy')}
+              >
                 Privacy Policy
-              </span>
-              <span className="site-footer-soon">Coming Soon</span>
+              </a>
             </li>
-            <li className="site-footer-legal-row">
-              <span className="site-footer-link is-disabled" aria-disabled="true">
+            <li>
+              <a
+                className="site-footer-link"
+                href={pathForTab('terms')}
+                onClick={(event) => handleLink(event, 'terms')}
+              >
                 Terms of Service
-              </span>
-              <span className="site-footer-soon">Coming Soon</span>
+              </a>
             </li>
           </ul>
         </div>

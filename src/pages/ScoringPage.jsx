@@ -42,7 +42,7 @@ const ESTIMATED_5K_MILES = getRaceById('5k')?.miles ?? 3.10686
 
 function ScoringPage({ onRequestAuth, onOpenTab }) {
   const { user, isAuthenticated } = useAuth()
-  const { patchDefaults } = useUserDefaults()
+  const { patchDefaults, isEstimated5kEdited } = useUserDefaults()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [scoreStrengthMode, setScoreStrengthMode] = useSyncedDefault(
     'scoreStrengthMode',
@@ -110,15 +110,17 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
   const [age, setAge, ageShared] = useSyncedDefault('age', '')
   const [gender, setGender, genderShared] = useSyncedDefault('gender', '')
 
-  // Autofill Estimated 5K from latest valid saved run; clear when none remain.
+  // Seed Estimated 5K from latest saved run (or clear). Skip if user is mid-edit.
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return undefined
 
     let cancelled = false
     fetchPerformanceRecords(user.id, 'running')
       .then((rows) => {
-        if (cancelled) return
-        patchDefaults(estimated5kAutofillPatch(rows))
+        if (cancelled || isEstimated5kEdited()) return
+        patchDefaults(estimated5kAutofillPatch(rows), {
+          source: 'estimated5k-sync',
+        })
       })
       .catch(() => {
         /* Leave defaults unchanged if history cannot be loaded. */
@@ -127,7 +129,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
     return () => {
       cancelled = true
     }
-  }, [isAuthenticated, user?.id, patchDefaults])
+  }, [isAuthenticated, user?.id, patchDefaults, isEstimated5kEdited])
 
   const handleMassUnitChange = (nextUnit) => {
     if (nextUnit === massUnit) return
