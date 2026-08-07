@@ -17,12 +17,10 @@ import {
   calculateFitnessScore,
   calculateOneRepMax,
   calculateSbdTotal,
-  convertDistance,
   convertMass,
-  DISTANCE_UNITS,
   formatConverted,
+  getRaceById,
   MASS_UNITS,
-  toMiles,
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
 import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
@@ -37,10 +35,11 @@ function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
 }
 
+const ESTIMATED_5K_MILES = getRaceById('5k')?.miles ?? 3.10686
+
 function ScoringPage({ onRequestAuth, onOpenTab }) {
   const { patchDefaults } = useUserDefaults()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
-  const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
   const [scoreStrengthMode, setScoreStrengthMode] = useSyncedDefault(
     'scoreStrengthMode',
     'sbd',
@@ -94,17 +93,14 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
     'sbdInputMode',
     'calculate',
   )
-  const [distance, setDistance, distanceShared] = useSyncedDefault(
-    'raceDistance',
-    '',
-  )
-  const [hours, setHours, hoursShared] = useSyncedDefault('raceHours', '')
+  // Canonical endurance input: Estimated 5K from latest running save.
+  const [hours, setHours, hoursShared] = useSyncedDefault('fiveKHours', '')
   const [minutes, setMinutes, minutesShared] = useSyncedDefault(
-    'raceMinutes',
+    'fiveKMinutes',
     '',
   )
   const [seconds, setSeconds, secondsShared] = useSyncedDefault(
-    'raceSeconds',
+    'fiveKSeconds',
     '',
   )
   const [age, setAge, ageShared] = useSyncedDefault('age', '')
@@ -132,28 +128,10 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
     setMassUnit(nextUnit)
   }
 
-  const handleDistanceUnitChange = (nextUnit) => {
-    if (nextUnit === distanceUnit) return
-
-    const distanceNum = Number(distance)
-    if (Number.isFinite(distanceNum) && distanceNum > 0) {
-      setDistance(
-        formatConverted(
-          convertDistance(distanceNum, distanceUnit, nextUnit),
-          2,
-        ),
-        { keepShared: true },
-      )
-    }
-
-    setDistanceUnit(nextUnit)
-  }
-
   const result = useMemo(() => {
     const weightNum = Number(weight)
     const repsNum = Number(reps)
     const bodyweightNum = Number(bodyweight)
-    const distanceNum = Number(distance)
     const timeSeconds = toSeconds(hours, minutes, seconds)
     const ageNum = Number(age)
     const useSbd = scoreStrengthMode === 'sbd'
@@ -205,11 +183,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         Number.isFinite(bodyweightNum) &&
         bodyweightNum > 0
 
-    const hasRunning =
-      Number.isFinite(distanceNum) &&
-      distanceNum > 0 &&
-      Number.isFinite(timeSeconds) &&
-      timeSeconds > 0
+    const hasRunning = Number.isFinite(timeSeconds) && timeSeconds > 0
 
     const hasDemographics =
       Number.isFinite(ageNum) &&
@@ -234,7 +208,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       bodyweight: bodyweightNum,
       lift,
       sbdTotal: useSbd ? sbdTotal : null,
-      distanceMiles: toMiles(distanceNum, distanceUnit),
+      distanceMiles: ESTIMATED_5K_MILES,
       timeSeconds,
       age: ageNum,
       gender,
@@ -258,8 +232,6 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
     reps,
     bodyweight,
     lift,
-    distance,
-    distanceUnit,
     hours,
     minutes,
     seconds,
@@ -280,7 +252,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       )
     }
     if (result.missing.running) {
-      parts.push('running (distance and finish time)')
+      parts.push('Estimated 5K finish time')
     }
     if (result.missing.demographics) {
       parts.push('age and gender')
@@ -335,7 +307,6 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
             deadliftWeightShared,
             deadliftRepsShared,
             sbdTotalShared,
-            distanceShared,
             hoursShared,
             minutesShared,
             secondsShared,
@@ -630,33 +601,22 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         <fieldset className="score-block">
           <legend>Running input</legend>
           <p className="optional-note">
-            Enter a recent race or time trial in miles or kilometers. We convert
-            to an equivalent 5K for scoring.
+            Uses your Estimated 5K from the most recently saved running
+            performance (autofilled from Running). You can adjust the time here
+            for scoring without changing your distance graphs.
           </p>
 
-          <UnitToggle
-            label="Distance units"
-            value={distanceUnit}
-            options={DISTANCE_UNITS}
-            onChange={handleDistanceUnitChange}
-          />
-
           <label className="field">
-            <span>Distance ({distanceUnit})</span>
-            <SharedInputShell shared={distanceShared}>
-              <input
-                type="number"
-                min="0.1"
-                step="any"
-                placeholder="3.1"
-                value={distance}
-                onChange={(event) => setDistance(event.target.value)}
-              />
-            </SharedInputShell>
+            <span>Distance</span>
+            <input type="text" value="Estimated 5K" disabled readOnly />
           </label>
 
-          <div className="field-group" role="group" aria-label="Finish time">
-            <span className="field-group-label">Finish time</span>
+          <div
+            className="field-group"
+            role="group"
+            aria-label="Estimated 5K finish time"
+          >
+            <span className="field-group-label">Estimated 5K finish time</span>
             <div className="field-row">
               <label className="field field-compact">
                 <span>Hour</span>

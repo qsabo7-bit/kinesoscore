@@ -44,14 +44,45 @@ export const SBD_TOTAL_TRACKS = [SBD_TOTAL_TRACK]
  */
 export const STRENGTH_GRAPH_TRACKS = [SBD_TOTAL_TRACK, ...STRENGTH_TRACKS]
 
-/** Running: independent distance series (times stored in seconds). */
-export const RUNNING_TRACKS = RACE_DISTANCES_MILES.map((race) => ({
+/** Stored exercise_name for the canonical Estimated 5K series. */
+export const ESTIMATED_5K_EXERCISE_NAME = 'Estimated 5K'
+
+export const ESTIMATED_5K_TRACK = {
+  id: 'estimated-5k',
+  label: 'Estimated 5K',
+  exerciseName: ESTIMATED_5K_EXERCISE_NAME,
+  yAxisLabel: 'Time',
+  higherIsBetter: false,
+  tooltip: `Calculated from your most recently saved running performance. This value is also used to autofill your ${BRAND.scoreName} Fitness Score calculation.`,
+}
+
+/**
+ * Graph-supported actual race distances only (save targets).
+ * Uses existing RACE_DISTANCES_MILES / historical exercise names.
+ */
+export const RUNNING_DISTANCE_TRACKS = RACE_DISTANCES_MILES.map((race) => ({
   id: race.id,
   label: race.name,
   exerciseName: race.name,
   yAxisLabel: 'Time',
   higherIsBetter: false,
 }))
+
+/**
+ * Running progress tabs shared by Running calculator + Dashboard.
+ * Estimated 5K sits immediately after the actual 5K tab.
+ */
+export const RUNNING_TRACKS = (() => {
+  const tracks = []
+  for (const track of RUNNING_DISTANCE_TRACKS) {
+    tracks.push(track)
+    if (track.id === '5k') tracks.push(ESTIMATED_5K_TRACK)
+  }
+  return tracks
+})()
+
+/** Alias for shared graph source (Running page + Dashboard). */
+export const RUNNING_GRAPH_TRACKS = RUNNING_TRACKS
 
 export const SCORING_TRACKS = [
   {

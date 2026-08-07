@@ -18,6 +18,7 @@ function GraphTrackSelector({ tracks, activeId, onChange }) {
             type="button"
             role="tab"
             aria-selected={isActive}
+            title={track.tooltip || undefined}
             className={`graph-track-btn${isActive ? ' is-active' : ''}${brandCasing ? ` ${BRAND_CASING_CLASS}` : ''}`}
             onClick={() => onChange(track.id)}
           >

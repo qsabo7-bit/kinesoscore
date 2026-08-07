@@ -37,6 +37,39 @@ export function matchNearestRace(distanceMiles) {
   return best
 }
 
+/** @param {string} raceId */
+export function getRaceById(raceId) {
+  return RACE_DISTANCES_MILES.find((race) => race.id === raceId) ?? null
+}
+
+/**
+ * Estimated 5K time (seconds) from a known race performance.
+ * Actual 5K inputs pass through unchanged.
+ *
+ * @param {number} knownDistanceMiles
+ * @param {number} knownTimeSeconds
+ * @returns {number | null}
+ */
+export function estimateFiveKSeconds(knownDistanceMiles, knownTimeSeconds) {
+  if (
+    !Number.isFinite(knownDistanceMiles) ||
+    knownDistanceMiles <= 0 ||
+    !Number.isFinite(knownTimeSeconds) ||
+    knownTimeSeconds <= 0
+  ) {
+    return null
+  }
+
+  const fiveK = getRaceById('5k')
+  if (!fiveK) return null
+
+  if (Math.abs(knownDistanceMiles - fiveK.miles) / fiveK.miles <= 0.001) {
+    return Math.round(knownTimeSeconds)
+  }
+
+  return predictRaceTime(knownDistanceMiles, knownTimeSeconds, fiveK.miles)
+}
+
 /**
  * Predict time for a target distance from a known race result.
  *

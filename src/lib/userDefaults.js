@@ -42,12 +42,17 @@ export const EMPTY_USER_DEFAULTS = {
   weeklySessions: '',
   strengthScore: '',
   activityId: '',
-  /** Last race / time-trial inputs (Running ↔ Fitness Score). */
+  /** Selected standard race id on Running (dropdown). */
+  raceDistanceId: '5k',
+  /** Last race / time-trial inputs (legacy numeric distance; Running UI uses raceDistanceId). */
   raceDistance: '',
   raceHours: '',
   raceMinutes: '',
   raceSeconds: '',
-  /** Equivalent / entered 5K (Running → Fitness Age). */
+  /**
+   * Canonical Estimated 5K (Running save → Fitness Age + myKinesoScore autofill).
+   * Always reflects the newest Estimated 5K from the latest running save.
+   */
   fiveKHours: '',
   fiveKMinutes: '',
   fiveKSeconds: '',

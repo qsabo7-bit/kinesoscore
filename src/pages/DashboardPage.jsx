@@ -5,10 +5,12 @@ import FpcScoreRing from '../components/FpcScoreRing'
 import LockedDashboardPreview from '../components/LockedDashboardPreview'
 import {
   GraphRangeToggle,
+  GraphTrackSelector,
   ProgressGraph,
 } from '../components/tracking'
 import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { DASHBOARD_GRAPH_METRICS } from '../data/dashboardMetrics'
+import { RUNNING_GRAPH_TRACKS } from '../data/trackingTracks'
 import {
   buildDashboardModel,
   loadDashboardRecords,
@@ -69,6 +71,10 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   })
   const [error, setError] = useState('')
   const [metricId, setMetricId] = useState('fpc-score')
+  const [runningTrackId, setRunningTrackId] = useState(
+    DASHBOARD_GRAPH_METRICS.find((metric) => metric.id === 'running')
+      ?.defaultTrackId || RUNNING_GRAPH_TRACKS[0]?.id,
+  )
   const [graphRange, setGraphRange] = useState('all')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -123,14 +129,38 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     DASHBOARD_GRAPH_METRICS.find((metric) => metric.id === metricId) ||
     DASHBOARD_GRAPH_METRICS[0]
 
+  const activeRunningTrack =
+    activeMetric.id === 'running'
+      ? RUNNING_GRAPH_TRACKS.find((track) => track.id === runningTrackId) ||
+        RUNNING_GRAPH_TRACKS[0]
+      : null
+
   const graphRecords = useMemo(() => {
-    const series = model.byMetric[activeMetric.id] || []
+    let series = model.byMetric[activeMetric.id] || []
+    if (activeMetric.id === 'running' && activeRunningTrack) {
+      series = series.filter(
+        (record) => record.exercise_name === activeRunningTrack.exerciseName,
+      )
+    }
     const ranged = filterRecordsByRange(series, graphRange)
     if (activeMetric.valueKind === 'mass') {
       return recordsInMassUnit(ranged, 'lb')
     }
     return ranged
-  }, [model.byMetric, activeMetric, graphRange])
+  }, [model.byMetric, activeMetric, activeRunningTrack, graphRange])
+
+  const graphYAxisLabel =
+    activeMetric.id === 'running' && activeRunningTrack
+      ? activeRunningTrack.yAxisLabel || 'Time'
+      : activeMetric.valueKind === 'mass'
+        ? `${activeMetric.yAxisLabel} (lb)`
+        : activeMetric.yAxisLabel
+
+  const graphEmptyMessage = model.hasAnyData
+    ? activeMetric.id === 'running' && activeRunningTrack
+      ? `No ${activeRunningTrack.label} results in this range.\nSave a result or choose another distance.`
+      : `No ${activeMetric.label} results in this range.\nSave a result or choose another metric.`
+    : 'Complete your first assessment to begin tracking progress.'
 
   const handleLogout = async () => {
     setBusy(true)
@@ -380,19 +410,19 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           })}
         </div>
 
+        {activeMetric.id === 'running' ? (
+          <GraphTrackSelector
+            tracks={RUNNING_GRAPH_TRACKS}
+            activeId={activeRunningTrack?.id}
+            onChange={setRunningTrackId}
+          />
+        ) : null}
+
         <ProgressGraph
           records={graphRecords}
-          yAxisLabel={
-            activeMetric.valueKind === 'mass'
-              ? `${activeMetric.yAxisLabel} (lb)`
-              : activeMetric.yAxisLabel
-          }
+          yAxisLabel={graphYAxisLabel}
           valueKind={activeMetric.valueKind}
-          emptyMessage={
-            model.hasAnyData
-              ? `No ${activeMetric.label} results in this range.\nSave a result or choose another metric.`
-              : 'Complete your first assessment to begin tracking progress.'
-          }
+          emptyMessage={graphEmptyMessage}
         />
         <GraphRangeToggle value={graphRange} onChange={setGraphRange} />
       </section>

@@ -8,21 +8,21 @@ import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
 import SeoIntro from '../components/SeoIntro'
-import UnitToggle from '../components/UnitToggle'
 import { RUNNING_SEO } from '../data/seoCopy'
 import {
   calculatePace,
   compareRunningToNorms,
-  convertDistance,
-  DISTANCE_UNITS,
-  formatConverted,
+  estimateFiveKSeconds,
   formatDuration,
-  matchNearestRace,
+  getRaceById,
   predictCommonRaces,
-  predictRaceTime,
-  toMiles,
+  RACE_DISTANCES_MILES,
 } from '../calculations'
-import { RUNNING_TRACKS } from '../data/trackingTracks'
+import {
+  ESTIMATED_5K_EXERCISE_NAME,
+  RUNNING_DISTANCE_TRACKS,
+  RUNNING_TRACKS,
+} from '../data/trackingTracks'
 
 function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
@@ -30,8 +30,10 @@ function toSeconds(hours, minutes, seconds) {
 
 function RunningPage({ onRequestAuth, onOpenTab }) {
   const { patchDefaults } = useUserDefaults()
-  const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
-  const [distance, setDistance] = useSyncedDefault('raceDistance', '')
+  const [raceDistanceId, setRaceDistanceId] = useSyncedDefault(
+    'raceDistanceId',
+    '5k',
+  )
   const [hours, setHours] = useSyncedDefault('raceHours', '')
   const [minutes, setMinutes] = useSyncedDefault('raceMinutes', '')
   const [seconds, setSeconds] = useSyncedDefault('raceSeconds', '')
@@ -39,93 +41,76 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
   const [gender, setGender] = useSyncedDefault('gender', '')
   const [saveHost, setSaveHost] = useState(null)
 
-  const handleDistanceUnitChange = (nextUnit) => {
-    if (nextUnit === distanceUnit) return
-
-    const distanceNum = Number(distance)
-    if (Number.isFinite(distanceNum) && distanceNum > 0) {
-      setDistance(
-        formatConverted(
-          convertDistance(distanceNum, distanceUnit, nextUnit),
-          2,
-        ),
-      )
-    }
-
-    setDistanceUnit(nextUnit)
-  }
+  const selectedRace =
+    getRaceById(raceDistanceId) || getRaceById('5k') || RACE_DISTANCES_MILES[0]
 
   const result = useMemo(() => {
-    const distanceNum = Number(distance)
     const timeSeconds = toSeconds(hours, minutes, seconds)
+    const distanceMiles = selectedRace?.miles
 
     if (
-      !Number.isFinite(distanceNum) ||
-      distanceNum <= 0 ||
+      !selectedRace ||
+      !Number.isFinite(distanceMiles) ||
+      distanceMiles <= 0 ||
       !Number.isFinite(timeSeconds) ||
       timeSeconds <= 0
     ) {
       return null
     }
 
-    // Race formulas and RunRepeat scoring are computed in miles.
-    const distanceMiles = toMiles(distanceNum, distanceUnit)
-    const paceSeconds = calculatePace(distanceNum, timeSeconds)
-    const predictions = predictCommonRaces(distanceMiles, timeSeconds)
+    const enteredSeconds = Math.round(timeSeconds)
+    const paceSeconds = calculatePace(distanceMiles, enteredSeconds)
+    const predictions = predictCommonRaces(distanceMiles, enteredSeconds)
+    const estimated5kSeconds = estimateFiveKSeconds(
+      distanceMiles,
+      enteredSeconds,
+    )
 
     const ageNum = Number(age)
     const hasDemographics =
       Number.isFinite(ageNum) && ageNum >= 15 && ageNum <= 100 && Boolean(gender)
 
     const peer = hasDemographics
-      ? compareRunningToNorms(distanceMiles, timeSeconds, ageNum, gender)
-      : null
-
-    const matchedRace = matchNearestRace(distanceMiles)
-    // Near a standard race: store the entered time. Otherwise Riegel-normalize.
-    const nearRace =
-      matchedRace &&
-      Math.abs(distanceMiles - matchedRace.miles) / matchedRace.miles <= 0.03
-    const trackTimeSeconds = matchedRace
-      ? nearRace
-        ? Math.round(timeSeconds)
-        : predictRaceTime(distanceMiles, timeSeconds, matchedRace.miles)
+      ? compareRunningToNorms(distanceMiles, enteredSeconds, ageNum, gender)
       : null
 
     return {
-      paceLabel: `${formatDuration(paceSeconds)} / ${distanceUnit}`,
-      trackId: matchedRace?.id ?? null,
-      trackTimeSeconds,
-      trackLabel: matchedRace?.name ?? null,
-      trackTimeLabel: trackTimeSeconds
-        ? formatDuration(trackTimeSeconds)
-        : null,
+      paceLabel: `${formatDuration(paceSeconds)} / mi`,
+      trackId: selectedRace.id,
+      trackTimeSeconds: enteredSeconds,
+      trackLabel: selectedRace.name,
+      trackTimeLabel: formatDuration(enteredSeconds),
+      estimated5kSeconds,
       predictions,
       peer,
     }
-  }, [distance, distanceUnit, hours, minutes, seconds, age, gender])
+  }, [selectedRace, hours, minutes, seconds, age, gender])
 
-  // Carry equivalent (or exact) 5K time into Fitness Age defaults.
+  // Keep Estimated 5K defaults in sync for Fitness Age + myKinesoScore autofill.
   useEffect(() => {
-    if (!result) return
+    if (!result?.estimated5kSeconds) return
 
-    let fiveKSeconds = null
-    if (result.trackId === '5k' && result.trackTimeSeconds != null) {
-      fiveKSeconds = result.trackTimeSeconds
-    } else {
-      const predicted = result.predictions?.find((race) => race.id === '5k')
-      if (predicted?.timeSeconds != null) fiveKSeconds = predicted.timeSeconds
-    }
-
-    const parts = splitDurationParts(fiveKSeconds)
+    const parts = splitDurationParts(result.estimated5kSeconds)
     if (!parts) return
 
     patchDefaults({
       fiveKHours: parts.hours,
       fiveKMinutes: parts.minutes,
       fiveKSeconds: parts.seconds,
+      raceDistance: String(selectedRace.miles),
     })
-  }, [result, patchDefaults])
+  }, [result, selectedRace, patchDefaults])
+
+  const companionSaves = useMemo(() => {
+    if (!result?.estimated5kSeconds) return []
+    return [
+      {
+        exerciseName: ESTIMATED_5K_EXERCISE_NAME,
+        resultValue: result.estimated5kSeconds,
+        resultUnit: 'sec',
+      },
+    ]
+  }, [result])
 
   return (
     <main className="page">
@@ -151,23 +136,18 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
       </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
-        <UnitToggle
-          label="Distance units"
-          value={distanceUnit}
-          options={DISTANCE_UNITS}
-          onChange={handleDistanceUnitChange}
-        />
-
         <label className="field">
-          <span>Distance ({distanceUnit})</span>
-          <input
-            type="number"
-            min="0.1"
-            step="any"
-            placeholder="3.1"
-            value={distance}
-            onChange={(event) => setDistance(event.target.value)}
-          />
+          <span>Distance</span>
+          <select
+            value={selectedRace.id}
+            onChange={(event) => setRaceDistanceId(event.target.value)}
+          >
+            {RUNNING_DISTANCE_TRACKS.map((track) => (
+              <option key={track.id} value={track.id}>
+                {track.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <div className="field-group" role="group" aria-label="Finish time">
@@ -226,22 +206,18 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
             <p className="result-value result-value-sm">{result.paceLabel}</p>
           </div>
 
-          {result.trackLabel && result.trackTimeLabel ? (
-            <div className="result-stat-with-save">
-              <div className="result-stat">
-                <p className="result-label">Tracking as {result.trackLabel}</p>
-                <p className="result-value result-value-sm">
-                  {result.trackTimeLabel}
-                </p>
-              </div>
-              <div
-                ref={setSaveHost}
-                className="save-result-slot save-result-slot-inline"
-              />
+          <div className="result-stat-with-save">
+            <div className="result-stat">
+              <p className="result-label">Tracking as {result.trackLabel}</p>
+              <p className="result-value result-value-sm">
+                {result.trackTimeLabel}
+              </p>
             </div>
-          ) : (
-            <div ref={setSaveHost} className="save-result-slot" />
-          )}
+            <div
+              ref={setSaveHost}
+              className="save-result-slot save-result-slot-inline"
+            />
+          </div>
 
           <div className="result-table-wrap">
             <h2 className="result-section-title">Predicted race times</h2>
@@ -290,7 +266,7 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
           ) : null}
         </section>
       ) : (
-        <p className="calc-hint">Enter a valid distance and finish time.</p>
+        <p className="calc-hint">Enter a valid finish time for the selected distance.</p>
       )}
 
       <CalculatorTracking
@@ -301,6 +277,7 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
         resultUnit="sec"
         valueKind="duration"
         hasResult={Boolean(result?.trackTimeSeconds)}
+        companionSaves={companionSaves}
         onRequestAuth={onRequestAuth}
         saveHost={saveHost}
       />

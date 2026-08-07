@@ -1,4 +1,5 @@
 import { BRAND } from './brand'
+import { RUNNING_GRAPH_TRACKS } from './trackingTracks'
 
 /**
  * Dashboard overview metric definitions.
@@ -83,12 +84,15 @@ export const DASHBOARD_GRAPH_METRICS = [
     id: 'running',
     label: 'Running',
     calculatorType: 'running',
-    exerciseName: '5K',
+    /** All running rows; Dashboard filters by RUNNING_GRAPH_TRACKS sub-tab. */
+    exerciseName: null,
     valueKind: 'duration',
-    yAxisLabel: '5K Time',
+    yAxisLabel: 'Time',
     higherIsBetter: false,
     tab: 'running',
     unit: 'sec',
+    tracks: RUNNING_GRAPH_TRACKS,
+    defaultTrackId: 'estimated-5k',
   },
 ]
 

@@ -13,10 +13,12 @@ export {
 } from './sbdTotal.js'
 export {
   calculatePace,
+  estimateFiveKSeconds,
   formatDuration,
   formatDurationWords,
   formatFriendlyDuration,
   formatRaceTime,
+  getRaceById,
   matchNearestRace,
   predictCommonRaces,
   predictRaceTime,
