@@ -3,9 +3,27 @@ import { pathForTab } from '../data/seo'
 /**
  * Compact SEO / educational intro for public calculator pages.
  * Invisible to calculator behavior — content only.
+ *
+ * @param {{ before?: string, tab: string, label: string, after?: string }} [relatedNote]
+ *   Optional closing note with an inline calculator link.
  */
-function SeoIntro({ title, children, links = [], disclaimer, onNavigate }) {
-  if (!title && !children && !links.length && !disclaimer) return null
+function SeoIntro({
+  title,
+  children,
+  links = [],
+  relatedNote = null,
+  disclaimer,
+  onNavigate,
+}) {
+  if (
+    !title &&
+    !children &&
+    !links.length &&
+    !relatedNote &&
+    !disclaimer
+  ) {
+    return null
+  }
 
   const handleLink = (event, tab) => {
     if (!onNavigate || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
@@ -24,6 +42,20 @@ function SeoIntro({ title, children, links = [], disclaimer, onNavigate }) {
       ) : null}
 
       <div className="seo-intro-body">{children}</div>
+
+      {relatedNote ? (
+        <p className="seo-intro-related">
+          {relatedNote.before || ''}
+          <a
+            className="seo-intro-link"
+            href={pathForTab(relatedNote.tab)}
+            onClick={(event) => handleLink(event, relatedNote.tab)}
+          >
+            {relatedNote.label}
+          </a>
+          {relatedNote.after || ''}
+        </p>
+      ) : null}
 
       {links.length > 0 ? (
         <nav className="seo-intro-links" aria-label="Related calculators">

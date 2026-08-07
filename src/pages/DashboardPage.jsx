@@ -30,6 +30,8 @@ function formatDate(iso) {
   }
 }
 
+const RECENT_ACTIVITY_PREVIEW = 5
+
 /** Keep last dashboard payload so revisits don't flash empty → loaded. */
 let dashboardRecordsCache = { userId: null, records: [] }
 
@@ -69,6 +71,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   const [graphRange, setGraphRange] = useState('all')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [activityExpanded, setActivityExpanded] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
@@ -217,7 +220,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
             className="btn btn-primary"
             onClick={() => onOpenTab?.('scoring')}
           >
-            Calculate Your KinesoScore
+            Calculate Your KinesoScore™
           </button>
         </section>
       ) : null}
@@ -315,7 +318,10 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
             Recent activity
           </h2>
           <ul className="dashboard-activity-list">
-            {model.recentActivity.map((item) => (
+            {(activityExpanded
+              ? model.recentActivity
+              : model.recentActivity.slice(0, RECENT_ACTIVITY_PREVIEW)
+            ).map((item) => (
               <li key={item.id}>
                 <button
                   type="button"
@@ -333,6 +339,18 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
               </li>
             ))}
           </ul>
+          {model.recentActivity.length > RECENT_ACTIVITY_PREVIEW ? (
+            <button
+              type="button"
+              className="dashboard-activity-expand"
+              onClick={() => setActivityExpanded((open) => !open)}
+              aria-expanded={activityExpanded}
+            >
+              {activityExpanded
+                ? 'Show less'
+                : `Show more (${model.recentActivity.length - RECENT_ACTIVITY_PREVIEW} more)`}
+            </button>
+          ) : null}
         </section>
       ) : null}
 

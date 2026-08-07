@@ -1,5 +1,14 @@
 /** Concise SEO / educational copy for public calculator pages. */
 
+/** Shared closing CTA pointing to the overall KinesoScore™ calculator. */
+export const KINESOSCORE_RELATED_NOTE = {
+  before:
+    'For an all-encompassing strength and endurance calculation, try ',
+  tab: 'scoring',
+  label: 'KinesoScore™',
+  after: '.',
+}
+
 export const STRENGTH_SEO = {
   title: 'About this strength calculator',
   paragraphs: [
@@ -7,15 +16,16 @@ export const STRENGTH_SEO = {
     'When you enter weight and reps, KinesoScore uses the Epley formula — 1RM ≈ weight × (1 + reps / 30) — to estimate a max. You can also enter a known 1RM directly.',
     'SBD Total is the sum of squat, bench, and deadlift 1RMs. Save results to track strength progress over time.',
   ],
-  links: [{ tab: 'scoring', label: 'KinesoScore overview' }],
+  relatedNote: KINESOSCORE_RELATED_NOTE,
 }
 
 export const RUNNING_SEO = {
   title: 'About this running calculator',
   paragraphs: [
     'This running performance calculator predicts race times and paces from a recent race or time trial across common distances.',
-    'Use it to compare equivalent performances, plan training paces, and save results to track endurance progression over time.',
+    'Use it to compare equivalent performances, plan training paces, and save results to track endurance progress over time.',
   ],
+  relatedNote: KINESOSCORE_RELATED_NOTE,
 }
 
 export const BMI_SEO = {

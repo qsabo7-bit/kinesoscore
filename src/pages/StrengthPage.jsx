@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
+import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
 import PeerComparison from '../components/PeerComparison'
 import SeoIntro from '../components/SeoIntro'
+import { isHighRepEpleyInput } from '../lib/epleyAccuracy'
 import SharedDataNotification, {
   SharedInputShell,
 } from '../components/SharedDataNotification'
@@ -61,6 +63,7 @@ function parseLiftSet(weight, reps) {
 }
 
 function StrengthPage({ onRequestAuth, onOpenTab }) {
+  const [saveHost, setSaveHost] = useState(null)
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [strengthTab, setStrengthTab] = useSyncedDefault(
     'strengthTab',
@@ -555,6 +558,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
                 </strong>
               </p>
             ) : null}
+            <EpleyAccuracyNotice show={isHighRepEpleyInput(repsValue)} />
           </>
         )}
       </fieldset>
@@ -604,7 +608,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
 
       <SeoIntro
         title={STRENGTH_SEO.title}
-        links={STRENGTH_SEO.links}
+        relatedNote={STRENGTH_SEO.relatedNote}
         onNavigate={onOpenTab}
       >
         {STRENGTH_SEO.paragraphs.map((text) => (
@@ -740,6 +744,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
                 />
               </SharedInputShell>
             </label>
+            <EpleyAccuracyNotice show={isHighRepEpleyInput(activeReps)} />
           </>
         )}
 
@@ -790,6 +795,8 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
               </div>
             </>
           ) : null}
+
+          <div ref={setSaveHost} className="save-result-slot" />
 
           {liftResult.peer ? (
             <PeerComparison
@@ -868,6 +875,8 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
             </>
           ) : null}
 
+          <div ref={setSaveHost} className="save-result-slot" />
+
           {sbdResult.peer ? (
             <PeerComparison
               title="Age & gender comparison"
@@ -921,6 +930,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
         onDisplayUnitChange={handleMassUnitChange}
         hasResult={hasResult}
         onRequestAuth={onRequestAuth}
+        saveHost={saveHost}
       />
     </main>
   )

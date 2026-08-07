@@ -4,7 +4,8 @@ export const BRAND = {
   mark: 'KS',
   short: 'KinesoScore',
   full: 'KinesoScore',
-  scoreName: 'KinesoScore',
+  /** User-facing name of the overall fitness calculator (includes trademark). */
+  scoreName: 'KinesoScore™',
   tagline: 'Your complete fitness performance score',
   metaDescription:
     'KinesoScore helps you measure, compare, and improve your overall fitness through comprehensive performance analytics.',

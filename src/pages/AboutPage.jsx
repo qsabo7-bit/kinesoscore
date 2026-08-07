@@ -25,9 +25,9 @@ function AboutPage() {
         </p>
         <p>
           We keep formulas and comparison datasets documented below so you can
-          see exactly what powers each estimate. Fitness Scoring balances
-          recreational strength and running percentiles into your{' '}
-          {BRAND.scoreName}.
+          see exactly what powers each estimate. {BRAND.scoreName} balances
+          recreational strength and running percentiles into one overall
+          performance score.
         </p>
       </section>
 
@@ -89,7 +89,7 @@ function AboutPage() {
             general public.
           </li>
           <li>
-            Fitness Scoring averages strength and running percentiles equally.
+            {BRAND.scoreName} averages strength and running percentiles equally.
             A high score in one domain cannot fully hide a low score in the
             other.
           </li>

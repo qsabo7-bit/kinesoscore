@@ -255,9 +255,10 @@ export function buildDashboardModel(allRecords, options = {}) {
     })
     .filter(Boolean)
 
+  // Keep a larger pool so the dashboard can expand past the default 5.
   const recentActivity = [...ascending]
     .reverse()
-    .slice(0, 12)
+    .slice(0, 40)
     .map((record) => {
       const meta = ACTIVITY_META[record.calculator_type] || {}
       const valueKind = meta.valueKind || 'number'

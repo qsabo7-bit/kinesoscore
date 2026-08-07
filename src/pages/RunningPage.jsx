@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   useSyncedDefault,
   useUserDefaults,
@@ -37,6 +37,7 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
   const [seconds, setSeconds] = useSyncedDefault('raceSeconds', '')
   const [age, setAge] = useSyncedDefault('age', '')
   const [gender, setGender] = useSyncedDefault('gender', '')
+  const [saveHost, setSaveHost] = useState(null)
 
   const handleDistanceUnitChange = (nextUnit) => {
     if (nextUnit === distanceUnit) return
@@ -138,7 +139,11 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
         </p>
       </header>
 
-      <SeoIntro title={RUNNING_SEO.title} onNavigate={onOpenTab}>
+      <SeoIntro
+        title={RUNNING_SEO.title}
+        relatedNote={RUNNING_SEO.relatedNote}
+        onNavigate={onOpenTab}
+      >
         {RUNNING_SEO.paragraphs.map((text) => (
           <p key={text}>{text}</p>
         ))}
@@ -221,13 +226,21 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
           </div>
 
           {result.trackLabel && result.trackTimeLabel ? (
-            <div className="result-stat">
-              <p className="result-label">Tracking as {result.trackLabel}</p>
-              <p className="result-value result-value-sm">
-                {result.trackTimeLabel}
-              </p>
+            <div className="result-stat-with-save">
+              <div className="result-stat">
+                <p className="result-label">Tracking as {result.trackLabel}</p>
+                <p className="result-value result-value-sm">
+                  {result.trackTimeLabel}
+                </p>
+              </div>
+              <div
+                ref={setSaveHost}
+                className="save-result-slot save-result-slot-inline"
+              />
             </div>
-          ) : null}
+          ) : (
+            <div ref={setSaveHost} className="save-result-slot" />
+          )}
 
           <div className="result-table-wrap">
             <h2 className="result-section-title">Predicted race times</h2>
@@ -288,6 +301,7 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
         valueKind="duration"
         hasResult={Boolean(result?.trackTimeSeconds)}
         onRequestAuth={onRequestAuth}
+        saveHost={saveHost}
       />
     </main>
   )

@@ -5,11 +5,13 @@ import {
 } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
+import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
 import PeerComparison from '../components/PeerComparison'
 import SharedDataNotification, {
   SharedInputShell,
 } from '../components/SharedDataNotification'
 import UnitToggle from '../components/UnitToggle'
+import { isHighRepEpleyInput } from '../lib/epleyAccuracy'
 import {
   calculateFitnessScore,
   calculateOneRepMax,
@@ -295,12 +297,12 @@ function ScoringPage({ onRequestAuth }) {
   return (
     <main className="page">
       <header className="page-header">
-        <p className="page-eyebrow">Fitness Scoring</p>
+        <p className="page-eyebrow">Overall performance</p>
         <h1>{BRAND.scoreName}</h1>
         <p className="page-lead">
-          Combine strength and running into one balanced score. {BRAND.scoreName}{' '}
-          averages your lifting and endurance percentiles so you can see overall
-          fitness — not just one specialty.
+          The {BRAND.scoreName} calculator estimates your overall fitness
+          performance using your strength, endurance, body composition, and
+          cardiovascular metrics.
         </p>
       </header>
 
@@ -348,7 +350,8 @@ function ScoringPage({ onRequestAuth }) {
 
           {showSbdRecommendation ? (
             <p className="score-recommendation">
-              For the most accurate fitness scoring results, use your SBD Total.
+              For the most accurate {BRAND.scoreName} results, use your SBD
+              Total.
             </p>
           ) : null}
 
@@ -404,6 +407,7 @@ function ScoringPage({ onRequestAuth }) {
                         />
                       </SharedInputShell>
                     </label>
+                    <EpleyAccuracyNotice show={isHighRepEpleyInput(benchReps)} />
                   </fieldset>
                   <fieldset className="sbd-lift-block">
                     <legend>Squat</legend>
@@ -434,6 +438,7 @@ function ScoringPage({ onRequestAuth }) {
                         />
                       </SharedInputShell>
                     </label>
+                    <EpleyAccuracyNotice show={isHighRepEpleyInput(squatReps)} />
                   </fieldset>
                   <fieldset className="sbd-lift-block">
                     <legend>Deadlift</legend>
@@ -466,6 +471,9 @@ function ScoringPage({ onRequestAuth }) {
                         />
                       </SharedInputShell>
                     </label>
+                    <EpleyAccuracyNotice
+                      show={isHighRepEpleyInput(deadliftReps)}
+                    />
                   </fieldset>
                 </>
               ) : (
@@ -554,6 +562,7 @@ function ScoringPage({ onRequestAuth }) {
                   />
                 </SharedInputShell>
               </label>
+              <EpleyAccuracyNotice show={isHighRepEpleyInput(reps)} />
 
               <label className="field">
                 <span>Lift</span>
@@ -689,7 +698,7 @@ function ScoringPage({ onRequestAuth }) {
           ageShared={ageShared}
           genderShared={genderShared}
           legend="Age & gender (required for scoring)"
-          note="Age and gender are required for Fitness Scoring so both percentiles use the same published age/sex reference groups."
+          note={`Age and gender are required for ${BRAND.scoreName} so both percentiles use the same published age/sex reference groups.`}
         />
       </form>
 

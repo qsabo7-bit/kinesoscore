@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '../auth/AuthContext'
 import { MASS_UNITS } from '../calculations'
 import {
@@ -44,6 +45,8 @@ import {
  * @param {'number' | 'duration' | 'score' | 'bmi' | 'fitnessAge'} [props.sampleKind]
  * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]
  * @param {Array<{ exerciseName: string, resultValue: number, resultUnit?: string }>} [props.companionSaves]
+ * @param {Element | null} [props.saveHost] - Optional DOM node to portal the Save button into
+ *   (e.g. above age/gender comparison on Strength / Running).
  */
 function CalculatorTracking({
   calculatorType,
@@ -61,6 +64,7 @@ function CalculatorTracking({
   sampleKind,
   lockedPreview,
   companionSaves = [],
+  saveHost = null,
 }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
   const [selectedTrackId, setSelectedTrackId] = useState(
@@ -274,16 +278,23 @@ function CalculatorTracking({
   // Signed-in: always show history/graph for this calculator (even before a new calc).
   if (!tracks.length) return null
 
+  const saveButton =
+    canSave ? (
+      <SaveResultButton
+        onSave={handleSave}
+        saving={saving}
+        savedMessage={savedMessage}
+        label={saveLabel}
+      />
+    ) : null
+
+  const externalSave =
+    saveHost && saveButton ? createPortal(saveButton, saveHost) : null
+
   return (
     <div className="tracking-panel">
-      {canSave ? (
-        <SaveResultButton
-          onSave={handleSave}
-          saving={saving}
-          savedMessage={savedMessage}
-          label={saveLabel}
-        />
-      ) : null}
+      {externalSave}
+      {!saveHost ? saveButton : null}
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 

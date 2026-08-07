@@ -45,7 +45,7 @@ export const PAGE_SEO = {
     path: '/',
     title: 'KinesoScore | Fitness Performance Calculator & Analytics',
     description:
-      'KinesoScore is a fitness performance analytics platform for measuring strength, running, BMI, fitness age, KinesoScore, and military fitness assessments in one place.',
+      'KinesoScore is a fitness performance analytics platform for measuring strength, running, BMI, fitness age, KinesoScore™, and military fitness assessments in one place.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [{ name: 'Home', path: '/' }],
@@ -55,7 +55,7 @@ export const PAGE_SEO = {
     path: '/calculators',
     title: 'Fitness Calculators | Strength, Running & Military Tools | KinesoScore',
     description:
-      'Explore KinesoScore fitness calculators for strength and SBD totals, running performance, BMI, fitness age, overall scoring, and military fitness assessments.',
+      'Explore KinesoScore fitness calculators for strength and SBD totals, running performance, BMI, fitness age, KinesoScore™, and military fitness assessments.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -94,15 +94,15 @@ export const PAGE_SEO = {
   scoring: {
     tab: 'scoring',
     path: '/scoring',
-    title: 'KinesoScore Calculator | Overall Fitness Performance Score',
+    title: 'KinesoScore™ Calculator | Overall Fitness Performance Score',
     description:
-      'Combine strength and running into one KinesoScore. Prefer SBD Total for a more complete strength profile, then track your performance score over time.',
+      'The KinesoScore™ calculator estimates your overall fitness performance using your strength, endurance, body composition, and cardiovascular metrics.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
       { name: 'Home', path: '/' },
       { name: 'Calculators', path: '/calculators' },
-      { name: 'KinesoScore', path: '/scoring' },
+      { name: 'KinesoScore™', path: '/scoring' },
     ],
   },
   vo2max: {
@@ -178,7 +178,7 @@ export const PAGE_SEO = {
   'air-force-pfa': {
     tab: 'air-force-pfa',
     path: '/air-force-pfa',
-    title: 'Legacy Air Force PFA Calculator | Historical Fitness Scoring | KinesoScore',
+    title: 'Legacy Air Force PFA Calculator | Historical Fitness Assessment | KinesoScore',
     description:
       'Calculate Legacy Air Force PFA scores with KinesoScore for historical tracking using published 1.5-mile run, push-up, and sit-up standards.',
     robots: 'index,follow',
@@ -349,7 +349,7 @@ export function buildWebApplicationSchema() {
       'Running performance tracking',
       'BMI calculator',
       'Fitness Age estimation',
-      'KinesoScore performance scoring',
+      'KinesoScore™ overall fitness performance calculator',
       'Air Force PFRA calculator',
       'Legacy Air Force PFA calculator',
       'Army AFT calculator',

@@ -35,8 +35,9 @@ export const calculators = [
   },
   {
     id: 'scoring',
-    name: 'Fitness Scoring',
-    description: 'Combine strength and running into one KinesoScore.',
+    name: 'KinesoScore™',
+    description:
+      'Estimate overall fitness performance from strength, endurance, and related metrics.',
     status: 'ready',
     category: 'performance',
   },
