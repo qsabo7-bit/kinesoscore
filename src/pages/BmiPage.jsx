@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
+import SeoIntro from '../components/SeoIntro'
 import UnitToggle from '../components/UnitToggle'
+import { BMI_SEO } from '../data/seoCopy'
 import {
   BMI_DISCLAIMER,
   calculateBmi,
@@ -14,7 +16,7 @@ import {
 import { BMI_LOCKED_PREVIEW } from '../components/tracking/lockedPreviewCopy'
 import { BMI_CALCULATOR_TYPE, BMI_TRACKS } from '../data/trackingTracks'
 
-function BmiPage({ onRequestAuth }) {
+function BmiPage({ onRequestAuth, onOpenTab }) {
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [heightUnit, setHeightUnit] = useSyncedDefault('heightUnit', 'in')
   const [weight, setWeight] = useSyncedDefault('bodyweight', '')
@@ -75,6 +77,16 @@ function BmiPage({ onRequestAuth }) {
           pounds/kilograms and inches/centimeters — values convert automatically.
         </p>
       </header>
+
+      <SeoIntro
+        title={BMI_SEO.title}
+        disclaimer={BMI_SEO.disclaimer}
+        onNavigate={onOpenTab}
+      >
+        {BMI_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
         <UnitToggle

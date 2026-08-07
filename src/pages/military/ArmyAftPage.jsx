@@ -12,7 +12,7 @@ const ARMY_LOCKED_PREVIEW = {
   title: 'Want to save your progress? Log-in!',
 }
 
-function ArmyAftPage({ onRequestAuth }) {
+function ArmyAftPage({ onRequestAuth, onOpenTab }) {
   const assessment = getMilitaryAssessment('army-aft')
   return (
     <MilitaryAssessmentShell
@@ -22,6 +22,7 @@ function ArmyAftPage({ onRequestAuth }) {
       calculatorType={ARMY_AFT_CALCULATOR_TYPE}
       lockedPreview={ARMY_LOCKED_PREVIEW}
       onRequestAuth={onRequestAuth}
+      onOpenTab={onOpenTab}
     />
   )
 }

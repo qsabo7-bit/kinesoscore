@@ -108,6 +108,14 @@ export function applyDocumentSeo(tabOrPath) {
     property: 'og:image',
     content: image,
   })
+  ensureMeta('meta[property="og:image:width"]', {
+    property: 'og:image:width',
+    content: '1200',
+  })
+  ensureMeta('meta[property="og:image:height"]', {
+    property: 'og:image:height',
+    content: '630',
+  })
   ensureMeta('meta[property="og:site_name"]', {
     property: 'og:site_name',
     content: SITE.name,

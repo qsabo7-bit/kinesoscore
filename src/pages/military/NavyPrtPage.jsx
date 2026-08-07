@@ -12,7 +12,7 @@ const NAVY_LOCKED_PREVIEW = {
   title: 'Want to save your progress? Log-in!',
 }
 
-function NavyPrtPage({ onRequestAuth }) {
+function NavyPrtPage({ onRequestAuth, onOpenTab }) {
   const assessment = getMilitaryAssessment('navy-prt')
   return (
     <MilitaryAssessmentShell
@@ -22,6 +22,7 @@ function NavyPrtPage({ onRequestAuth }) {
       calculatorType={NAVY_PRT_CALCULATOR_TYPE}
       lockedPreview={NAVY_LOCKED_PREVIEW}
       onRequestAuth={onRequestAuth}
+      onOpenTab={onOpenTab}
     />
   )
 }

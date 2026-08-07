@@ -22,10 +22,19 @@ import DashboardPage from './pages/DashboardPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AboutPage from './pages/AboutPage'
 import { pathForTab, resolveSeoRoute } from './data/seo'
+import {
+  getAuthIntent,
+  hasPendingAuthCallbackInUrl,
+} from './lib/authCallback'
 import { applyDocumentSeo } from './lib/documentSeo'
+
+const EMAIL_CONFIRMED_MESSAGE =
+  'Email confirmed. Log in to access your KinesoScore account.'
 
 function initialTabFromLocation() {
   if (typeof window === 'undefined') return 'home'
+  // Recovery callbacks must open reset-password even when path is "/".
+  if (getAuthIntent() === 'recovery') return 'reset-password'
   return resolveSeoRoute(window.location.pathname).seoId
 }
 
@@ -34,12 +43,15 @@ function App() {
     isAuthenticated,
     loading,
     passwordRecovery,
+    emailJustConfirmed,
     authUrlError,
     clearPasswordRecovery,
+    clearEmailJustConfirmed,
   } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromLocation)
   const [authNotice, setAuthNotice] = useState('')
   const openedRecovery = useRef(false)
+  const handledEmailConfirm = useRef(false)
   const skipNextUrlPush = useRef(false)
   const goToLogin = () => setActiveTab('login')
 
@@ -62,6 +74,9 @@ function App() {
 
     applyDocumentSeo(activeTab)
 
+    // Do not rewrite the URL while Supabase auth tokens are still in the hash/query.
+    if (hasPendingAuthCallbackInUrl()) return
+
     const nextPath = pathForTab(activeTab)
     const currentPath = window.location.pathname.replace(/\/+$/, '') || '/'
     const normalizedNext = nextPath.replace(/\/+$/, '') || '/'
@@ -76,25 +91,49 @@ function App() {
     }
   }, [activeTab])
 
-  // Open the reset screen once when a recovery link is detected — don't lock nav.
+  // Password recovery always owns routing — never let SIGNED_IN send users elsewhere.
   useEffect(() => {
-    if (passwordRecovery && !openedRecovery.current) {
+    if (!passwordRecovery) {
+      openedRecovery.current = false
+      return
+    }
+    if (activeTab !== 'reset-password') {
       openedRecovery.current = true
       setActiveTab('reset-password')
     }
-    if (!passwordRecovery) {
-      openedRecovery.current = false
-    }
-  }, [passwordRecovery])
+  }, [passwordRecovery, activeTab])
 
+  // Signup / email confirmation → login or dashboard, never reset-password.
   useEffect(() => {
-    if (authUrlError) {
+    if (loading || passwordRecovery) return
+    if (!emailJustConfirmed || handledEmailConfirm.current) return
+
+    handledEmailConfirm.current = true
+
+    if (isAuthenticated) {
+      setActiveTab('dashboard')
+    } else {
+      setAuthNotice(EMAIL_CONFIRMED_MESSAGE)
       setActiveTab('login')
     }
-  }, [authUrlError])
+
+    clearEmailJustConfirmed?.()
+  }, [
+    loading,
+    passwordRecovery,
+    emailJustConfirmed,
+    isAuthenticated,
+    clearEmailJustConfirmed,
+  ])
 
   useEffect(() => {
-    if (loading) return
+    if (authUrlError && !passwordRecovery) {
+      setActiveTab('login')
+    }
+  }, [authUrlError, passwordRecovery])
+
+  useEffect(() => {
+    if (loading || passwordRecovery) return
 
     if (isAuthenticated && activeTab === 'login') {
       setActiveTab('dashboard')
@@ -106,25 +145,27 @@ function App() {
     }
 
     // Only bounce off reset when there's no active recovery session.
-    if (!isAuthenticated && !passwordRecovery && activeTab === 'reset-password') {
+    if (!isAuthenticated && activeTab === 'reset-password') {
       setActiveTab('login')
     }
   }, [isAuthenticated, loading, activeTab, passwordRecovery])
-
-  const showResetPassword =
-    activeTab === 'reset-password' ||
-    (passwordRecovery && activeTab === 'reset-password')
 
   const renderTab =
     activeTab === 'calculators' ? 'strength' : activeTab
 
   let content
-  if (showResetPassword && passwordRecovery) {
+  if (passwordRecovery) {
     content = (
       <ResetPasswordPage
-        onSuccess={(notice) => {
+        onSuccess={(notice, options = {}) => {
           setAuthNotice(notice || '')
-          setActiveTab('login')
+          // Recovery state is already cleared. Prefer dashboard when the
+          // recovery session is still valid; otherwise send users to login.
+          if (options.staySignedIn) {
+            setActiveTab('dashboard')
+          } else {
+            setActiveTab('login')
+          }
         }}
         onRequestLogin={() => {
           clearPasswordRecovery?.()
@@ -133,9 +174,13 @@ function App() {
       />
     )
   } else if (renderTab === 'strength') {
-    content = <StrengthPage onRequestAuth={goToLogin} />
+    content = (
+      <StrengthPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'running') {
-    content = <RunningPage onRequestAuth={goToLogin} />
+    content = (
+      <RunningPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'scoring') {
     content = <ScoringPage onRequestAuth={goToLogin} />
   } else if (renderTab === 'vo2max') {
@@ -143,19 +188,29 @@ function App() {
   } else if (renderTab === 'bmr') {
     content = <BmrPage onRequestAuth={goToLogin} />
   } else if (renderTab === 'bmi') {
-    content = <BmiPage onRequestAuth={goToLogin} />
+    content = <BmiPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
   } else if (renderTab === 'fitness-age') {
-    content = <FitnessAgePage onRequestAuth={goToLogin} />
+    content = (
+      <FitnessAgePage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'air-force-pfra') {
-    content = <AirForcePfraPage onRequestAuth={goToLogin} />
+    content = (
+      <AirForcePfraPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'air-force-pfa') {
     content = <AirForcePfaPage onRequestAuth={goToLogin} />
   } else if (renderTab === 'army-aft') {
-    content = <ArmyAftPage onRequestAuth={goToLogin} />
+    content = (
+      <ArmyAftPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'marine-pft') {
-    content = <MarinePftPage onRequestAuth={goToLogin} />
+    content = (
+      <MarinePftPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'navy-prt') {
-    content = <NavyPrtPage onRequestAuth={goToLogin} />
+    content = (
+      <NavyPrtPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'login') {
     content = (
       <AuthPage

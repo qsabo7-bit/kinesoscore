@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { friendlyAuthError } from '../lib/authErrors'
 
@@ -21,6 +21,13 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
   const [error, setError] = useState('')
   const [message, setMessage] = useState(initialMessage || '')
   const [submitting, setSubmitting] = useState(false)
+  const errorRef = useRef(null)
+  const statusRef = useRef(null)
+  const firstNameId = useId()
+  const emailId = useId()
+  const passwordId = useId()
+  const errorId = useId()
+  const messageId = useId()
 
   const isSignup = mode === 'signup'
   const isForgot = mode === 'forgot'
@@ -33,10 +40,24 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
 
   useEffect(() => {
     if (!authUrlError) return
-    setError(friendlyAuthError(authUrlError))
-    setMode('forgot')
+    const friendly = friendlyAuthError(authUrlError)
+    setError(friendly)
+    // Expired/invalid reset links → offer request-new-link; other errors stay on login.
+    if (/reset link|expired|invalid/i.test(friendly)) {
+      setMode('forgot')
+    } else {
+      setMode('login')
+    }
     clearAuthUrlError?.()
   }, [authUrlError, clearAuthUrlError])
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus()
+    } else if (message) {
+      statusRef.current?.focus()
+    }
+  }, [error, message])
 
   const switchMode = (nextMode) => {
     setMode(nextMode)
@@ -121,7 +142,7 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
       </header>
 
       {!isConfigured ? (
-        <p className="feedback feedback-error">
+        <p className="feedback feedback-error" role="alert">
           Supabase is not configured yet. In <code>.env</code>, set{' '}
           <code>VITE_SUPABASE_URL</code> to your project URL (
           <code>https://….supabase.co</code>) and{' '}
@@ -130,12 +151,21 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
         </p>
       ) : null}
 
-      <form className="calc-form auth-form" onSubmit={handleSubmit}>
+      <form
+        className="calc-form auth-form"
+        onSubmit={handleSubmit}
+        noValidate
+        aria-describedby={[error ? errorId : null, message ? messageId : null]
+          .filter(Boolean)
+          .join(' ') || undefined}
+      >
         {isSignup ? (
-          <label className="field">
+          <label className="field" htmlFor={firstNameId}>
             <span>First name</span>
             <input
+              id={firstNameId}
               type="text"
+              name="firstName"
               autoComplete="given-name"
               value={firstName}
               onChange={(event) => setFirstName(event.target.value)}
@@ -144,27 +174,34 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
           </label>
         ) : null}
 
-        <label className="field">
+        <label className="field" htmlFor={emailId}>
           <span>Email</span>
           <input
+            id={emailId}
             type="email"
+            name="email"
             autoComplete="email"
+            inputMode="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
+            aria-invalid={error ? true : undefined}
           />
         </label>
 
         {!isForgot ? (
-          <label className="field">
+          <label className="field" htmlFor={passwordId}>
             <span>Password</span>
             <input
+              id={passwordId}
               type="password"
+              name="password"
               autoComplete={isSignup ? 'new-password' : 'current-password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
               minLength={6}
+              aria-invalid={error ? true : undefined}
             />
           </label>
         ) : null}
@@ -181,8 +218,29 @@ function AuthPage({ onSuccess, initialMessage = '' }) {
           </p>
         ) : null}
 
-        {error ? <p className="feedback feedback-error">{error}</p> : null}
-        {message ? <p className="feedback feedback-success">{message}</p> : null}
+        <div
+          ref={errorRef}
+          id={errorId}
+          className="auth-status"
+          role="alert"
+          aria-live="assertive"
+          tabIndex={error ? -1 : undefined}
+        >
+          {error ? <p className="feedback feedback-error">{error}</p> : null}
+        </div>
+
+        <div
+          ref={statusRef}
+          id={messageId}
+          className="auth-status"
+          role="status"
+          aria-live="polite"
+          tabIndex={message && !error ? -1 : undefined}
+        >
+          {message ? (
+            <p className="feedback feedback-success">{message}</p>
+          ) : null}
+        </div>
 
         <button
           type="submit"

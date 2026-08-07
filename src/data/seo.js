@@ -13,8 +13,8 @@ export const SITE = {
   description: BRAND.metaDescription,
   locale: 'en_US',
   twitterCard: 'summary_large_image',
-  /** Square brand mark used until a dedicated 1200×630 share image is added. */
-  defaultImagePath: '/kinesoscore-favicon.png',
+  /** Dedicated 1200×630 social preview. Favicon stays separate. */
+  defaultImagePath: '/og-image.png',
   faviconPath: '/kinesoscore-favicon.png',
   appleTouchIconPath: '/kinesoscore-favicon.png',
 }

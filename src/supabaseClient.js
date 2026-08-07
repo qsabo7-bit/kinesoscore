@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { captureAuthCallbackParams } from './lib/authCallback'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim()
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim()
@@ -14,6 +15,9 @@ if (!isSupabaseConfigured) {
     'Supabase is not configured. Add VITE_SUPABASE_URL (https://….supabase.co) and VITE_SUPABASE_ANON_KEY to .env, then restart npm run dev.',
   )
 }
+
+// Snapshot type=signup / type=recovery before the auth client clears the hash.
+captureAuthCallbackParams()
 
 export const supabase = createClient(
   isSupabaseConfigured ? supabaseUrl : 'https://placeholder.supabase.co',

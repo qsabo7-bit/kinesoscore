@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
+import SeoIntro from '../components/SeoIntro'
 import UnitToggle from '../components/UnitToggle'
+import { FITNESS_AGE_SEO } from '../data/seoCopy'
 import {
   calculateFitnessAge,
   convertHeight,
@@ -31,7 +33,7 @@ function toSeconds(hours, minutes, seconds) {
   return total > 0 ? total : null
 }
 
-function FitnessAgePage({ onRequestAuth }) {
+function FitnessAgePage({ onRequestAuth, onOpenTab }) {
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [heightUnit, setHeightUnit] = useSyncedDefault('heightUnit', 'in')
   const [age, setAge] = useSyncedDefault('age', '')
@@ -141,6 +143,16 @@ function FitnessAgePage({ onRequestAuth }) {
           for ages {MIN_FITNESS_AGE} and up.
         </p>
       </header>
+
+      <SeoIntro
+        title={FITNESS_AGE_SEO.title}
+        disclaimer={FITNESS_AGE_SEO.disclaimer}
+        onNavigate={onOpenTab}
+      >
+        {FITNESS_AGE_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
         <fieldset className="score-block">

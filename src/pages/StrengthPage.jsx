@@ -3,10 +3,12 @@ import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
+import SeoIntro from '../components/SeoIntro'
 import SharedDataNotification, {
   SharedInputShell,
 } from '../components/SharedDataNotification'
 import UnitToggle from '../components/UnitToggle'
+import { STRENGTH_SEO } from '../data/seoCopy'
 import {
   calculateOneRepMax,
   calculateSbdTotal,
@@ -58,7 +60,7 @@ function parseLiftSet(weight, reps) {
   }
 }
 
-function StrengthPage({ onRequestAuth }) {
+function StrengthPage({ onRequestAuth, onOpenTab }) {
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [strengthTab, setStrengthTab] = useSyncedDefault(
     'strengthTab',
@@ -599,6 +601,16 @@ function StrengthPage({ onRequestAuth }) {
             : 'Choose your exercise, then estimate 1RM with the Epley formula. Add bodyweight for a relative-strength ratio, then optionally compare with recreational lifters in your age and gender group.'}
         </p>
       </header>
+
+      <SeoIntro
+        title={STRENGTH_SEO.title}
+        links={STRENGTH_SEO.links}
+        onNavigate={onOpenTab}
+      >
+        {STRENGTH_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <div
         className="strength-mode-tabs"

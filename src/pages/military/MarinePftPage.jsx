@@ -12,7 +12,7 @@ const MARINE_LOCKED_PREVIEW = {
   title: 'Want to save your progress? Log-in!',
 }
 
-function MarinePftPage({ onRequestAuth }) {
+function MarinePftPage({ onRequestAuth, onOpenTab }) {
   const assessment = getMilitaryAssessment('marine-pft')
   return (
     <MilitaryAssessmentShell
@@ -22,6 +22,7 @@ function MarinePftPage({ onRequestAuth }) {
       calculatorType={MARINE_PFT_CALCULATOR_TYPE}
       lockedPreview={MARINE_LOCKED_PREVIEW}
       onRequestAuth={onRequestAuth}
+      onOpenTab={onOpenTab}
     />
   )
 }

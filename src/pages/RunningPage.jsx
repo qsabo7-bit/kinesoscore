@@ -7,7 +7,9 @@ import { splitDurationParts } from '../lib/userDefaults'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
+import SeoIntro from '../components/SeoIntro'
 import UnitToggle from '../components/UnitToggle'
+import { RUNNING_SEO } from '../data/seoCopy'
 import {
   calculatePace,
   compareRunningToNorms,
@@ -26,7 +28,7 @@ function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
 }
 
-function RunningPage({ onRequestAuth }) {
+function RunningPage({ onRequestAuth, onOpenTab }) {
   const { patchDefaults } = useUserDefaults()
   const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
   const [distance, setDistance] = useSyncedDefault('raceDistance', '')
@@ -135,6 +137,12 @@ function RunningPage({ onRequestAuth }) {
           dataset.
         </p>
       </header>
+
+      <SeoIntro title={RUNNING_SEO.title} onNavigate={onOpenTab}>
+        {RUNNING_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
         <UnitToggle

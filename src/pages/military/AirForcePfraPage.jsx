@@ -12,7 +12,7 @@ const PFRA_LOCKED_PREVIEW = {
   title: 'Want to save your progress? Log-in!',
 }
 
-function AirForcePfraPage({ onRequestAuth }) {
+function AirForcePfraPage({ onRequestAuth, onOpenTab }) {
   const assessment = getMilitaryAssessment('air-force-pfra')
   return (
     <MilitaryAssessmentShell
@@ -22,6 +22,7 @@ function AirForcePfraPage({ onRequestAuth }) {
       calculatorType={AIR_FORCE_PFRA_CALCULATOR_TYPE}
       lockedPreview={PFRA_LOCKED_PREVIEW}
       onRequestAuth={onRequestAuth}
+      onOpenTab={onOpenTab}
     />
   )
 }

@@ -4,8 +4,22 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
+import {
+  captureAuthCallbackParams,
+  clearAuthCallbackFromUrl,
+  clearAuthIntent,
+  getAuthIntent,
+  isEmailConfirmType,
+  isPasswordRecoveryType,
+  markRecoveryIntent,
+} from '../lib/authCallback'
+import {
+  passwordRecoveryRedirectTo,
+  signupConfirmRedirectTo,
+} from '../lib/authRedirects'
 import { isSupabaseConfigured, supabase } from '../supabaseClient'
 
 const AuthContext = createContext(null)
@@ -51,13 +65,49 @@ async function fetchProfile(userId) {
   return data
 }
 
+function initialRecoveryState() {
+  return getAuthIntent() === 'recovery'
+}
+
+function initialEmailConfirmedState() {
+  return getAuthIntent() === 'signup'
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [passwordRecovery, setPasswordRecovery] = useState(false)
+  const [passwordRecovery, setPasswordRecovery] = useState(initialRecoveryState)
+  const [emailJustConfirmed, setEmailJustConfirmed] = useState(
+    initialEmailConfirmedState,
+  )
   const [authUrlError, setAuthUrlError] = useState('')
+  // Once password update finishes, ignore further recovery events this session.
+  const recoveryFinishedRef = useRef(false)
+
+  const enterRecovery = useCallback(() => {
+    if (recoveryFinishedRef.current) return
+    if (getAuthIntent() !== 'recovery') {
+      markRecoveryIntent()
+    }
+    setPasswordRecovery(true)
+    setEmailJustConfirmed(false)
+  }, [])
+
+  const enterSignupConfirm = useCallback(() => {
+    if (recoveryFinishedRef.current) return
+    if (getAuthIntent() === 'recovery') return
+    setPasswordRecovery(false)
+    setEmailJustConfirmed(true)
+  }, [])
+
+  const finishRecovery = useCallback(() => {
+    recoveryFinishedRef.current = true
+    clearAuthIntent()
+    setPasswordRecovery(false)
+    setEmailJustConfirmed(false)
+  }, [])
 
   const loadProfile = useCallback(async (nextUser) => {
     if (!nextUser) {
@@ -104,6 +154,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true
 
+    const callback = captureAuthCallbackParams()
+    const intent = getAuthIntent()
+
     if (!isSupabaseConfigured) {
       setSession(null)
       setUser(null)
@@ -112,25 +165,21 @@ export function AuthProvider({ children }) {
       return undefined
     }
 
-    // Surface expired / invalid recovery links from the URL hash or query.
     try {
-      const hashParams = new URLSearchParams(
-        window.location.hash.replace(/^#/, ''),
-      )
-      const searchParams = new URLSearchParams(window.location.search)
-      const rawError =
-        hashParams.get('error_description') ||
-        hashParams.get('error') ||
-        searchParams.get('error_description') ||
-        searchParams.get('error')
+      const rawError = callback.errorDescription || callback.error
       if (rawError) {
-        const decoded = decodeURIComponent(rawError.replace(/\+/g, ' '))
-        setAuthUrlError(decoded)
-        window.history.replaceState(
-          {},
-          document.title,
-          `${window.location.pathname}${window.location.search}`,
+        const decoded = decodeURIComponent(
+          String(rawError).replace(/\+/g, ' '),
         )
+        setAuthUrlError(decoded)
+        clearAuthIntent()
+        recoveryFinishedRef.current = true
+        setPasswordRecovery(false)
+        clearAuthCallbackFromUrl()
+      } else if (intent === 'recovery' && !recoveryFinishedRef.current) {
+        enterRecovery()
+      } else if (intent === 'signup') {
+        enterSignupConfirm()
       }
     } catch {
       // Ignore malformed URL fragments.
@@ -140,6 +189,17 @@ export function AuthProvider({ children }) {
       if (!mounted) return
       setSession(data.session ?? null)
       setUser(data.session?.user ?? null)
+
+      if (!recoveryFinishedRef.current) {
+        if (getAuthIntent() === 'recovery') {
+          enterRecovery()
+        } else if (getAuthIntent() === 'signup') {
+          enterSignupConfirm()
+        }
+      }
+
+      clearAuthCallbackFromUrl()
+
       loadProfile(data.session?.user ?? null).finally(() => {
         if (mounted) setLoading(false)
       })
@@ -148,9 +208,35 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      const type = callback.type
+      const currentIntent = getAuthIntent()
+
       if (event === 'PASSWORD_RECOVERY') {
-        setPasswordRecovery(true)
+        if (recoveryFinishedRef.current) {
+          // Ignore stale recovery notifications after a completed update.
+        } else if (isEmailConfirmType(type) && currentIntent !== 'recovery') {
+          enterSignupConfirm()
+        } else {
+          enterRecovery()
+        }
+      } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        // Recovery has priority over normal signed-in routing — but only while
+        // an active (uncleared) recovery intent exists.
+        if (
+          !recoveryFinishedRef.current &&
+          (currentIntent === 'recovery' || isPasswordRecoveryType(type))
+        ) {
+          enterRecovery()
+        } else if (
+          !recoveryFinishedRef.current &&
+          (isEmailConfirmType(type) || currentIntent === 'signup')
+        ) {
+          enterSignupConfirm()
+        }
+      } else if (event === 'SIGNED_OUT') {
+        // Do not re-arm recovery from cleared in-memory state.
       }
+
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
       loadProfile(nextSession?.user ?? null)
@@ -160,7 +246,7 @@ export function AuthProvider({ children }) {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [loadProfile])
+  }, [loadProfile, enterRecovery, enterSignupConfirm])
 
   const requireConfigured = () => {
     if (!isSupabaseConfigured) {
@@ -177,6 +263,7 @@ export function AuthProvider({ children }) {
       password,
       options: {
         data: { first_name: firstName.trim() },
+        emailRedirectTo: signupConfirmRedirectTo(),
       },
     })
     if (error) throw error
@@ -185,6 +272,11 @@ export function AuthProvider({ children }) {
 
   const signIn = useCallback(async ({ email, password }) => {
     requireConfigured()
+    // Normal password login must never reopen recovery UI.
+    recoveryFinishedRef.current = true
+    clearAuthIntent()
+    setPasswordRecovery(false)
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
@@ -197,7 +289,9 @@ export function AuthProvider({ children }) {
     requireConfigured()
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    clearAuthIntent()
     setPasswordRecovery(false)
+    setEmailJustConfirmed(false)
     setSession(null)
     setUser(null)
     setProfile(null)
@@ -205,23 +299,35 @@ export function AuthProvider({ children }) {
 
   const resetPasswordForEmail = useCallback(async (email) => {
     requireConfigured()
+    recoveryFinishedRef.current = false
     const trimmed = email.trim()
     const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: passwordRecoveryRedirectTo(),
     })
     if (error) throw error
   }, [])
 
-  const updatePassword = useCallback(async (password) => {
-    requireConfigured()
-    const { data, error } = await supabase.auth.updateUser({ password })
-    if (error) throw error
-    setPasswordRecovery(false)
-    return data
-  }, [])
+  const updatePassword = useCallback(
+    async (password) => {
+      requireConfigured()
+      const { data, error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+      // Clear recovery BEFORE any follow-up SIGNED_IN / USER_UPDATED handling.
+      finishRecovery()
+      return data
+    },
+    [finishRecovery],
+  )
 
   const clearPasswordRecovery = useCallback(() => {
-    setPasswordRecovery(false)
+    finishRecovery()
+  }, [finishRecovery])
+
+  const clearEmailJustConfirmed = useCallback(() => {
+    if (getAuthIntent() === 'signup') {
+      clearAuthIntent()
+    }
+    setEmailJustConfirmed(false)
   }, [])
 
   const clearAuthUrlError = useCallback(() => {
@@ -233,8 +339,8 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.rpc('delete_own_account')
     if (error) throw error
 
-    // Local cleanup even if the auth user was already removed server-side.
-    setPasswordRecovery(false)
+    finishRecovery()
+    setEmailJustConfirmed(false)
     setSession(null)
     setUser(null)
     setProfile(null)
@@ -243,7 +349,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Session may already be invalid after account deletion.
     }
-  }, [])
+  }, [finishRecovery])
 
   const value = useMemo(
     () => ({
@@ -253,9 +359,9 @@ export function AuthProvider({ children }) {
       loading,
       isConfigured: isSupabaseConfigured,
       // During password recovery the session exists only to update the password.
-      // Treat the user as logged out everywhere else so nav stays in guest mode.
       isAuthenticated: Boolean(session?.user ?? user) && !passwordRecovery,
       passwordRecovery,
+      emailJustConfirmed,
       authUrlError,
       firstName: profile?.first_name || user?.user_metadata?.first_name || '',
       signUp,
@@ -264,6 +370,7 @@ export function AuthProvider({ children }) {
       resetPasswordForEmail,
       updatePassword,
       clearPasswordRecovery,
+      clearEmailJustConfirmed,
       clearAuthUrlError,
       deleteAccount,
       refreshProfile: () => loadProfile(user),
@@ -274,6 +381,7 @@ export function AuthProvider({ children }) {
       profile,
       loading,
       passwordRecovery,
+      emailJustConfirmed,
       authUrlError,
       signUp,
       signIn,
@@ -281,6 +389,7 @@ export function AuthProvider({ children }) {
       resetPasswordForEmail,
       updatePassword,
       clearPasswordRecovery,
+      clearEmailJustConfirmed,
       clearAuthUrlError,
       deleteAccount,
       loadProfile,

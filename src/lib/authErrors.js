@@ -16,11 +16,15 @@ export function friendlyAuthError(err, fallback = 'Something went wrong. Please 
   }
 
   if (
-    /otp_expired|expired|invalid.*(token|link)|access_denied|flow_state/i.test(
+    /otp_expired|expired|invalid.*(token|link)|access_denied|flow_state|same.?email/i.test(
       text,
     )
   ) {
-    return 'This reset link is invalid or has expired. Request a new one from the login page.'
+    return 'This email link is invalid or has expired. Request a new one from the login page.'
+  }
+
+  if (/email.?not.?confirmed|confirm.?your.?email/i.test(text)) {
+    return 'Please confirm your email before signing in. Check your inbox for the confirmation link.'
   }
 
   if (/invalid email|email address.*invalid|unable to validate email/i.test(text)) {

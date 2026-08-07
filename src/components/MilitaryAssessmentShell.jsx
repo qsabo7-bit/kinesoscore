@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
+import { MILITARY_SEO, MILITARY_SEO_DISCLAIMER } from '../data/seoCopy'
 import CalculatorTracking from './CalculatorTracking'
+import SeoIntro from './SeoIntro'
 
 const MILITARY_ESTIMATE_DISCLAIMER =
   'KinesoScore provides an estimate based on published military fitness standards. It is not an official service scorecard.'
@@ -30,7 +32,9 @@ function MilitaryAssessmentShell({
   calculatorType = null,
   lockedPreview = null,
   onRequestAuth,
+  onOpenTab,
 }) {
+  const seo = MILITARY_SEO[assessment.id]
   const [ageBand, setAgeBand] = useState(assessment.ageBands[0]?.id ?? '')
   const [gender, setGender] = useState(assessment.genders[0]?.id ?? '')
   const [values, setValues] = useState(() => emptyEventState(assessment.events))
@@ -57,6 +61,19 @@ function MilitaryAssessmentShell({
         <h1>{assessment.name}</h1>
         <p className="page-lead">{assessment.lead}</p>
       </header>
+
+      {seo ? (
+        <SeoIntro
+          title={seo.title}
+          links={seo.links}
+          disclaimer={MILITARY_SEO_DISCLAIMER}
+          onNavigate={onOpenTab}
+        >
+          {seo.paragraphs.map((text) => (
+            <p key={text}>{text}</p>
+          ))}
+        </SeoIntro>
+      ) : null}
 
       <section
         className="account-card military-assessment-info"

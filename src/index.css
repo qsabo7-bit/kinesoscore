@@ -1034,6 +1034,65 @@ a.site-footer-link:hover {
   line-height: 1.45;
 }
 
+.seo-intro {
+  margin: 0 0 1.35rem;
+  padding: 1rem 0 1.15rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  max-width: 40rem;
+}
+
+.seo-intro-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+}
+
+.seo-intro-body p {
+  margin-top: 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.seo-intro-body p:first-child {
+  margin-top: 0.7rem;
+}
+
+.seo-intro-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1.15rem;
+  margin-top: 0.85rem;
+}
+
+.seo-intro-link {
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  transition: color var(--motion-fast) var(--motion-ease-soft);
+}
+
+.seo-intro-link:hover {
+  color: var(--text-strong);
+}
+
+.seo-intro .calc-disclaimer {
+  margin-top: 0.9rem;
+}
+
+@media (max-width: 560px) {
+  .seo-intro {
+    margin-bottom: 1.1rem;
+    padding: 0.9rem 0 1rem;
+  }
+}
+
 .result-table-note {
   display: block;
   margin-top: 0.25rem;
@@ -1179,6 +1238,19 @@ a.site-footer-link:hover {
 
 .auth-form {
   margin-top: 0.5rem;
+}
+
+.auth-status {
+  min-height: 0;
+}
+
+.auth-status:focus {
+  outline: none;
+}
+
+.auth-status:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 2px;
 }
 
 .auth-forgot {
