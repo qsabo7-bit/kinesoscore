@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useAuth } from '../auth/AuthContext'
 import {
   useSyncedDefault,
   useUserDefaults,
 } from '../auth/UserDefaultsContext'
-import { splitDurationParts } from '../lib/userDefaults'
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
@@ -19,16 +19,18 @@ import {
   RACE_DISTANCES_MILES,
 } from '../calculations'
 import {
-  ESTIMATED_5K_EXERCISE_NAME,
   RUNNING_DISTANCE_TRACKS,
   RUNNING_TRACKS,
 } from '../data/trackingTracks'
+import { fetchPerformanceRecords } from '../lib/performanceRecords'
+import { estimated5kAutofillPatch } from '../lib/runningTracking'
 
 function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
 }
 
 function RunningPage({ onRequestAuth, onOpenTab }) {
+  const { user } = useAuth()
   const { patchDefaults } = useUserDefaults()
   const [raceDistanceId, setRaceDistanceId] = useSyncedDefault(
     'raceDistanceId',
@@ -86,31 +88,16 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
     }
   }, [selectedRace, hours, minutes, seconds, age, gender])
 
-  // Keep Estimated 5K defaults in sync for Fitness Age + myKinesoScore autofill.
-  useEffect(() => {
-    if (!result?.estimated5kSeconds) return
-
-    const parts = splitDurationParts(result.estimated5kSeconds)
-    if (!parts) return
-
-    patchDefaults({
-      fiveKHours: parts.hours,
-      fiveKMinutes: parts.minutes,
-      fiveKSeconds: parts.seconds,
-      raceDistance: String(selectedRace.miles),
-    })
-  }, [result, selectedRace, patchDefaults])
-
-  const companionSaves = useMemo(() => {
-    if (!result?.estimated5kSeconds) return []
-    return [
-      {
-        exerciseName: ESTIMATED_5K_EXERCISE_NAME,
-        resultValue: result.estimated5kSeconds,
-        resultUnit: 'sec',
-      },
-    ]
-  }, [result])
+  // Keep myKinesoScore autofill aligned with latest valid saved run (or cleared).
+  const syncEstimated5kAutofillFromSaves = useCallback(async () => {
+    if (!user?.id) return
+    try {
+      const rows = await fetchPerformanceRecords(user.id, 'running')
+      patchDefaults(estimated5kAutofillPatch(rows))
+    } catch {
+      /* Keep current defaults if history cannot be refreshed. */
+    }
+  }, [user?.id, patchDefaults])
 
   return (
     <main className="page">
@@ -277,7 +264,8 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
         resultUnit="sec"
         valueKind="duration"
         hasResult={Boolean(result?.trackTimeSeconds)}
-        companionSaves={companionSaves}
+        onSaved={syncEstimated5kAutofillFromSaves}
+        onDeleted={syncEstimated5kAutofillFromSaves}
         onRequestAuth={onRequestAuth}
         saveHost={saveHost}
       />

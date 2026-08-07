@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { useAuth } from '../auth/AuthContext'
 import {
   useSyncedDefault,
   useUserDefaults,
@@ -30,6 +31,8 @@ import {
   FPC_SCORE_CALCULATOR_TYPE,
   SCORING_TRACKS,
 } from '../data/trackingTracks'
+import { fetchPerformanceRecords } from '../lib/performanceRecords'
+import { estimated5kAutofillPatch } from '../lib/runningTracking'
 
 function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
@@ -38,6 +41,7 @@ function toSeconds(hours, minutes, seconds) {
 const ESTIMATED_5K_MILES = getRaceById('5k')?.miles ?? 3.10686
 
 function ScoringPage({ onRequestAuth, onOpenTab }) {
+  const { user, isAuthenticated } = useAuth()
   const { patchDefaults } = useUserDefaults()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [scoreStrengthMode, setScoreStrengthMode] = useSyncedDefault(
@@ -105,6 +109,25 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
   )
   const [age, setAge, ageShared] = useSyncedDefault('age', '')
   const [gender, setGender, genderShared] = useSyncedDefault('gender', '')
+
+  // Autofill Estimated 5K from latest valid saved run; clear when none remain.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return undefined
+
+    let cancelled = false
+    fetchPerformanceRecords(user.id, 'running')
+      .then((rows) => {
+        if (cancelled) return
+        patchDefaults(estimated5kAutofillPatch(rows))
+      })
+      .catch(() => {
+        /* Leave defaults unchanged if history cannot be loaded. */
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, user?.id, patchDefaults])
 
   const handleMassUnitChange = (nextUnit) => {
     if (nextUnit === massUnit) return

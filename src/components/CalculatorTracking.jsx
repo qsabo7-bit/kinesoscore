@@ -10,6 +10,10 @@ import {
   recordsInMassUnit,
   savePerformanceRecord,
 } from '../lib/performanceRecords'
+import {
+  buildDerivedEstimated5kRecords,
+  excludeStoredEstimated5kRecords,
+} from '../lib/runningTracking'
 import FadeSwap from './FadeSwap'
 import UnitToggle from './UnitToggle'
 import {
@@ -45,6 +49,8 @@ import {
  * @param {'number' | 'duration' | 'score' | 'bmi' | 'fitnessAge'} [props.sampleKind]
  * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]
  * @param {Array<{ exerciseName: string, resultValue: number, resultUnit?: string }>} [props.companionSaves]
+ * @param {(payload: { track: object, resultValue: number }) => void} [props.onSaved]
+ * @param {(payload: { recordId: string }) => void} [props.onDeleted]
  * @param {Element | null} [props.saveHost] - Optional DOM node to portal the Save button into
  *   (e.g. above age/gender comparison on Strength / Running).
  */
@@ -64,6 +70,8 @@ function CalculatorTracking({
   sampleKind,
   lockedPreview,
   companionSaves = [],
+  onSaved,
+  onDeleted,
   saveHost = null,
 }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
@@ -119,12 +127,27 @@ function CalculatorTracking({
     setLoadingHistory(true)
     setError('')
     try {
+      const hasDerivedTrack = tracks.some((track) => track.derived)
+      const allForCalculator = hasDerivedTrack
+        ? excludeStoredEstimated5kRecords(
+            await fetchPerformanceRecords(user.id, calculatorType),
+          )
+        : null
+
       const entries = await Promise.all(
         tracks.map(async (track) => {
-          const rows = await fetchPerformanceRecords(
-            user.id,
-            calculatorType,
-            track.exerciseName,
+          if (track.derived) {
+            return [
+              track.id,
+              buildDerivedEstimated5kRecords(allForCalculator || []),
+            ]
+          }
+          const rows = excludeStoredEstimated5kRecords(
+            await fetchPerformanceRecords(
+              user.id,
+              calculatorType,
+              track.exerciseName,
+            ),
           )
           return [track.id, rows]
         }),
@@ -167,16 +190,18 @@ function CalculatorTracking({
     [selectedRecords, higherIsBetter],
   )
 
+  const saveTrack = tracks.find((item) => item.id === activeTrackId)
   const canSave =
     hasResult &&
     isAuthenticated &&
     Number.isFinite(Number(resultValue)) &&
-    Boolean(activeTrackId)
+    Boolean(saveTrack) &&
+    !saveTrack.derived
 
   const handleSave = async () => {
     if (!user || !canSave) return
-    const track = tracks.find((item) => item.id === activeTrackId)
-    if (!track) return
+    const track = saveTrack
+    if (!track || track.derived) return
 
     setSaving(true)
     setError('')
@@ -194,6 +219,15 @@ function CalculatorTracking({
 
       for (const companion of companionSaves) {
         if (!Number.isFinite(Number(companion.resultValue))) continue
+        // Skip companions that target a derived display-only track.
+        if (
+          tracks.some(
+            (item) =>
+              item.derived && item.exerciseName === companion.exerciseName,
+          )
+        ) {
+          continue
+        }
         await savePerformanceRecord({
           userId: user.id,
           calculatorType,
@@ -205,6 +239,7 @@ function CalculatorTracking({
 
       setSavedMessage(true)
       setSelectedTrackId(track.id)
+      onSaved?.({ track, resultValue: Number(resultValue) })
       await loadHistory()
     } catch (err) {
       setError(err.message || 'Could not save this result.')
@@ -218,13 +253,9 @@ function CalculatorTracking({
     setError('')
     try {
       await deletePerformanceRecord(recordId)
-      setRecordsByTrack((current) => {
-        const next = { ...current }
-        for (const key of Object.keys(next)) {
-          next[key] = next[key].filter((item) => item.id !== recordId)
-        }
-        return next
-      })
+      // Full reload so derived Estimated 5K is recomputed without orphan points.
+      await loadHistory()
+      onDeleted?.({ recordId })
     } catch (err) {
       setError(err.message || 'Could not delete that result.')
     } finally {
@@ -375,7 +406,7 @@ function CalculatorTracking({
             <GraphRangeToggle value={graphRange} onChange={setGraphRange} />
             <HistoryList
               records={selectedRecords}
-              onDelete={handleDelete}
+              onDelete={selectedTrack?.derived ? undefined : handleDelete}
               deletingId={deletingId}
               valueKind={valueKind}
             />

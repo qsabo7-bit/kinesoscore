@@ -29,14 +29,16 @@ function HistoryList({
               {formatRecordDate(record.created_at)}
             </p>
           </div>
-          <button
-            type="button"
-            className="btn btn-danger-ghost"
-            onClick={() => onDelete(record.id)}
-            disabled={deletingId === record.id}
-          >
-            {deletingId === record.id ? 'Deleting…' : 'Delete'}
-          </button>
+          {onDelete ? (
+            <button
+              type="button"
+              className="btn btn-danger-ghost"
+              onClick={() => onDelete(record.id)}
+              disabled={deletingId === record.id}
+            >
+              {deletingId === record.id ? 'Deleting…' : 'Delete'}
+            </button>
+          ) : null}
         </li>
       ))}
     </ul>

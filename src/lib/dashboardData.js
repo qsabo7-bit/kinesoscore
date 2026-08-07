@@ -12,6 +12,10 @@ import {
   formatRecordValue,
   getTrendDisplay,
 } from './performanceRecords'
+import {
+  excludeStoredEstimated5kRecords,
+  isStoredEstimated5kRecord,
+} from './runningTracking'
 
 const MILITARY_OVERALL_EXERCISE = 'Overall Score'
 
@@ -40,10 +44,14 @@ export function buildDashboardModel(allRecords, options = {}) {
   )
 
   const byMetric = Object.fromEntries(
-    DASHBOARD_GRAPH_METRICS.map((metric) => [
-      metric.id,
-      recordsForMetric(ascending, metric),
-    ]),
+    DASHBOARD_GRAPH_METRICS.map((metric) => {
+      let rows = recordsForMetric(ascending, metric)
+      // Hide legacy stored Estimated 5K companion rows from graph sources.
+      if (metric.id === 'running') {
+        rows = excludeStoredEstimated5kRecords(rows)
+      }
+      return [metric.id, rows]
+    }),
   )
 
   const summaryCards = []
@@ -208,10 +216,12 @@ export function buildDashboardModel(allRecords, options = {}) {
     }
   }
 
-  // Endurance (latest running)
+  // Endurance (latest actual running distance — ignore legacy Estimated 5K rows)
   {
     const runRows = ascending.filter(
-      (record) => record.calculator_type === 'running',
+      (record) =>
+        record.calculator_type === 'running' &&
+        !isStoredEstimated5kRecord(record),
     )
     const latest = latestRecord(runRows)
     if (latest) {
@@ -256,8 +266,10 @@ export function buildDashboardModel(allRecords, options = {}) {
     .filter(Boolean)
 
   // Keep a larger pool so the dashboard can expand past the default 5.
+  // Omit legacy stored Estimated 5K companion rows from activity.
   const recentActivity = [...ascending]
     .reverse()
+    .filter((record) => !isStoredEstimated5kRecord(record))
     .slice(0, 40)
     .map((record) => {
       const meta = ACTIVITY_META[record.calculator_type] || {}

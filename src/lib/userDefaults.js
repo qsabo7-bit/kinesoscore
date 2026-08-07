@@ -50,8 +50,8 @@ export const EMPTY_USER_DEFAULTS = {
   raceMinutes: '',
   raceSeconds: '',
   /**
-   * Canonical Estimated 5K (Running save → Fitness Age + myKinesoScore autofill).
-   * Always reflects the newest Estimated 5K from the latest running save.
+   * Canonical Estimated 5K autofill for Fitness Age + myKinesoScore.
+   * Derived from the newest saved actual running distance (not a stored series).
    */
   fiveKHours: '',
   fiveKMinutes: '',
@@ -66,8 +66,10 @@ export const EMPTY_USER_DEFAULTS = {
 
 /** Split total seconds into hour / minute / second strings for form fields. */
 export function splitDurationParts(totalSeconds) {
+  // null/undefined must not coerce to 0 via Number(null).
+  if (totalSeconds == null || totalSeconds === '') return null
   const sec = Math.round(Number(totalSeconds))
-  if (!Number.isFinite(sec) || sec < 0) return null
+  if (!Number.isFinite(sec) || sec <= 0) return null
   return {
     hours: String(Math.floor(sec / 3600)),
     minutes: String(Math.floor((sec % 3600) / 60)),

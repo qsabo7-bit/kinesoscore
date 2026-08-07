@@ -53,6 +53,8 @@ export const ESTIMATED_5K_TRACK = {
   exerciseName: ESTIMATED_5K_EXERCISE_NAME,
   yAxisLabel: 'Time',
   higherIsBetter: false,
+  /** Display-only series derived from actual distance saves (not stored). */
+  derived: true,
   tooltip: `Calculated from your most recently saved running performance. This value is also used to autofill your ${BRAND.scoreName} Fitness Score calculation.`,
 }
 

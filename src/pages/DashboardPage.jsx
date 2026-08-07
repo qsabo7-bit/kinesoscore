@@ -10,7 +10,10 @@ import {
 } from '../components/tracking'
 import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { DASHBOARD_GRAPH_METRICS } from '../data/dashboardMetrics'
-import { RUNNING_GRAPH_TRACKS } from '../data/trackingTracks'
+import {
+  RUNNING_DISTANCE_TRACKS,
+  RUNNING_GRAPH_TRACKS,
+} from '../data/trackingTracks'
 import {
   buildDashboardModel,
   loadDashboardRecords,
@@ -19,6 +22,16 @@ import {
   filterRecordsByRange,
   recordsInMassUnit,
 } from '../lib/performanceRecords'
+import {
+  buildDerivedEstimated5kRecords,
+  isActualRunningExerciseName,
+} from '../lib/runningTracking'
+
+const PREFERRED_RUNNING_TRACK_ID =
+  DASHBOARD_GRAPH_METRICS.find((metric) => metric.id === 'running')
+    ?.defaultTrackId || 'estimated-5k'
+
+const EMPTY_RUNNING_ROWS = []
 
 function formatDate(iso) {
   if (!iso) return '—'
@@ -71,14 +84,17 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   })
   const [error, setError] = useState('')
   const [metricId, setMetricId] = useState('fpc-score')
-  const [runningTrackId, setRunningTrackId] = useState(
-    DASHBOARD_GRAPH_METRICS.find((metric) => metric.id === 'running')
-      ?.defaultTrackId || RUNNING_GRAPH_TRACKS[0]?.id,
-  )
+  const [runningTrackId, setRunningTrackId] = useState(PREFERRED_RUNNING_TRACK_ID)
+  const [runningTrackTouched, setRunningTrackTouched] = useState(false)
   const [graphRange, setGraphRange] = useState('all')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [activityExpanded, setActivityExpanded] = useState(false)
+
+  useEffect(() => {
+    setRunningTrackId(PREFERRED_RUNNING_TRACK_ID)
+    setRunningTrackTouched(false)
+  }, [user?.id])
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
@@ -125,6 +141,40 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     [records, defaults.age],
   )
 
+  const runningMetricRows = model.byMetric.running || EMPTY_RUNNING_ROWS
+  const derivedEstimated5kRows = useMemo(
+    () => buildDerivedEstimated5kRecords(runningMetricRows),
+    [runningMetricRows],
+  )
+
+  // Prefer Estimated 5K; if that derived series is empty, show the latest actual distance.
+  // Skip once the user manually picks a distance tab.
+  useEffect(() => {
+    if (loadingData || runningTrackTouched) return
+    if (runningTrackId !== PREFERRED_RUNNING_TRACK_ID) return
+
+    if (derivedEstimated5kRows.length) return
+
+    const exerciseNameToTrackId = new Map(
+      RUNNING_DISTANCE_TRACKS.map((track) => [track.exerciseName, track.id]),
+    )
+    for (let i = runningMetricRows.length - 1; i >= 0; i -= 1) {
+      const trackId = exerciseNameToTrackId.get(
+        runningMetricRows[i].exercise_name,
+      )
+      if (trackId) {
+        setRunningTrackId(trackId)
+        return
+      }
+    }
+  }, [
+    loadingData,
+    runningMetricRows,
+    derivedEstimated5kRows,
+    runningTrackId,
+    runningTrackTouched,
+  ])
+
   const activeMetric =
     DASHBOARD_GRAPH_METRICS.find((metric) => metric.id === metricId) ||
     DASHBOARD_GRAPH_METRICS[0]
@@ -138,16 +188,28 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   const graphRecords = useMemo(() => {
     let series = model.byMetric[activeMetric.id] || []
     if (activeMetric.id === 'running' && activeRunningTrack) {
-      series = series.filter(
-        (record) => record.exercise_name === activeRunningTrack.exerciseName,
-      )
+      if (activeRunningTrack.derived) {
+        series = derivedEstimated5kRows
+      } else {
+        series = series.filter(
+          (record) =>
+            record.exercise_name === activeRunningTrack.exerciseName &&
+            isActualRunningExerciseName(record.exercise_name),
+        )
+      }
     }
     const ranged = filterRecordsByRange(series, graphRange)
     if (activeMetric.valueKind === 'mass') {
       return recordsInMassUnit(ranged, 'lb')
     }
     return ranged
-  }, [model.byMetric, activeMetric, activeRunningTrack, graphRange])
+  }, [
+    model.byMetric,
+    activeMetric,
+    activeRunningTrack,
+    derivedEstimated5kRows,
+    graphRange,
+  ])
 
   const graphYAxisLabel =
     activeMetric.id === 'running' && activeRunningTrack
@@ -156,10 +218,16 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         ? `${activeMetric.yAxisLabel} (lb)`
         : activeMetric.yAxisLabel
 
+  const hasEstimated5kData = derivedEstimated5kRows.length > 0
+
   const graphEmptyMessage = model.hasAnyData
-    ? activeMetric.id === 'running' && activeRunningTrack
-      ? `No ${activeRunningTrack.label} results in this range.\nSave a result or choose another distance.`
-      : `No ${activeMetric.label} results in this range.\nSave a result or choose another metric.`
+    ? activeMetric.id === 'running' &&
+      activeRunningTrack?.id === 'estimated-5k' &&
+      !hasEstimated5kData
+      ? 'Estimated 5K will populate after you save a qualifying running calculation.\nIt is derived from your most recent race performance.'
+      : activeMetric.id === 'running' && activeRunningTrack
+        ? `No ${activeRunningTrack.label} results in this range.\nSave a result or choose another distance.`
+        : `No ${activeMetric.label} results in this range.\nSave a result or choose another metric.`
     : 'Complete your first assessment to begin tracking progress.'
 
   const handleLogout = async () => {
@@ -414,7 +482,10 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           <GraphTrackSelector
             tracks={RUNNING_GRAPH_TRACKS}
             activeId={activeRunningTrack?.id}
-            onChange={setRunningTrackId}
+            onChange={(trackId) => {
+              setRunningTrackTouched(true)
+              setRunningTrackId(trackId)
+            }}
           />
         ) : null}
 
