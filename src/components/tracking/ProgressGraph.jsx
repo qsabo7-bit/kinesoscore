@@ -12,6 +12,51 @@ import {
   formatRecordValue,
 } from '../../lib/performanceRecords'
 
+const TOOLTIP_CONTENT_STYLE = {
+  background: '#171d1a',
+  border: '1px solid rgba(242, 247, 244, 0.12)',
+  borderRadius: 0,
+  color: '#f2f7f4',
+  margin: 0,
+  padding: 10,
+}
+
+const TOOLTIP_LABEL_STYLE = {
+  margin: 0,
+  color: '#b8c4bc',
+}
+
+/**
+ * Tooltip reads the active chart point payload.
+ * LineChart only supports axis tooltips; unique xKey values keep lookup unambiguous.
+ */
+function ProgressGraphTooltip({ active, payload, valueKind, timeFormat }) {
+  if (!active || !payload?.length) return null
+
+  const point = payload[0]?.payload
+  if (!point || !Number.isFinite(Number(point.value))) return null
+
+  const formatted = formatRecordValue(
+    point.value,
+    valueKind,
+    valueKind === 'duration' ? null : point.unit,
+    timeFormat,
+  )
+
+  return (
+    <div className="recharts-default-tooltip" style={TOOLTIP_CONTENT_STYLE}>
+      <p className="recharts-tooltip-label" style={TOOLTIP_LABEL_STYLE}>
+        {point.dateLabel}
+      </p>
+      <p style={{ margin: 0, color: '#f2f7f4' }}>
+        <span>Result</span>
+        <span> : </span>
+        <span>{formatted}</span>
+      </p>
+    </div>
+  )
+}
+
 function ProgressGraph({
   records,
   yAxisLabel = 'Result',
@@ -31,12 +76,27 @@ function ProgressGraph({
     )
   }
 
-  const chartData = records.map((record) => ({
-    id: record.id,
-    dateLabel: formatRecordDate(record.created_at),
-    value: Number(record.result_value),
-    unit: record.result_unit,
-  }))
+  const chartData = records.map((record, index) => {
+    const id = record.id ?? `idx-${index}`
+    const createdAt = record.created_at ?? ''
+    const point = {
+      id,
+      // Unique internal category for LineChart axis tooltip lookup.
+      xKey: `${createdAt}:${id}`,
+      // Visible / tooltip date (calendar day only — unchanged).
+      dateLabel: formatRecordDate(record.created_at),
+      value: Number(record.result_value),
+    }
+    // Mass graphs keep unit for tooltip; duration must not pass "sec".
+    if (valueKind === 'mass' && record.result_unit) {
+      point.unit = record.result_unit
+    }
+    return point
+  })
+
+  const dateLabelByXKey = new Map(
+    chartData.map((point) => [point.xKey, point.dateLabel]),
+  )
 
   const formatTick = (value) =>
     valueKind === 'duration'
@@ -52,7 +112,8 @@ function ProgressGraph({
         >
           <CartesianGrid stroke="rgba(242, 247, 244, 0.08)" vertical={false} />
           <XAxis
-            dataKey="dateLabel"
+            dataKey="xKey"
+            tickFormatter={(xKey) => dateLabelByXKey.get(xKey) ?? ''}
             tick={{ fill: '#b8c4bc', fontSize: 12 }}
             axisLine={{ stroke: 'rgba(242, 247, 244, 0.12)' }}
             tickLine={false}
@@ -72,22 +133,13 @@ function ProgressGraph({
             }}
           />
           <Tooltip
-            contentStyle={{
-              background: '#171d1a',
-              border: '1px solid rgba(242, 247, 244, 0.12)',
-              borderRadius: 0,
-              color: '#f2f7f4',
-            }}
-            labelStyle={{ color: '#b8c4bc' }}
-            formatter={(value, _name, item) => [
-              formatRecordValue(
-                value,
-                valueKind,
-                valueKind === 'duration' ? null : item.payload.unit,
-                timeFormat,
-              ),
-              'Result',
-            ]}
+            content={(tooltipProps) => (
+              <ProgressGraphTooltip
+                {...tooltipProps}
+                valueKind={valueKind}
+                timeFormat={timeFormat}
+              />
+            )}
           />
           <Line
             type="monotone"
