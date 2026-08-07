@@ -43,9 +43,9 @@ export const PAGE_SEO = {
   home: {
     tab: 'home',
     path: '/',
-    title: 'KinesoScore | Fitness Performance Calculator & Analytics',
+    title: 'KinesoScore™ | Fitness Score, Strength, Running & Military Calculators',
     description:
-      'KinesoScore is a fitness performance analytics platform for measuring strength, running, BMI, fitness age, KinesoScore™, and military fitness assessments in one place.',
+      'KinesoScore™ is a comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking — including 1RM, VO₂ max, fitness age, Army AFT, Marine PFT, Navy PRT, and Air Force PFRA tools.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [{ name: 'Home', path: '/' }],
@@ -53,9 +53,9 @@ export const PAGE_SEO = {
   calculators: {
     tab: 'calculators',
     path: '/calculators',
-    title: 'Fitness Calculators | Strength, Running & Military Tools | KinesoScore',
+    title: 'Fitness Calculators | 1RM, Running, VO₂, Military Tests | KinesoScore',
     description:
-      'Explore KinesoScore fitness calculators for strength and SBD totals, running performance, BMI, fitness age, KinesoScore™, and military fitness assessments.',
+      'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, KinesoScore™, and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -66,9 +66,9 @@ export const PAGE_SEO = {
   strength: {
     tab: 'strength',
     path: '/strength',
-    title: 'Strength & SBD Total Calculator | 1RM Tracking | KinesoScore',
+    title: '1RM Calculator | Bench, Squat, Deadlift & SBD Total | KinesoScore',
     description:
-      'Estimate one-rep max with the Epley formula, calculate Squat/Bench/Deadlift SBD totals, and track strength progress over time with KinesoScore.',
+      'Free strength and 1RM calculator using the Epley formula for bench press, squat, and deadlift. Build an SBD total and track lifting progress with KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -80,9 +80,9 @@ export const PAGE_SEO = {
   running: {
     tab: 'running',
     path: '/running',
-    title: 'Running Performance Calculator | Race Times & Paces | KinesoScore',
+    title: 'Running Fitness Calculator | Race Times & Benchmarks | KinesoScore',
     description:
-      'Analyze running performance with KinesoScore. Predict race times, training paces, and track endurance progress across common distances.',
+      'Analyze running fitness with race-time predictions, pacing context, and progression tracking. Benchmark endurance performance across common distances with KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -94,9 +94,9 @@ export const PAGE_SEO = {
   scoring: {
     tab: 'scoring',
     path: '/scoring',
-    title: 'KinesoScore™ Calculator | Overall Fitness Performance Score',
+    title: 'KinesoScore™ Calculator | Overall Fitness Score from Strength & Running',
     description:
-      'The KinesoScore™ calculator estimates your overall fitness performance using your strength, endurance, body composition, and cardiovascular metrics.',
+      'Calculate your KinesoScore™ — a transparent fitness score that averages recreational strength and running percentiles so you can compare overall performance in one number.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -105,12 +105,25 @@ export const PAGE_SEO = {
       { name: 'KinesoScore™', path: '/scoring' },
     ],
   },
+  'fitness-score': {
+    tab: 'fitness-score',
+    path: '/fitness-score',
+    title: 'What Is KinesoScore™? Understanding Fitness Scores',
+    description:
+      'Learn what a fitness score is, why strength and endurance matter together, and how KinesoScore™ measures overall fitness performance for tracking progress over time.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'What Is KinesoScore™?', path: '/fitness-score' },
+    ],
+  },
   vo2max: {
     tab: 'vo2max',
     path: '/vo2max',
-    title: 'VO₂ Max Calculator | Cooper & Rockport Estimates | KinesoScore',
+    title: 'VO₂ Max Calculator | Cooper & Rockport Fitness Test | KinesoScore',
     description:
-      'Estimate VO₂ max from Cooper and Rockport field tests with KinesoScore and track cardiorespiratory fitness over time.',
+      'Estimate VO₂ max with Cooper 12-minute run or Rockport 1-mile walk tests, compare with age- and sex-based norms, and track cardiorespiratory fitness on KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -124,7 +137,7 @@ export const PAGE_SEO = {
     path: '/bmr',
     title: 'BMR Calculator | Resting Metabolism & TDEE | KinesoScore',
     description:
-      'Estimate basal metabolic rate and daily calorie needs with the Mifflin–St Jeor equation using the KinesoScore BMR calculator.',
+      'Estimate basal metabolic rate and daily calorie needs (TDEE) with the Mifflin–St Jeor equation using the free KinesoScore BMR calculator.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -136,9 +149,9 @@ export const PAGE_SEO = {
   bmi: {
     tab: 'bmi',
     path: '/bmi',
-    title: 'BMI Calculator | Body Mass Index & Category | KinesoScore',
+    title: 'BMI Calculator | Body Mass Index Category Tracker | KinesoScore',
     description:
-      'Calculate body mass index, see WHO weight category guidance, and track BMI trends with the KinesoScore BMI calculator.',
+      'Calculate body mass index, see standard category guidance, and track BMI trends with the free KinesoScore BMI calculator.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -150,9 +163,9 @@ export const PAGE_SEO = {
   'fitness-age': {
     tab: 'fitness-age',
     path: '/fitness-age',
-    title: 'Fitness Age Calculator | VO₂ Cardiorespiratory Age | KinesoScore',
+    title: 'Fitness Age Calculator | VO₂ Max Age & Sex Norms | KinesoScore',
     description:
-      'Estimate KinesoScore™ Fitness Age by comparing VO₂ max with age- and sex-based fitness reference values. Higher cardiorespiratory fitness can mean a younger fitness age.',
+      'Estimate fitness age from VO₂ max using age- and sex-based cardiorespiratory norms. See how aerobic fitness compares with adult reference values — educational only, not medical advice.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -164,9 +177,9 @@ export const PAGE_SEO = {
   'air-force-pfra': {
     tab: 'air-force-pfra',
     path: '/air-force-pfra',
-    title: 'Air Force PFRA Calculator | Military Fitness Score | KinesoScore',
+    title: 'Air Force PFRA Calculator | Military Fitness Test Score | KinesoScore',
     description:
-      'Estimate your Air Force Physical Fitness Readiness Assessment score with KinesoScore using published PFRA standards for cardio, strength, core, and body composition.',
+      'Free Air Force PFRA calculator for unofficial cardio, strength, core, and body-composition score estimates. Use for training feedback and test prep — not an official scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -178,9 +191,9 @@ export const PAGE_SEO = {
   'air-force-pfa': {
     tab: 'air-force-pfa',
     path: '/air-force-pfa',
-    title: 'Legacy Air Force PFA Calculator | Historical Fitness Assessment | KinesoScore',
+    title: 'Air Force PFA Calculator | Legacy Fitness Assessment | KinesoScore',
     description:
-      'Calculate Legacy Air Force PFA scores with KinesoScore for historical tracking using published 1.5-mile run, push-up, and sit-up standards.',
+      'Legacy Air Force PFA calculator for historical 1.5-mile run, push-up, and sit-up style score estimates. Educational tracking only — not official testing.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -192,9 +205,9 @@ export const PAGE_SEO = {
   'army-aft': {
     tab: 'army-aft',
     path: '/army-aft',
-    title: 'Army AFT Calculator | Army Fitness Test Score | KinesoScore',
+    title: 'Army AFT Calculator | Army Fitness Test Score Estimator | KinesoScore',
     description:
-      'Estimate Army Fitness Test scores with KinesoScore using published AFT event standards for deadlift, hand-release push-ups, SDC, plank, and 2-mile run.',
+      'Free Army AFT calculator for deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run score estimates. Prepare and track readiness — not an official Army scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -206,9 +219,9 @@ export const PAGE_SEO = {
   'marine-pft': {
     tab: 'marine-pft',
     path: '/marine-pft',
-    title: 'Marine Corps PFT Calculator | Military Fitness Test | KinesoScore',
+    title: 'Marine PFT Calculator | Marine Corps Fitness Test Score | KinesoScore',
     description:
-      'Estimate Marine Corps Physical Fitness Test scores with KinesoScore using published pull-up or push-up, plank, and 3-mile run standards.',
+      'Free Marine Corps PFT calculator for pull-up or push-up, plank, and 3-mile run score estimates. Training feedback for Marines and candidates — not official testing.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -222,7 +235,7 @@ export const PAGE_SEO = {
     path: '/navy-prt',
     title: 'Navy PRT Calculator | Physical Readiness Test Score | KinesoScore',
     description:
-      'Estimate Navy Physical Readiness Test scores with KinesoScore using published push-up, forearm plank, and 1.5-mile run standards.',
+      'Free Navy PRT calculator for push-up, forearm plank, and 1.5-mile run score estimates. Use for readiness prep and progress tracking — not an official Navy scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -234,9 +247,9 @@ export const PAGE_SEO = {
   about: {
     tab: 'about',
     path: '/about',
-    title: 'About KinesoScore | Fitness Performance Analytics Platform',
+    title: 'About KinesoScore™ | Exercise Science–Informed Fitness Platform',
     description:
-      'Learn how KinesoScore helps athletes, fitness enthusiasts, and military personnel measure, compare, and track long-term performance across strength, endurance, and readiness assessments.',
+      'Learn how KinesoScore™ applies kinesiology and human performance principles to transparent strength, endurance, VO₂ fitness age, and military fitness calculators — educational tools, not medical advice.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -345,16 +358,17 @@ export function buildWebApplicationSchema() {
       priceCurrency: 'USD',
     },
     featureList: [
-      'Strength and SBD total calculators',
-      'Running performance tracking',
-      'BMI calculator',
-      'Fitness Age estimation',
-      'KinesoScore™ overall fitness performance calculator',
-      'Air Force PFRA calculator',
-      'Legacy Air Force PFA calculator',
+      '1RM strength calculator for bench press, squat, and deadlift',
+      'SBD total tracking',
+      'Running fitness and race performance calculator',
+      'VO₂ max Cooper and Rockport calculators',
+      'VO₂-based fitness age calculator',
+      'BMI and BMR calculators',
+      'KinesoScore™ overall fitness score calculator',
       'Army AFT calculator',
       'Marine Corps PFT calculator',
       'Navy PRT calculator',
+      'Air Force PFRA and legacy PFA calculators',
     ],
   }
 }
@@ -369,6 +383,26 @@ export function buildBreadcrumbSchema(breadcrumb) {
       position: index + 1,
       name: item.name,
       item: absoluteUrl(item.path),
+    })),
+  }
+}
+
+/**
+ * FAQPage JSON-LD for organic search rich results.
+ * @param {Array<{ question: string, answer: string }> | null | undefined} faqs
+ */
+export function buildFaqSchema(faqs) {
+  if (!faqs?.length) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
     })),
   }
 }

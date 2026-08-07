@@ -66,6 +66,7 @@ function MilitaryAssessmentShell({
         <SeoIntro
           title={seo.title}
           links={seo.links}
+          faqs={seo.faqs}
           disclaimer={MILITARY_SEO_DISCLAIMER}
           onNavigate={onOpenTab}
         >

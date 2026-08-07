@@ -22,14 +22,16 @@ export const calculators = [
   {
     id: 'strength',
     name: 'Strength',
-    description: 'Estimate one-rep max and strength standards.',
+    description:
+      '1RM calculator for bench, squat, and deadlift using Epley — plus SBD total tracking.',
     status: 'ready',
     category: 'performance',
   },
   {
     id: 'running',
     name: 'Running',
-    description: 'Predict race times and training paces.',
+    description:
+      'Running fitness calculator for race predictions, pacing context, and endurance tracking.',
     status: 'ready',
     category: 'performance',
   },
@@ -37,28 +39,30 @@ export const calculators = [
     id: 'scoring',
     name: 'KinesoScore™',
     description:
-      'Estimate overall fitness performance from strength, endurance, and related metrics.',
+      'Overall fitness score calculator combining strength and running percentiles.',
     status: 'ready',
     category: 'performance',
   },
   {
     id: 'vo2max',
     name: 'VO₂ Max',
-    description: 'Estimate VO₂ max from Cooper or Rockport field tests.',
+    description:
+      'VO₂ max calculator from Cooper and Rockport field tests with age–sex norms.',
     status: 'ready',
     category: 'performance',
   },
   {
     id: 'bmr',
     name: 'BMR',
-    description: 'Estimate resting metabolism and daily calorie needs.',
+    description:
+      'BMR and TDEE calculator using the Mifflin–St Jeor metabolism equation.',
     status: 'ready',
     category: 'performance',
   },
   {
     id: 'bmi',
     name: 'BMI',
-    description: 'Calculate body mass index and WHO weight category.',
+    description: 'BMI calculator with standard category bands and trend tracking.',
     status: 'ready',
     category: 'performance',
   },
@@ -66,14 +70,15 @@ export const calculators = [
     id: 'fitness-age',
     name: 'Fitness Age',
     description:
-      'Estimate cardiovascular fitness age from VO₂ max and age–sex norms.',
+      'VO₂ fitness age calculator using age- and sex-based cardiorespiratory norms.',
     status: 'ready',
     category: 'performance',
   },
   {
     id: 'air-force-pfra',
     name: 'Air Force PFRA',
-    description: 'Current Air Force Physical Fitness Readiness Assessment score estimator.',
+    description:
+      'Air Force PFRA calculator for unofficial readiness score estimates and training feedback.',
     status: 'ready',
     category: 'military',
     badge: 'NEW',
@@ -81,7 +86,8 @@ export const calculators = [
   {
     id: 'air-force-pfa',
     name: 'Air Force PFA',
-    description: 'Legacy Air Force Physical Fitness Assessment score estimator.',
+    description:
+      'Legacy Air Force PFA calculator for historical fitness assessment estimates.',
     status: 'ready',
     category: 'military',
     badge: 'Legacy',
@@ -89,21 +95,24 @@ export const calculators = [
   {
     id: 'army-aft',
     name: 'Army AFT',
-    description: 'Army Fitness Test score estimator.',
+    description:
+      'Army AFT calculator for deadlift, HRPU, SDC, plank, and 2-mile run estimates.',
     status: 'ready',
     category: 'military',
   },
   {
     id: 'marine-pft',
     name: 'Marine Corps PFT',
-    description: 'Marine Corps Physical Fitness Test score estimator.',
+    description:
+      'Marine PFT calculator for pull-ups or push-ups, plank, and 3-mile run estimates.',
     status: 'ready',
     category: 'military',
   },
   {
     id: 'navy-prt',
     name: 'Navy PRT',
-    description: 'Navy Physical Readiness Test score estimator.',
+    description:
+      'Navy PRT calculator for push-ups, plank, and 1.5-mile run readiness estimates.',
     status: 'ready',
     category: 'military',
   },

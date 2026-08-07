@@ -3,10 +3,12 @@ import {
   SITE,
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildFaqSchema,
   buildOrganizationSchema,
   buildWebApplicationSchema,
   resolveSeoRoute,
 } from '../data/seo'
+import { PAGE_FAQS_BY_TAB } from '../data/seoCopy'
 
 function ensureMeta(selector, attributes) {
   let el = document.head.querySelector(selector)
@@ -145,4 +147,5 @@ export function applyDocumentSeo(tabOrPath) {
   setJsonLd('organization', buildOrganizationSchema())
   setJsonLd('webapplication', buildWebApplicationSchema())
   setJsonLd('breadcrumb', buildBreadcrumbSchema(page.breadcrumb))
+  setJsonLd('faq', buildFaqSchema(PAGE_FAQS_BY_TAB[page.tab]))
 }

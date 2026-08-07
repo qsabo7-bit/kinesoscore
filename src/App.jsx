@@ -21,6 +21,7 @@ import AccountPage from './pages/AccountPage'
 import DashboardPage from './pages/DashboardPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AboutPage from './pages/AboutPage'
+import FitnessScorePage from './pages/FitnessScorePage'
 import { pathForTab, resolveSeoRoute } from './data/seo'
 import {
   getAuthIntent,
@@ -182,11 +183,15 @@ function App() {
       <RunningPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
     )
   } else if (renderTab === 'scoring') {
-    content = <ScoringPage onRequestAuth={goToLogin} />
+    content = (
+      <ScoringPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'vo2max') {
-    content = <Vo2MaxPage onRequestAuth={goToLogin} />
+    content = (
+      <Vo2MaxPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'bmr') {
-    content = <BmrPage onRequestAuth={goToLogin} />
+    content = <BmrPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
   } else if (renderTab === 'bmi') {
     content = <BmiPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
   } else if (renderTab === 'fitness-age') {
@@ -228,7 +233,9 @@ function App() {
       <DashboardPage onOpenTab={setActiveTab} onRequestAuth={goToLogin} />
     )
   } else if (renderTab === 'about') {
-    content = <AboutPage />
+    content = <AboutPage onOpenTab={setActiveTab} />
+  } else if (renderTab === 'fitness-score') {
+    content = <FitnessScorePage onOpenTab={setActiveTab} />
   } else {
     content = <HomePage onOpenTab={setActiveTab} />
   }

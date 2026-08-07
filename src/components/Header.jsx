@@ -104,7 +104,7 @@ function Header({ activeTab, onTabChange }) {
                       <button
                         key={tool.id}
                         type="button"
-                        className={`sub-nav-tab${isActive ? ' is-active' : ''}${isDev ? ' is-dev' : ''}`}
+                        className={`sub-nav-tab${isActive ? ' is-active' : ''}${isDev ? ' is-dev' : ''}${tool.id === 'scoring' ? ' brand-casing' : ''}`}
                         onClick={() => onTabChange(tool.id)}
                         aria-current={isActive ? 'page' : undefined}
                         disabled={isDev}

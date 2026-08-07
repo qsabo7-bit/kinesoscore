@@ -1,4 +1,4 @@
-import { BRAND } from '../../data/brand'
+import { BRAND, BRAND_CASING_CLASS } from '../../data/brand'
 import {
   formatRecordValue,
   getTrendDisplay,
@@ -36,7 +36,14 @@ function PerformanceSummary({
 
   if (variant === 'score' || variant === 'assessment') {
     const isAssessment = variant === 'assessment'
-    const scoreLabel = isAssessment ? 'Score' : BRAND.scoreName
+    const labelClass = isAssessment
+      ? 'result-label'
+      : 'result-label result-label-score-brand'
+    const scoreLabel = isAssessment ? (
+      ' Score'
+    ) : (
+      <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>
+    )
     return (
       <div
         className="performance-summary performance-summary-score"
@@ -45,19 +52,19 @@ function PerformanceSummary({
         }
       >
         <div className="performance-stat">
-          <p className="result-label">Current {scoreLabel}</p>
+          <p className={labelClass}>Current{scoreLabel}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.latestValue, 'number')}
           </p>
         </div>
         <div className="performance-stat">
-          <p className="result-label">Best {scoreLabel}</p>
+          <p className={labelClass}>Best{scoreLabel}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.personalRecord, 'number')}
           </p>
         </div>
         <div className="performance-stat">
-          <p className="result-label">Average {scoreLabel}</p>
+          <p className={labelClass}>Average{scoreLabel}</p>
           <p className="performance-stat-value">
             {formatRecordValue(summary.averageValue, 'number')}
           </p>

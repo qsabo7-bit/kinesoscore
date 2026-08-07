@@ -169,7 +169,9 @@ function LockedDashboardPreview({ onRequestAuth }) {
         <section className="dashboard-section">
           <h2 className="result-section-title">Progress overview</h2>
           <div className="graph-track-selector">
-            <span className="graph-track-btn is-active">{BRAND.scoreName}</span>
+            <span className="graph-track-btn is-active brand-casing">
+              {BRAND.scoreName}
+            </span>
             <span className="graph-track-btn">Fitness Age</span>
             <span className="graph-track-btn">BMI</span>
             <span className="graph-track-btn">Bench</span>

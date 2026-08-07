@@ -4,6 +4,7 @@ import {
   useUserDefaults,
 } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
+import SeoIntro from '../components/SeoIntro'
 import DemographicFields from '../components/DemographicFields'
 import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
 import PeerComparison from '../components/PeerComparison'
@@ -24,7 +25,8 @@ import {
   toMiles,
 } from '../calculations'
 import { STRENGTH_LIFTS } from '../data/strengthNorms'
-import { BRAND } from '../data/brand'
+import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
+import { SCORING_SEO } from '../data/seoCopy'
 import { FPC_SCORE_LOCKED_PREVIEW } from '../components/tracking'
 import {
   FPC_SCORE_CALCULATOR_TYPE,
@@ -35,7 +37,7 @@ function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
 }
 
-function ScoringPage({ onRequestAuth }) {
+function ScoringPage({ onRequestAuth, onOpenTab }) {
   const { patchDefaults } = useUserDefaults()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
@@ -298,13 +300,24 @@ function ScoringPage({ onRequestAuth }) {
     <main className="page">
       <header className="page-header">
         <p className="page-eyebrow">Overall performance</p>
-        <h1>{BRAND.scoreName}</h1>
+        <h1 className={BRAND_CASING_CLASS}>{BRAND.scoreName}</h1>
         <p className="page-lead">
-          The {BRAND.scoreName} calculator estimates your overall fitness
-          performance using your strength, endurance, body composition, and
-          cardiovascular metrics.
+          Calculate a transparent overall fitness score from recreational
+          strength and running percentiles — one number to track how you compare
+          across both domains.
         </p>
       </header>
+
+      <SeoIntro
+        title={SCORING_SEO.title}
+        faqs={SCORING_SEO.faqs}
+        relatedNote={SCORING_SEO.learnMoreNote}
+        onNavigate={onOpenTab}
+      >
+        {SCORING_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <form
         className="calc-form calc-form-wide"
@@ -705,7 +718,7 @@ function ScoringPage({ onRequestAuth }) {
       {result.score ? (
         <section className="results" aria-live="polite">
           <div className="result-stat result-stat-hero">
-            <p className="result-label">{BRAND.scoreName}</p>
+            <p className={`result-label ${BRAND_CASING_CLASS}`}>{BRAND.scoreName}</p>
             <p className="result-value">{result.score.FPCScore}</p>
             <p className="result-sub">
               {result.score.band} · {result.score.balance}
@@ -817,6 +830,12 @@ function ScoringPage({ onRequestAuth }) {
           />
         </section>
       ) : null}
+
+      <SeoIntro
+        relatedNote={SCORING_SEO.relatedNote}
+        links={SCORING_SEO.links}
+        onNavigate={onOpenTab}
+      />
     </main>
   )
 }

@@ -81,6 +81,7 @@ function BmiPage({ onRequestAuth, onOpenTab }) {
       <SeoIntro
         title={BMI_SEO.title}
         disclaimer={BMI_SEO.disclaimer}
+        faqs={BMI_SEO.faqs}
         onNavigate={onOpenTab}
       >
         {BMI_SEO.paragraphs.map((text) => (

@@ -1,33 +1,71 @@
 import { sources } from '../data/sources'
 import { BRAND } from '../data/brand'
+import { pathForTab } from '../data/seo'
 
-function AboutPage() {
+function AboutPage({ onOpenTab }) {
+  const handleLink = (event, tab) => {
+    if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return
+    }
+    event.preventDefault()
+    onOpenTab(tab)
+  }
+
   return (
     <main className="page about-page">
       <header className="page-header">
         <p className="page-eyebrow">About</p>
         <h1 className="about-brand">{BRAND.full}</h1>
         <p className="page-lead">
-          A comprehensive fitness analytics platform designed to help users
-          understand, measure, and improve their overall fitness.
+          A comprehensive fitness performance platform combining strength,
+          endurance, military fitness standards, and cardiovascular fitness
+          tracking.
         </p>
       </header>
 
       <section className="about-section">
         <h2 className="result-section-title">Our mission</h2>
         <p>
-          {BRAND.full} combines strength, endurance, body composition,
-          performance, and long-term progress into one easy-to-understand score
-          — your {BRAND.scoreName}. Free, transparent calculators make it simple
-          to estimate one-rep max, predict race times, estimate VO₂ max and BMR,
-          track BMI and fitness age, and see how results compare with published
-          data for your age and gender group.
+          {BRAND.full} brings free, transparent tools for 1RM strength (bench,
+          squat, deadlift, and SBD total), running fitness, VO₂ max, fitness age,
+          BMI/BMR, and military assessments such as the Army AFT, Marine PFT,
+          Navy PRT, and Air Force PFRA — plus an overall {BRAND.scoreName} that
+          averages recreational strength and running percentiles.
         </p>
         <p>
           We keep formulas and comparison datasets documented below so you can
           see exactly what powers each estimate. {BRAND.scoreName} balances
           recreational strength and running percentiles into one overall
-          performance score.
+          performance score. For an educational overview,{' '}
+          <a
+            className="seo-intro-link"
+            href={pathForTab('fitness-score')}
+            onClick={(event) => handleLink(event, 'fitness-score')}
+          >
+            learn how {BRAND.scoreName} works
+          </a>
+          .
+        </p>
+      </section>
+
+      <section
+        className="about-section"
+        aria-labelledby="science-foundation-heading"
+      >
+        <h2 id="science-foundation-heading" className="result-section-title">
+          Built with an exercise science foundation
+        </h2>
+        <p>
+          {BRAND.scoreName} was developed with a foundation in kinesiology and
+          human performance principles. The platform combines strength
+          assessment, endurance metrics, cardiovascular fitness evaluation, and
+          standardized fitness scoring concepts to help users better understand
+          and track their performance.
+        </p>
+        <p>
+          Methods are documented openly and draw on published equations and
+          reference norms — educational tools for training insight, not medical
+          advice or officially certified testing systems.
         </p>
       </section>
 

@@ -609,6 +609,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
       <SeoIntro
         title={STRENGTH_SEO.title}
         relatedNote={STRENGTH_SEO.relatedNote}
+        faqs={STRENGTH_SEO.faqs}
         onNavigate={onOpenTab}
       >
         {STRENGTH_SEO.paragraphs.map((text) => (

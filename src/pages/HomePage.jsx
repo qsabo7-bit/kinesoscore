@@ -4,8 +4,18 @@ import {
   DEFAULT_CALCULATOR_ID,
 } from '../data/calculators'
 import { BRAND } from '../data/brand'
+import { pathForTab } from '../data/seo'
+import { HOME_SEO_TAGLINE } from '../data/seoCopy'
 
 function ToolList({ tools, onOpenTab }) {
+  const handleToolClick = (event, tabId) => {
+    if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return
+    }
+    event.preventDefault()
+    onOpenTab(tabId)
+  }
+
   return (
     <ul className="tool-list">
       {tools.map((tool) => (
@@ -23,13 +33,13 @@ function ToolList({ tools, onOpenTab }) {
           </h3>
           <p>{tool.description}</p>
           {tool.status === 'ready' ? (
-            <button
-              type="button"
+            <a
               className="tool-link"
-              onClick={() => onOpenTab(tool.id)}
+              href={pathForTab(tool.id)}
+              onClick={(event) => handleToolClick(event, tool.id)}
             >
               Open calculator
-            </button>
+            </a>
           ) : (
             <span className="tool-status">In development</span>
           )}
@@ -54,9 +64,27 @@ function HomePage({ onOpenTab }) {
       <section className="home-hero">
         <p className="home-eyebrow">Performance tools</p>
         <h1 className="home-brand">{BRAND.full}</h1>
-        <p className="home-tagline">
-          Measure strength, running, VO₂ max, BMI, fitness age, metabolism, and
-          overall fitness with clear, practical calculators.
+        <p className="home-tagline">{HOME_SEO_TAGLINE}</p>
+        <p>
+          <a
+            className="seo-intro-link"
+            href={pathForTab('fitness-score')}
+            onClick={(event) => {
+              if (
+                !onOpenTab ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              ) {
+                return
+              }
+              event.preventDefault()
+              onOpenTab('fitness-score')
+            }}
+          >
+            Learn how {BRAND.scoreName} works
+          </a>
         </p>
       </section>
 

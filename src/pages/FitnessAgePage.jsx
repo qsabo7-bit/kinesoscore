@@ -93,6 +93,7 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
       <SeoIntro
         title={FITNESS_AGE_SEO.title}
         disclaimer={FITNESS_AGE_SEO.disclaimer}
+        faqs={FITNESS_AGE_SEO.faqs}
         onNavigate={onOpenTab}
       >
         {FITNESS_AGE_SEO.paragraphs.map((text) => (
@@ -305,6 +306,12 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
             : []
         }
         onRequestAuth={onRequestAuth}
+      />
+
+      <SeoIntro
+        relatedNote={FITNESS_AGE_SEO.relatedNote}
+        links={FITNESS_AGE_SEO.links}
+        onNavigate={onOpenTab}
       />
     </main>
   )

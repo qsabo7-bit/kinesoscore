@@ -6,7 +6,9 @@ import {
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
+import SeoIntro from '../components/SeoIntro'
 import UnitToggle from '../components/UnitToggle'
+import { VO2_SEO } from '../data/seoCopy'
 import {
   calculateCooperVo2,
   calculateRockportVo2,
@@ -24,7 +26,7 @@ const METHODS = [
   { value: 'rockport', label: 'Rockport walk' },
 ]
 
-function Vo2MaxPage({ onRequestAuth }) {
+function Vo2MaxPage({ onRequestAuth, onOpenTab }) {
   const { patchDefaults } = useUserDefaults()
   const [method, setMethod] = useSyncedDefault('vo2Method', 'cooper')
   const [distanceUnit, setDistanceUnit] = useSyncedDefault('distanceUnit', 'mi')
@@ -137,6 +139,16 @@ function Vo2MaxPage({ onRequestAuth }) {
           Institute / ACSM age–sex norms.
         </p>
       </header>
+
+      <SeoIntro
+        title={VO2_SEO.title}
+        faqs={VO2_SEO.faqs}
+        onNavigate={onOpenTab}
+      >
+        {VO2_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
         <UnitToggle
@@ -333,6 +345,8 @@ function Vo2MaxPage({ onRequestAuth }) {
         hasResult={Boolean(result?.vo2Max)}
         onRequestAuth={onRequestAuth}
       />
+
+      <SeoIntro relatedNote={VO2_SEO.relatedNote} onNavigate={onOpenTab} />
     </main>
   )
 }

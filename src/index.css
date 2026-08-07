@@ -490,6 +490,24 @@ a.site-footer-link:hover {
   cursor: not-allowed;
 }
 
+/* Preserve KinesoScore™ brand casing against uppercase UI styles. */
+.brand-casing,
+.sub-nav-tab-brand,
+.btn.brand-casing,
+.graph-track-btn.brand-casing,
+.result-label.brand-casing,
+.page-header h1.brand-casing,
+.result-label .brand-casing {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* Stack brand under CURRENT / BEST / AVERAGE for consistent card labels. */
+.result-label-score-brand .brand-casing {
+  display: block;
+  margin-top: 0.15rem;
+}
+
 .nav-badge {
   font-size: 0.65rem;
   letter-spacing: 0.06em;
@@ -1783,10 +1801,9 @@ a.site-footer-link:hover {
 }
 
 .fpc-score-ring-label {
-  font-size: 0.58rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--text);
   max-width: 6.5rem;
   text-align: center;

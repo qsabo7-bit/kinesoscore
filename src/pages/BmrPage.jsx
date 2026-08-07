@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
+import SeoIntro from '../components/SeoIntro'
 import UnitToggle from '../components/UnitToggle'
 import { LockedGraphPreview } from '../components/tracking'
+import { BMR_SEO } from '../data/seoCopy'
 import {
   ACTIVITY_LEVELS,
   calculateBmr,
@@ -13,7 +15,7 @@ import {
   MASS_UNITS,
 } from '../calculations'
 
-function BmrPage({ onRequestAuth }) {
+function BmrPage({ onRequestAuth, onOpenTab }) {
   const { isAuthenticated, loading: authLoading } = useAuth()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [heightUnit, setHeightUnit] = useSyncedDefault('heightUnit', 'in')
@@ -87,6 +89,16 @@ function BmrPage({ onRequestAuth }) {
           (TDEE).
         </p>
       </header>
+
+      <SeoIntro
+        title={BMR_SEO.title}
+        faqs={BMR_SEO.faqs}
+        onNavigate={onOpenTab}
+      >
+        {BMR_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
         <UnitToggle

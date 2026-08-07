@@ -142,6 +142,7 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
       <SeoIntro
         title={RUNNING_SEO.title}
         relatedNote={RUNNING_SEO.relatedNote}
+        faqs={RUNNING_SEO.faqs}
         onNavigate={onOpenTab}
       >
         {RUNNING_SEO.paragraphs.map((text) => (

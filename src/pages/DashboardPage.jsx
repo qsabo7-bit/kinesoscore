@@ -7,6 +7,7 @@ import {
   GraphRangeToggle,
   ProgressGraph,
 } from '../components/tracking'
+import { BRAND } from '../data/brand'
 import { DASHBOARD_GRAPH_METRICS } from '../data/dashboardMetrics'
 import {
   buildDashboardModel,
@@ -360,18 +361,22 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         </h2>
 
         <div className="graph-track-selector" role="tablist" aria-label="Metric">
-          {DASHBOARD_GRAPH_METRICS.map((metric) => (
-            <button
-              key={metric.id}
-              type="button"
-              role="tab"
-              className={`graph-track-btn${metricId === metric.id ? ' is-active' : ''}`}
-              aria-selected={metricId === metric.id}
-              onClick={() => setMetricId(metric.id)}
-            >
-              {metric.label}
-            </button>
-          ))}
+          {DASHBOARD_GRAPH_METRICS.map((metric) => {
+            const brandCasing =
+              metric.id === 'fpc-score' || metric.label === BRAND.scoreName
+            return (
+              <button
+                key={metric.id}
+                type="button"
+                role="tab"
+                className={`graph-track-btn${metricId === metric.id ? ' is-active' : ''}${brandCasing ? ' brand-casing' : ''}`}
+                aria-selected={metricId === metric.id}
+                onClick={() => setMetricId(metric.id)}
+              >
+                {metric.label}
+              </button>
+            )
+          })}
         </div>
 
         <ProgressGraph

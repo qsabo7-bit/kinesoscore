@@ -6,19 +6,24 @@ import { pathForTab } from '../data/seo'
  *
  * @param {{ before?: string, tab: string, label: string, after?: string }} [relatedNote]
  *   Optional closing note with an inline calculator link.
+ * @param {Array<{ question: string, answer: string }>} [faqs]
  */
 function SeoIntro({
   title,
   children,
   links = [],
+  faqs = [],
   relatedNote = null,
   disclaimer,
   onNavigate,
 }) {
+  const faqList = Array.isArray(faqs) ? faqs.filter((f) => f?.question && f?.answer) : []
+
   if (
     !title &&
     !children &&
     !links.length &&
+    !faqList.length &&
     !relatedNote &&
     !disclaimer
   ) {
@@ -41,7 +46,19 @@ function SeoIntro({
         </h2>
       ) : null}
 
-      <div className="seo-intro-body">{children}</div>
+      <div className="seo-intro-body">
+        {children}
+        {faqList.length > 0
+          ? faqList.map((faq) => (
+              <div key={faq.question}>
+                <p>
+                  <strong>{faq.question}</strong>
+                </p>
+                <p>{faq.answer}</p>
+              </div>
+            ))
+          : null}
+      </div>
 
       {relatedNote ? (
         <p className="seo-intro-related">
