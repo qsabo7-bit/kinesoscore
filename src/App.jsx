@@ -48,7 +48,6 @@ function App() {
     passwordRecovery,
     emailJustConfirmed,
     authUrlError,
-    clearPasswordRecovery,
     clearEmailJustConfirmed,
   } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromLocation)
@@ -185,7 +184,7 @@ function App() {
           }
         }}
         onRequestLogin={() => {
-          clearPasswordRecovery?.()
+          // Recovery abandon already awaited sign-out in ResetPasswordPage.
           setAuthMode('login')
           setActiveTab('login')
         }}

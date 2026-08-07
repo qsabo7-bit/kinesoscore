@@ -341,7 +341,18 @@ export function AuthProvider({ children }) {
     [finishRecovery],
   )
 
-  const clearPasswordRecovery = useCallback(() => {
+  /**
+   * Abandon recovery without changing the password.
+   * Sign out first (while passwordRecovery is still true so isAuthenticated
+   * stays false), then clear the recovery UI gate. Session/user/profile are
+   * updated by onAuthStateChange — do not clear them here.
+   */
+  const clearPasswordRecovery = useCallback(async () => {
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // Session may already be invalid.
+    }
     finishRecovery()
   }, [finishRecovery])
 

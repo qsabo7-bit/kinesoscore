@@ -8,6 +8,7 @@ function ResetPasswordPage({ onSuccess, onRequestLogin }) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [abandoning, setAbandoning] = useState(false)
   const errorRef = useRef(null)
   const passwordId = useId()
   const confirmId = useId()
@@ -130,12 +131,27 @@ function ResetPasswordPage({ onSuccess, onRequestLogin }) {
         <button
           type="button"
           className="text-link"
-          onClick={() => {
-            clearPasswordRecovery?.()
-            onRequestLogin?.()
+          disabled={submitting || abandoning}
+          onClick={async () => {
+            setAbandoning(true)
+            setError('')
+            try {
+              // Fully sign out before navigating so App never sees an
+              // authenticated recovery session on the login tab.
+              await clearPasswordRecovery?.()
+              onRequestLogin?.()
+            } catch (err) {
+              setError(
+                friendlyAuthError(
+                  err,
+                  'Could not leave password reset. Try again or close this tab.',
+                ),
+              )
+              setAbandoning(false)
+            }
           }}
         >
-          Request reset link
+          {abandoning ? 'Returning to login…' : 'Request reset link'}
         </button>
       </p>
     </main>
