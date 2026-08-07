@@ -7,7 +7,7 @@ import {
   GraphRangeToggle,
   ProgressGraph,
 } from '../components/tracking'
-import { BRAND } from '../data/brand'
+import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { DASHBOARD_GRAPH_METRICS } from '../data/dashboardMetrics'
 import {
   buildDashboardModel,
@@ -221,7 +221,8 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
             className="btn btn-primary"
             onClick={() => onOpenTab?.('scoring')}
           >
-            Calculate Your KinesoScore™
+            Calculate Your{' '}
+            <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>
           </button>
         </section>
       ) : null}

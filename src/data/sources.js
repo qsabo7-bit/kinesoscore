@@ -79,7 +79,7 @@ export const sources = [
   },
   {
     id: 'fpc-score',
-    category: 'KinesoScore™',
+    category: 'myKinesoScore™',
     title: FITNESS_SCORE_SOURCE.name,
     detail: FITNESS_SCORE_SOURCE.detail,
     url: FITNESS_SCORE_SOURCE.url,

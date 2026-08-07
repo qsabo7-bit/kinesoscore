@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
 import SeoIntro from '../components/SeoIntro'
+import { pathForTab } from '../data/seo'
+import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { FITNESS_AGE_SEO } from '../data/seoCopy'
 import { calculateFitnessAge, MIN_FITNESS_AGE } from '../calculations'
 import { FITNESS_AGE_LOCKED_PREVIEW } from '../components/tracking/lockedPreviewCopy'
@@ -36,6 +38,14 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
   const [hours, setHours] = useSyncedDefault('fiveKHours', '')
   const [minutes, setMinutes] = useSyncedDefault('fiveKMinutes', '')
   const [seconds, setSeconds] = useSyncedDefault('fiveKSeconds', '')
+
+  const handleToolLink = (event, tab) => {
+    if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return
+    }
+    event.preventDefault()
+    onOpenTab(tab)
+  }
 
   const result = useMemo(() => {
     const ageNum = Number(age)
@@ -84,9 +94,10 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
         <p className="page-lead">
           Estimate Fitness Age from VO₂ max and biological sex using age–sex
           fitness norms — the age of an average person with comparable
-          cardiorespiratory fitness. Optional resting heart rate and KinesoScore
-          strength apply only small capped modifiers. Lower fitness age is
-          better. Adults {MIN_FITNESS_AGE}+.
+          cardiorespiratory fitness. Optional resting heart rate and{' '}
+          <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span> strength
+          apply only small capped modifiers. Lower fitness age is better. Adults{' '}
+          {MIN_FITNESS_AGE}+.
         </p>
       </header>
 
@@ -150,6 +161,25 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
               value={vo2Max}
               onChange={(event) => setVo2Max(event.target.value)}
             />
+            <span className="field-hint">
+              Need a VO₂ estimate? Use the{' '}
+              <a
+                className="seo-intro-link"
+                href={pathForTab('vo2max')}
+                onClick={(event) => handleToolLink(event, 'vo2max')}
+              >
+                VO₂ Max calculator
+              </a>
+              , or start from a race time in the{' '}
+              <a
+                className="seo-intro-link"
+                href={pathForTab('running')}
+                onClick={(event) => handleToolLink(event, 'running')}
+              >
+                Running calculator
+              </a>
+              .
+            </span>
           </label>
 
           <label className="field">
@@ -170,12 +200,16 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
           <legend>Optional inputs</legend>
           <p className="optional-note">
             5K is used only when VO₂ is blank (never stacked with VO₂). Strength
-            modifier uses a KinesoScore strength percentile when available. Body
-            fat, BMI, and weekly training frequency do not affect Fitness Age.
+            modifier uses a{' '}
+            <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>{' '}
+            strength percentile when available. Body fat, BMI, and weekly
+            training frequency do not affect Fitness Age.
           </p>
 
           <label className="field">
-            <span>KinesoScore strength percentile (0–100)</span>
+            <span className={BRAND_CASING_CLASS}>
+              {BRAND.scoreName} strength percentile (0–100)
+            </span>
             <input
               type="number"
               min="0"
@@ -306,12 +340,6 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
             : []
         }
         onRequestAuth={onRequestAuth}
-      />
-
-      <SeoIntro
-        relatedNote={FITNESS_AGE_SEO.relatedNote}
-        links={FITNESS_AGE_SEO.links}
-        onNavigate={onOpenTab}
       />
     </main>
   )

@@ -1,11 +1,11 @@
 /** Concise SEO / educational copy for public calculator pages. */
 
-/** Shared closing CTA pointing to the overall KinesoScore™ calculator. */
+/** Shared closing CTA pointing to the overall myKinesoScore™ calculator. */
 export const KINESOSCORE_RELATED_NOTE = {
   before:
     'Want one number that combines strength and running? Calculate your ',
   tab: 'scoring',
-  label: 'KinesoScore™',
+  label: 'myKinesoScore™',
   after: '.',
 }
 
@@ -48,39 +48,43 @@ export const RUNNING_SEO = {
 }
 
 export const SCORING_SEO = {
-  title: 'About the KinesoScore™ fitness score calculator',
+  title: 'About the myKinesoScore™ fitness score calculator',
   paragraphs: [
-    'KinesoScore™ is an overall fitness performance score that averages your recreational strength percentile and running percentile into one transparent 0–100 result.',
+    'myKinesoScore™ is an overall fitness performance score that averages your recreational strength percentile and running percentile into one transparent 0–100 result.',
     'Strength input can come from an SBD total or a single lift; running input comes from a race or time trial. Both sides use age- and sex-specific published norms so the score reflects how you compare with recreational peers — not a proprietary black box.',
     'Use it when you want a simple fitness score calculator that balances lifting and endurance, then save assessments to watch the number move as you train.',
   ],
   faqs: [
     {
-      question: 'How does KinesoScore compare fitness performance?',
+      question: 'How does myKinesoScore™ compare fitness performance?',
       answer:
-        'KinesoScore™ averages two percentiles: strength (bodyweight-relative 1RM or SBD total vs recreational gym-goer norms) and running (race performance vs published finisher curves). The result is roughly how many peers out of 100 you outperform on average across both domains.',
+        'myKinesoScore™ averages two percentiles: strength (bodyweight-relative 1RM or SBD total vs recreational gym-goer norms) and running (race performance vs published finisher curves). The result is roughly how many peers out of 100 you outperform on average across both domains.',
     },
   ],
   learnMoreNote: {
     before: 'Want the educational overview? ',
     tab: 'fitness-score',
-    label: 'Learn how KinesoScore™ works',
+    label: 'Learn how myKinesoScore™ works',
     after: '.',
   },
   relatedNote: {
     before: 'Start with the ',
     tab: 'strength',
     label: 'Strength calculator',
-    after: ', then add a race result.',
+    after: ', then add a race result with ',
+    trailingLink: {
+      tab: 'running',
+      label: 'Running calculator',
+      after: '.',
+    },
   },
-  links: [{ tab: 'running', label: 'Running calculator' }],
 }
 
 /** Educational landing page for /fitness-score (not the calculator). */
 export const FITNESS_SCORE_SEO = {
-  heroTitle: 'What Is KinesoScore™?',
+  heroTitle: 'What Is myKinesoScore™?',
   heroLead:
-    'KinesoScore™ is a fitness performance score that combines strength and endurance performance into one simple metric.',
+    'myKinesoScore™ is a fitness performance score that combines strength and endurance performance into one simple metric.',
   heroSupport:
     'Use it to understand overall fitness, track performance over time, and see how strength and endurance contribute to a single progress marker — not as a medical diagnosis.',
   whatIsTitle: 'What is a fitness score?',
@@ -89,9 +93,9 @@ export const FITNESS_SCORE_SEO = {
     'No single measurement can represent every aspect of fitness. Strength, endurance, body composition, and other qualities answer different questions. Combining more than one performance area can give a clearer picture of overall readiness than relying on one metric alone.',
     'An overall fitness score is most useful when it is transparent about what it includes — and what it leaves out — so you can interpret the number in context.',
   ],
-  howItWorksTitle: 'How KinesoScore™ works',
+  howItWorksTitle: 'How myKinesoScore™ works',
   howItWorksIntro:
-    'At a high level, KinesoScore™ looks at two major performance domains and combines them into one overall result.',
+    'At a high level, myKinesoScore™ looks at two major performance domains and combines them into one overall result.',
   strengthTitle: 'Strength performance',
   strengthParagraphs: [
     'Strength reflects muscular performance capacity — how much force you can produce relative to useful comparison standards for recreational lifters.',
@@ -104,22 +108,22 @@ export const FITNESS_SCORE_SEO = {
   ],
   combinedTitle: 'Combined score',
   combinedParagraphs: [
-    'KinesoScore™ combines the strength and endurance components into one overall performance score so you can track both qualities together.',
+    'myKinesoScore™ combines the strength and endurance components into one overall performance score so you can track both qualities together.',
     'The goal is a practical summary for training insight: one number that reflects balance across lifting and running performance, without claiming to measure every aspect of health or athleticism.',
   ],
   whyCombineTitle: 'Why combine strength and endurance?',
   whyCombineParagraphs: [
     'Strength alone does not describe cardiovascular fitness. Someone can be highly capable in the weight room and still have limited aerobic performance.',
     'Endurance alone does not describe muscular performance. Strong race times do not automatically reveal relative strength on major lifts.',
-    'A balanced approach provides a broader view of physical performance. By including both domains, KinesoScore™ helps you see whether progress is one-sided or shared across strength and endurance.',
+    'A balanced approach provides a broader view of physical performance. By including both domains, myKinesoScore™ helps you see whether progress is one-sided or shared across strength and endurance.',
   ],
-  understandingTitle: 'Understanding your KinesoScore™',
+  understandingTitle: 'Understanding myKinesoScore™',
   understandingParagraphs: [
     'Higher scores indicate stronger relative performance across the included strength and endurance inputs. The number is most useful when you recalculate it over time and watch the trend.',
     'Improving strength, endurance, or both can raise your overall result. Large gaps between the two sides often mean the combined score has room to grow through the weaker domain.',
-    'KinesoScore™ is a fitness tracking tool. It is not a medical assessment, not a clinical diagnosis, and not an official military scorecard.',
+    'myKinesoScore™ is a fitness tracking tool. It is not a medical assessment, not a clinical diagnosis, and not an official military scorecard.',
   ],
-  improveTitle: 'How to improve your KinesoScore™',
+  improveTitle: 'How to improve myKinesoScore™',
   improveParagraphs: [
     'Strength improvements usually come from progressive training and consistent tracking of major lifts such as squat, bench, and deadlift.',
     'Endurance improvements usually come from building aerobic capacity and improving running performance across distances that matter for your training.',
@@ -133,40 +137,40 @@ export const FITNESS_SCORE_SEO = {
         'A fitness score is a summary number that represents physical performance so you can compare results over time. Useful scores are transparent about which qualities they include — such as strength and endurance — instead of treating one measurement as a complete picture of fitness.',
     },
     {
-      question: 'What does KinesoScore™ measure?',
+      question: 'What does myKinesoScore™ measure?',
       answer:
-        'KinesoScore™ measures overall fitness performance by combining a strength component and an endurance (running) component into one score. It is designed for performance tracking and progress insight, not for diagnosing health conditions.',
+        'myKinesoScore™ measures overall fitness performance by combining a strength component and an endurance (running) component into one score. It is designed for performance tracking and progress insight, not for diagnosing health conditions.',
     },
     {
-      question: 'Is KinesoScore™ a fitness test?',
+      question: 'Is myKinesoScore™ a fitness test?',
       answer:
-        'KinesoScore™ is an educational fitness scoring tool based on strength and endurance performance inputs. It helps you summarize and track those qualities, but it is not a laboratory test, medical exam, or certified athletic certification.',
+        'myKinesoScore™ is an educational fitness scoring tool based on strength and endurance performance inputs. It helps you summarize and track those qualities, but it is not a laboratory test, medical exam, or certified athletic certification.',
     },
     {
-      question: 'How is KinesoScore™ different from BMI?',
+      question: 'How is myKinesoScore™ different from BMI?',
       answer:
-        'BMI is a height-and-weight ratio used as a general body-mass screening tool. KinesoScore™ focuses on performance — strength and endurance results — rather than body mass index alone. The two answer different questions and are not interchangeable.',
+        'BMI is a height-and-weight ratio used as a general body-mass screening tool. myKinesoScore™ focuses on performance — strength and endurance results — rather than body mass index alone. The two answer different questions and are not interchangeable.',
     },
     {
-      question: 'How is KinesoScore™ different from VO₂ Max?',
+      question: 'How is myKinesoScore™ different from VO₂ Max?',
       answer:
-        'VO₂ max estimates cardiorespiratory fitness from aerobic capacity. KinesoScore™ combines strength and endurance performance into an overall score, so it includes muscular performance as well as running-related fitness rather than aerobic capacity alone.',
+        'VO₂ max estimates cardiorespiratory fitness from aerobic capacity. myKinesoScore™ combines strength and endurance performance into an overall score, so it includes muscular performance as well as running-related fitness rather than aerobic capacity alone.',
     },
     {
-      question: 'How can I improve my KinesoScore™?',
+      question: 'How can I improve myKinesoScore™?',
       answer:
         'Improve the strength side with progressive lifting and tracked major lifts, improve the endurance side with aerobic and running training, or work on both. Recalculate after training progress to see how the overall score responds.',
     },
     {
-      question: 'Is KinesoScore™ an official military score?',
+      question: 'Is myKinesoScore™ an official military score?',
       answer:
-        'No. KinesoScore™ is an educational overall fitness score for tracking strength and endurance performance. It is not an official Army, Marine Corps, Navy, or Air Force scorecard. Military calculators on KinesoScore are separate educational estimates.',
+        'No. myKinesoScore™ is an educational overall fitness score for tracking strength and endurance performance. It is not an official Army, Marine Corps, Navy, or Air Force scorecard. Military calculators on KinesoScore are separate educational estimates.',
     },
   ],
   relatedNote: {
     before: 'Ready to see your number? ',
     tab: 'scoring',
-    label: 'Calculate your KinesoScore™',
+    label: 'Calculate your myKinesoScore™',
     after: '.',
   },
   links: [
@@ -175,7 +179,7 @@ export const FITNESS_SCORE_SEO = {
     { tab: 'vo2max', label: 'VO₂ Max calculator' },
   ],
   disclaimer:
-    'KinesoScore™ is an educational fitness tracking tool, not medical advice and not an official military assessment.',
+    'myKinesoScore™ is an educational fitness tracking tool, not medical advice and not an official military assessment.',
 }
 
 export const VO2_SEO = {
@@ -222,7 +226,7 @@ export const BMI_SEO = {
 export const FITNESS_AGE_SEO = {
   title: 'About this VO₂ fitness age calculator',
   paragraphs: [
-    'KinesoScore™ Fitness Age estimates your cardiovascular fitness age by comparing VO₂ max with age- and sex-based fitness reference values. Higher cardiorespiratory fitness can correspond to a younger fitness age.',
+    'KinesoScore Fitness Age estimates your cardiovascular fitness age by comparing VO₂ max with age- and sex-based fitness reference values. Higher cardiorespiratory fitness can correspond to a younger fitness age.',
     'The primary inputs are VO₂ max, chronological age, and biological sex. Resting heart rate may refine the estimate slightly. A running time is used only to estimate VO₂ when VO₂ is missing — aerobic fitness is never double-counted. Body fat, BMI, and training frequency are not used.',
     'Try the calculator to see how your aerobic fitness maps onto an adult reference curve, then save assessments to track Fitness Age over time.',
   ],
@@ -245,55 +249,49 @@ export const FITNESS_AGE_SEO = {
 }
 
 export const MILITARY_SEO = {
-  'air-force-pfra': {
-    title: 'About the Air Force PFRA calculator',
-    paragraphs: [
-      'Estimate your Air Force Physical Fitness Readiness Assessment (PFRA) score from published standards for cardio, muscular strength, core endurance, and waist-to-height ratio.',
-      'Use this military fitness calculator for training feedback and test preparation — enter event results to see an unofficial score estimate you can save and improve against. It does not replace official Air Force testing or scorecards.',
-    ],
-    faqs: [
-      {
-        question: 'Is the Air Force PFRA calculator official?',
-        answer:
-          'No. KinesoScore provides an educational estimate based on published PFRA-style standards to support training and preparation. Official scores come only from authorized testing under current Air Force guidance.',
-      },
-    ],
-    links: [
-      { tab: 'army-aft', label: 'Army AFT calculator' },
-      { tab: 'marine-pft', label: 'Marine Corps PFT calculator' },
-      { tab: 'navy-prt', label: 'Navy PRT calculator' },
-      { tab: 'air-force-pfa', label: 'Legacy Air Force PFA calculator' },
-    ],
-  },
-  'air-force-pfa': {
-    title: 'About the Legacy Air Force PFA calculator',
-    paragraphs: [
-      'Estimate a Legacy Air Force Physical Fitness Assessment (PFA) score for historical comparison using published 1.5-mile run, push-up, and sit-up style standards.',
-      'Helpful if you are reviewing past performance or comparing eras of testing. This is preparation and tracking assistance only — not an official scorecard.',
-    ],
-    faqs: [],
-    links: [
-      { tab: 'air-force-pfra', label: 'Current Air Force PFRA calculator' },
-      { tab: 'army-aft', label: 'Army AFT calculator' },
-      { tab: 'marine-pft', label: 'Marine Corps PFT calculator' },
-      { tab: 'navy-prt', label: 'Navy PRT calculator' },
-    ],
-  },
   'army-aft': {
     title: 'About the Army AFT calculator',
     paragraphs: [
-      'Estimate your Army Fitness Test (AFT) score with this Army AFT calculator using published age- and gender-normed event standards.',
-      'Scored events typically include the 3-rep max deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run. Use it for training feedback and readiness prep — not as a substitute for official Army testing.',
+      'The Army Fitness Test (AFT) measures soldier physical readiness across strength, muscular endurance, power-endurance, and aerobic capacity. This calculator helps you estimate how event results map onto published AFT-style scoring for training feedback.',
+      'Events commonly entered here include the 3-rep max deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run. Select age band and gender, then enter each result to review an unofficial estimate.',
+      'Treat the output as a practice score for prep and progress tracking — not a record score. Weak events usually matter as much as the total, so use the breakdown to guide training priorities.',
+      'KinesoScore does not provide official military scoring. Official Army results come only from authorized testing under current Army guidance and command procedures.',
     ],
     faqs: [
       {
-        question: 'How is the Army AFT scored?',
+        question: 'Is Army AFT the same as ACFT?',
         answer:
-          'The Army Fitness Test awards points by event against published standards that vary by age band and gender. KinesoScore estimates each event score from your inputs, then sums them into an unofficial total so you can see where to improve before an official test.',
+          'People still search for “ACFT calculator” because the Army Combat Fitness Test (ACFT) was the prior widely used name for Army fitness testing. The current test of record discussed on this page is the Army Fitness Test (AFT). Event lists and standards can change over time — always confirm the latest official Army materials. This page estimates AFT-style performance for education and training prep only.',
+      },
+      {
+        question: 'What events are included in the Army AFT calculator?',
+        answer:
+          'This calculator covers the common AFT event set used for general-standard estimates: 3-rep max deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run. Specialty or alternate standards may exist in official guidance and are not all represented here.',
+      },
+      {
+        question: 'How does this Army AFT calculator estimate a score?',
+        answer:
+          'You enter age band, gender, and event results. KinesoScore maps those inputs to published age- and gender-normed point tables and returns an unofficial event-by-event and total estimate for training insight.',
+      },
+      {
+        question: 'Is the Army AFT calculator official?',
+        answer:
+          'No. KinesoScore is an educational training tool. It is not an Army scorecard, not a substitute for record testing, and not an official Department of the Army product.',
+      },
+      {
+        question: 'How can I prepare using this Army AFT calculator?',
+        answer:
+          'Retest after training blocks, note which events limit your estimate, and focus practice on those movements — for example deadlift strength work or 2-mile pacing. Pair this page with the Strength and Running calculators for supporting lift and aerobic tracking.',
+      },
+      {
+        question: 'Does age or gender affect Army AFT scoring in this calculator?',
+        answer:
+          'Yes. The estimate uses age-band and gender inputs against published general-standard tables. Always verify the standard that applies to your component and duty requirements in official Army sources.',
       },
     ],
     links: [
-      { tab: 'air-force-pfra', label: 'Air Force PFRA calculator' },
+      { tab: 'strength', label: 'Strength calculator' },
+      { tab: 'running', label: 'Running calculator' },
       { tab: 'marine-pft', label: 'Marine Corps PFT calculator' },
       { tab: 'navy-prt', label: 'Navy PRT calculator' },
     ],
@@ -301,18 +299,41 @@ export const MILITARY_SEO = {
   'marine-pft': {
     title: 'About the Marine Corps PFT calculator',
     paragraphs: [
-      'Estimate your Marine Corps Physical Fitness Test (PFT) score with this Marine PFT calculator using published pull-up or push-up, forearm plank, and 3-mile run standards.',
-      'Enter age band, gender, and event results for unofficial scoring assistance and training feedback. Official Marine Corps testing remains the source of record.',
+      'The Marine Corps Physical Fitness Test (PFT) measures upper-body strength or endurance, core endurance, and aerobic fitness. This Marine PFT calculator estimates how your event results compare with published PFT-style standards.',
+      'Components typically include pull-ups or push-ups, a forearm plank, and a 3-mile run. Choose age band and gender, select the upper-body option you performed, then enter reps and times.',
+      'Interpret results as unofficial training feedback. Use event scores to see whether upper-body work, plank capacity, or run fitness is the limiting factor before an official PFT.',
+      'KinesoScore does not provide official military scoring. Official Marine Corps scores come only from authorized testing under current Marine Corps guidance.',
     ],
     faqs: [
       {
-        question: 'How is the Marine Corps PFT scored?',
+        question: 'What events are on the Marine Corps PFT?',
         answer:
-          'The PFT scores pull-ups or push-ups, a timed forearm plank, and a 3-mile run against Marine Corps age- and gender-based tables. KinesoScore estimates those event points from your inputs so you can prepare and track progress.',
+          'The PFT scored in this calculator includes an upper-body event (pull-ups or push-ups), a forearm plank, and a 3-mile run. Official tables set event minimums and a total-score threshold for passing.',
+      },
+      {
+        question: 'How is the Marine Corps PFT scored on KinesoScore?',
+        answer:
+          'After you enter age band, gender, and event results, KinesoScore estimates event points from published Marine Corps tables and combines them into an unofficial total for readiness prep.',
+      },
+      {
+        question: 'Is this Marine PFT calculator an official USMC tool?',
+        answer:
+          'No. It is an educational estimate for training and progress tracking. It does not replace official Marine Corps testing, scorecards, or command reporting.',
+      },
+      {
+        question: 'How can I prepare for the Marine PFT?',
+        answer:
+          'Train the events you will perform: pull-up or push-up volume, plank hold progressions, and 3-mile run pacing. Recalculate after focused blocks to see which event still limits the estimate. The Running and Strength calculators can support aerobic and upper-body tracking.',
+      },
+      {
+        question: 'Do age and gender change Marine PFT standards here?',
+        answer:
+          'Yes. Point values depend on age band and gender inputs against published PFT tables. Confirm current Marine Corps standards for your situation before treating any estimate as a target.',
       },
     ],
     links: [
-      { tab: 'air-force-pfra', label: 'Air Force PFRA calculator' },
+      { tab: 'running', label: 'Running calculator' },
+      { tab: 'strength', label: 'Strength calculator' },
       { tab: 'army-aft', label: 'Army AFT calculator' },
       { tab: 'navy-prt', label: 'Navy PRT calculator' },
     ],
@@ -320,20 +341,134 @@ export const MILITARY_SEO = {
   'navy-prt': {
     title: 'About the Navy PRT calculator',
     paragraphs: [
-      'Estimate your Navy Physical Readiness Test (PRT) score with this Navy PRT calculator using published push-up, forearm plank, and 1.5-mile run standards.',
-      'Built for sailors and candidates who want practical readiness feedback between official tests — educational estimates only, not an official Navy scorecard.',
+      'The Navy Physical Readiness Test (PRT) measures muscular endurance and aerobic readiness for sailors. This Navy PRT calculator estimates performance against published PRT-style standards for training feedback between official tests.',
+      'Primary components entered here are push-ups, a forearm plank, and a 1.5-mile run. Select age band and gender, then enter each result to review an unofficial estimate.',
+      'Use the estimate to identify whether strength-endurance, core endurance, or run fitness needs the most work. It is a prep aid, not a fitness report entry.',
+      'KinesoScore does not provide official military scoring. Official Navy PRT results come only from authorized testing under current Navy physical readiness guidance.',
     ],
     faqs: [
       {
-        question: 'How is the Navy PRT scored?',
+        question: 'What does the Navy PRT include in this calculator?',
         answer:
-          'The PRT typically scores push-ups, a forearm plank, and a 1.5-mile run using Navy age- and gender-based standards. KinesoScore estimates each component and a combined result for training insight only.',
+          'This page scores the common PRT trio of push-ups, forearm plank, and 1.5-mile run. Alternate cardio options may exist in official Navy guidance and are not all scored here.',
+      },
+      {
+        question: 'How is Navy PRT scoring estimated?',
+        answer:
+          'KinesoScore converts your age band, gender, and event inputs into unofficial event points using published Navy tables, then summarizes a combined estimate for training insight.',
+      },
+      {
+        question: 'Is the Navy PRT calculator official?',
+        answer:
+          'No. KinesoScore provides educational estimates only. It is not a Navy Human Resources tool and cannot produce an official PRT score of record.',
+      },
+      {
+        question: 'How can I prepare for the Navy PRT?',
+        answer:
+          'Build push-up capacity, extend plank holds, and improve 1.5-mile run pacing, then re-enter results to see which event still limits the estimate. The Running calculator is useful for aerobic progress between PRT attempts.',
+      },
+      {
+        question: 'Are Navy PRT estimates age- and gender-based?',
+        answer:
+          'Yes. This calculator uses age-band and gender selections with published Navy standards. Always confirm the standards that apply to your age group and testing cycle in official Navy materials.',
       },
     ],
     links: [
-      { tab: 'air-force-pfra', label: 'Air Force PFRA calculator' },
+      { tab: 'running', label: 'Running calculator' },
       { tab: 'army-aft', label: 'Army AFT calculator' },
       { tab: 'marine-pft', label: 'Marine Corps PFT calculator' },
+      { tab: 'air-force-pfra', label: 'Air Force PFRA calculator' },
+    ],
+  },
+  'air-force-pfra': {
+    title: 'About the Air Force PFRA calculator',
+    paragraphs: [
+      'The Air Force Physical Fitness Readiness Assessment (PFRA) measures cardiorespiratory fitness, muscular strength, core endurance, and a waist-to-height body-composition component. This calculator estimates how entered results relate to published PFRA-style scoring.',
+      'Typical inputs include a cardio event, a strength option (such as push-ups or hand-release push-ups), a core option (such as sit-ups, reverse crunch, or forearm plank), and waist and height for waist-to-height ratio.',
+      'Interpret the result as an unofficial practice estimate for test preparation. Review component scores to see whether cardio, strength, core, or body-composition inputs are limiting the estimate.',
+      'KinesoScore does not provide official military scoring. Official Air Force fitness results come only from authorized testing under current Air Force guidance.',
+    ],
+    faqs: [
+      {
+        question: 'What does the Air Force PFRA measure?',
+        answer:
+          'PFRA-style scoring combines cardio performance, muscular strength, core endurance, and waist-to-height ratio into a composite readiness picture. This calculator estimates that composite for training feedback only.',
+      },
+      {
+        question: 'Which PFRA components can I enter here?',
+        answer:
+          'You can enter strength and core event choices with repetitions or plank time, a cardio result, and waist and height for waist-to-height ratio. Some specialty or alternate charts may exist officially and are not all included.',
+      },
+      {
+        question: 'How should I interpret a PFRA calculator estimate?',
+        answer:
+          'Use it as a prep snapshot: higher component estimates generally indicate stronger relative performance on those inputs. It is not a medical assessment and not an official fitness score of record.',
+      },
+      {
+        question: 'Is the Air Force PFRA calculator official?',
+        answer:
+          'No. KinesoScore provides an educational estimate based on published PFRA-style standards. Official scores come only from authorized Air Force testing.',
+      },
+      {
+        question: 'How can I prepare for the Air Force PFRA?',
+        answer:
+          'Train the cardio option you will perform, build strength and core event capacity, and track body-composition inputs that affect waist-to-height ratio. Recalculate after training blocks. Running and VO₂ Max tools can support aerobic prep.',
+      },
+      {
+        question: 'Does age or gender affect PFRA estimates?',
+        answer:
+          'Yes. Age band and gender selections are part of the estimate against published tables. Confirm current Air Force standards for your age group before setting training targets.',
+      },
+    ],
+    links: [
+      { tab: 'running', label: 'Running calculator' },
+      { tab: 'vo2max', label: 'VO₂ Max calculator' },
+      { tab: 'air-force-pfa', label: 'Legacy Air Force PFA calculator' },
+      { tab: 'army-aft', label: 'Army AFT calculator' },
+    ],
+  },
+  'air-force-pfa': {
+    title: 'About the Legacy Air Force PFA calculator',
+    paragraphs: [
+      'The Legacy Air Force Physical Fitness Assessment (PFA) reflects a previous Air Force fitness testing model retained here for historical comparison and long-term tracking. It is not the current PFRA assessment.',
+      'Legacy-style components commonly include a 1.5-mile run, one-minute push-ups, and one-minute sit-ups. Enter age band, gender, and event results to estimate an unofficial legacy-style score.',
+      'Interpret results as historical or comparative feedback — useful if you are reviewing past performance eras, not as a current Air Force record score.',
+      'KinesoScore does not provide official military scoring. For current Air Force testing, use official guidance and the current PFRA calculator for educational prep estimates.',
+    ],
+    faqs: [
+      {
+        question: 'What is the Legacy Air Force PFA?',
+        answer:
+          'It is the earlier Air Force Physical Fitness Assessment model kept on KinesoScore for historical estimates. Current Air Force readiness testing is represented separately by the PFRA calculator.',
+      },
+      {
+        question: 'Which events are in the legacy Air Force PFA calculator?',
+        answer:
+          'This calculator focuses on legacy-style 1.5-mile run, push-up, and sit-up inputs against published charts from that assessment era. Optional waist/height fields may appear for reference and are not always used by those charts.',
+      },
+      {
+        question: 'How is the legacy PFA different from the PFRA?',
+        answer:
+          'PFRA is the current Air Force fitness assessment model on KinesoScore, with different components and scoring emphasis (including waist-to-height ratio). The legacy PFA page is for historical comparison, not current official testing.',
+      },
+      {
+        question: 'Is this Air Force PFA calculator official?',
+        answer:
+          'No. It is an educational historical estimate only. It cannot produce an official Air Force score of record.',
+      },
+      {
+        question: 'Who should use the legacy PFA calculator?',
+        answer:
+          'Use it if you need a legacy-era comparison or are tracking older saved results. For current Air Force prep, prefer the PFRA calculator and confirm requirements in official Air Force materials.',
+      },
+      {
+        question: 'Did age and gender affect legacy PFA scoring?',
+        answer:
+          'Yes. Legacy estimates on this page use age-band and gender inputs with published charts from that assessment period. Always verify any historical comparison against the original official tables when accuracy matters.',
+      },
+    ],
+    links: [
+      { tab: 'air-force-pfra', label: 'Current Air Force PFRA calculator' },
     ],
   },
 }
@@ -342,7 +477,7 @@ export const MILITARY_SEO_DISCLAIMER =
   'Educational estimate only — not an official service scorecard or medical advice. Always confirm with current official standards and command guidance.'
 
 export const HOME_SEO_TAGLINE =
-  'KinesoScore™ is a comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking.'
+  'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, fitness assessment standards, and an intuitive myKinesoScore™. Measure where you are-Improve where you\'re going.'
 
 /** FAQs attached to document JSON-LD by App tab / PAGE_SEO key. */
 export const PAGE_FAQS_BY_TAB = {
@@ -350,7 +485,7 @@ export const PAGE_FAQS_BY_TAB = {
     {
       question: 'How does KinesoScore compare fitness performance?',
       answer:
-        'KinesoScore™ combines transparent calculators for strength (including Epley 1RM and SBD total), running, VO₂ max, fitness age, BMI/BMR, and military assessments (Army AFT, Marine PFT, Navy PRT, Air Force PFRA/PFA). The overall KinesoScore™ averages strength and running percentiles against published recreational norms.',
+        'KinesoScore combines transparent calculators for strength (including Epley 1RM and SBD total), running, VO₂ max, fitness age, BMI/BMR, and military assessments (Army AFT, Marine PFT, Navy PRT, Air Force PFRA/PFA). The overall myKinesoScore™ averages strength and running percentiles against published recreational norms.',
     },
     {
       question: 'How is fitness age calculated?',

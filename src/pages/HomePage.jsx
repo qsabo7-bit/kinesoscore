@@ -3,10 +3,8 @@ import {
   calculatorsByCategory,
   DEFAULT_CALCULATOR_ID,
 } from '../data/calculators'
-import { BRAND } from '../data/brand'
+import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { pathForTab } from '../data/seo'
-import { HOME_SEO_TAGLINE } from '../data/seoCopy'
-
 function ToolList({ tools, onOpenTab }) {
   const handleToolClick = (event, tabId) => {
     if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
@@ -64,7 +62,14 @@ function HomePage({ onOpenTab }) {
       <section className="home-hero">
         <p className="home-eyebrow">Performance tools</p>
         <h1 className="home-brand">{BRAND.full}</h1>
-        <p className="home-tagline">{HOME_SEO_TAGLINE}</p>
+        <p className="home-tagline">
+          KinesoScore is a comprehensive fitness performance platform combining
+          strength, endurance, fitness assessment standards, and an intuitive{' '}
+          <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>.
+        </p>
+        <p className="home-tagline">
+          Measure where you are-Improve where you&apos;re going.
+        </p>
         <p>
           <a
             className="seo-intro-link"
@@ -83,7 +88,8 @@ function HomePage({ onOpenTab }) {
               onOpenTab('fitness-score')
             }}
           >
-            Learn how {BRAND.scoreName} works
+            Learn how{' '}
+            <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span> works
           </a>
         </p>
       </section>

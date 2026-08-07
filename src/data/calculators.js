@@ -37,7 +37,7 @@ export const calculators = [
   },
   {
     id: 'scoring',
-    name: 'KinesoScore™',
+    name: 'myKinesoScore™',
     description:
       'Overall fitness score calculator combining strength and running percentiles.',
     status: 'ready',

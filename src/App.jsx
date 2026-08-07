@@ -203,7 +203,9 @@ function App() {
       <AirForcePfraPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
     )
   } else if (renderTab === 'air-force-pfa') {
-    content = <AirForcePfaPage onRequestAuth={goToLogin} />
+    content = (
+      <AirForcePfaPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />
+    )
   } else if (renderTab === 'army-aft') {
     content = (
       <ArmyAftPage onRequestAuth={goToLogin} onOpenTab={setActiveTab} />

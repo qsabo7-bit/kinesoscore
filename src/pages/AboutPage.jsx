@@ -56,11 +56,11 @@ function AboutPage({ onOpenTab }) {
           Built with an exercise science foundation
         </h2>
         <p>
-          {BRAND.scoreName} was developed with a foundation in kinesiology and
-          human performance principles. The platform combines strength
-          assessment, endurance metrics, cardiovascular fitness evaluation, and
-          standardized fitness scoring concepts to help users better understand
-          and track their performance.
+          {BRAND.full} was developed with a foundation in kinesiology and human
+          performance principles. The platform combines strength assessment,
+          endurance metrics, cardiovascular fitness evaluation, and standardized
+          fitness scoring concepts to help users better understand and track
+          their performance.
         </p>
         <p>
           Methods are documented openly and draw on published equations and

@@ -43,9 +43,9 @@ export const PAGE_SEO = {
   home: {
     tab: 'home',
     path: '/',
-    title: 'KinesoScore™ | Fitness Score, Strength, Running & Military Calculators',
+    title: 'KinesoScore | Fitness Score, Strength, Running & Military Calculators',
     description:
-      'KinesoScore™ is a comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking — including 1RM, VO₂ max, fitness age, Army AFT, Marine PFT, Navy PRT, and Air Force PFRA tools.',
+      'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking — including 1RM, VO₂ max, fitness age, Army AFT, Marine PFT, Navy PRT, and Air Force PFRA tools.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [{ name: 'Home', path: '/' }],
@@ -55,7 +55,7 @@ export const PAGE_SEO = {
     path: '/calculators',
     title: 'Fitness Calculators | 1RM, Running, VO₂, Military Tests | KinesoScore',
     description:
-      'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, KinesoScore™, and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
+      'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, myKinesoScore™, and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -94,28 +94,28 @@ export const PAGE_SEO = {
   scoring: {
     tab: 'scoring',
     path: '/scoring',
-    title: 'KinesoScore™ Calculator | Overall Fitness Score from Strength & Running',
+    title: 'myKinesoScore™ Calculator | Overall Fitness Score from Strength & Running',
     description:
-      'Calculate your KinesoScore™ — a transparent fitness score that averages recreational strength and running percentiles so you can compare overall performance in one number.',
+      'Calculate your myKinesoScore™ — a transparent fitness score that averages recreational strength and running percentiles so you can compare overall performance in one number.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
       { name: 'Home', path: '/' },
       { name: 'Calculators', path: '/calculators' },
-      { name: 'KinesoScore™', path: '/scoring' },
+      { name: 'myKinesoScore™', path: '/scoring' },
     ],
   },
   'fitness-score': {
     tab: 'fitness-score',
     path: '/fitness-score',
-    title: 'What Is KinesoScore™? Understanding Fitness Scores',
+    title: 'What Is myKinesoScore™? Understanding Fitness Scores',
     description:
-      'Learn what a fitness score is, why strength and endurance matter together, and how KinesoScore™ measures overall fitness performance for tracking progress over time.',
+      'Learn what a fitness score is, why strength and endurance matter together, and how myKinesoScore™ measures overall fitness performance for tracking progress over time.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
       { name: 'Home', path: '/' },
-      { name: 'What Is KinesoScore™?', path: '/fitness-score' },
+      { name: 'What Is myKinesoScore™?', path: '/fitness-score' },
     ],
   },
   vo2max: {
@@ -179,7 +179,7 @@ export const PAGE_SEO = {
     path: '/air-force-pfra',
     title: 'Air Force PFRA Calculator | Military Fitness Test Score | KinesoScore',
     description:
-      'Free Air Force PFRA calculator for unofficial cardio, strength, core, and body-composition score estimates. Use for training feedback and test prep — not an official scorecard.',
+      'Free Air Force PFRA calculator for unofficial cardio, strength, core, and waist-to-height score estimates. Training feedback and test prep only — not an official Air Force scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -193,7 +193,7 @@ export const PAGE_SEO = {
     path: '/air-force-pfa',
     title: 'Air Force PFA Calculator | Legacy Fitness Assessment | KinesoScore',
     description:
-      'Legacy Air Force PFA calculator for historical 1.5-mile run, push-up, and sit-up style score estimates. Educational tracking only — not official testing.',
+      'Legacy Air Force PFA calculator for historical 1.5-mile run, push-up, and sit-up style estimates. Compare with current PFRA — educational tracking only, not official testing.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -207,7 +207,7 @@ export const PAGE_SEO = {
     path: '/army-aft',
     title: 'Army AFT Calculator | Army Fitness Test Score Estimator | KinesoScore',
     description:
-      'Free Army AFT calculator for deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run score estimates. Prepare and track readiness — not an official Army scorecard.',
+      'Free Army AFT calculator for unofficial deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run estimates. Clarifies AFT vs older ACFT search terms for training prep — not an official Army scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -221,7 +221,7 @@ export const PAGE_SEO = {
     path: '/marine-pft',
     title: 'Marine PFT Calculator | Marine Corps Fitness Test Score | KinesoScore',
     description:
-      'Free Marine Corps PFT calculator for pull-up or push-up, plank, and 3-mile run score estimates. Training feedback for Marines and candidates — not official testing.',
+      'Free Marine Corps PFT calculator with unofficial pull-up or push-up, forearm plank, and 3-mile run estimates. Training feedback for Marines and candidates — not official USMC testing.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -235,7 +235,7 @@ export const PAGE_SEO = {
     path: '/navy-prt',
     title: 'Navy PRT Calculator | Physical Readiness Test Score | KinesoScore',
     description:
-      'Free Navy PRT calculator for push-up, forearm plank, and 1.5-mile run score estimates. Use for readiness prep and progress tracking — not an official Navy scorecard.',
+      'Free Navy PRT calculator with unofficial push-up, forearm plank, and 1.5-mile run estimates for readiness prep and progress tracking — not an official Navy scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -247,9 +247,9 @@ export const PAGE_SEO = {
   about: {
     tab: 'about',
     path: '/about',
-    title: 'About KinesoScore™ | Exercise Science–Informed Fitness Platform',
+    title: 'About KinesoScore | Exercise Science–Informed Fitness Platform',
     description:
-      'Learn how KinesoScore™ applies kinesiology and human performance principles to transparent strength, endurance, VO₂ fitness age, and military fitness calculators — educational tools, not medical advice.',
+      'Learn how KinesoScore applies kinesiology and human performance principles to transparent strength, endurance, VO₂ fitness age, and military fitness calculators — educational tools, not medical advice.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -364,7 +364,7 @@ export function buildWebApplicationSchema() {
       'VO₂ max Cooper and Rockport calculators',
       'VO₂-based fitness age calculator',
       'BMI and BMR calculators',
-      'KinesoScore™ overall fitness score calculator',
+      'myKinesoScore™ overall fitness score calculator',
       'Army AFT calculator',
       'Marine Corps PFT calculator',
       'Navy PRT calculator',

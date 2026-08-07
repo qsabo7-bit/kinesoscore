@@ -62,56 +62,9 @@ function MilitaryAssessmentShell({
         <p className="page-lead">{assessment.lead}</p>
       </header>
 
-      {seo ? (
-        <SeoIntro
-          title={seo.title}
-          links={seo.links}
-          faqs={seo.faqs}
-          disclaimer={MILITARY_SEO_DISCLAIMER}
-          onNavigate={onOpenTab}
-        >
-          {seo.paragraphs.map((text) => (
-            <p key={text}>{text}</p>
-          ))}
-        </SeoIntro>
-      ) : null}
-
-      <section
-        className="account-card military-assessment-info"
-        aria-labelledby={`${assessment.id}-info`}
-      >
-        <h2 id={`${assessment.id}-info`} className="result-section-title">
-          Assessment information
-        </h2>
-        <ul className="result-table">
-          <li>
-            <span>Assessment</span>
-            <strong>{assessment.name}</strong>
-          </li>
-          <li>
-            <span>Status</span>
-            <strong>{assessment.infoStatus || 'Current'}</strong>
-          </li>
-          <li>
-            <span>Official source</span>
-            <strong>
-              {source?.url ? (
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="military-source-link"
-                >
-                  {source.name}
-                </a>
-              ) : (
-                source?.name || '—'
-              )}
-            </strong>
-          </li>
-        </ul>
-        <p className="calc-disclaimer">{MILITARY_ESTIMATE_DISCLAIMER}</p>
-      </section>
+      <p className="calc-disclaimer military-short-disclaimer">
+        {MILITARY_ESTIMATE_DISCLAIMER}
+      </p>
 
       {!scoringReady ? (
         <section className="military-coming-soon" role="status">
@@ -297,6 +250,58 @@ function MilitaryAssessmentShell({
           onRequestAuth={onRequestAuth}
         />
       ) : null}
+
+      {seo ? (
+        <SeoIntro
+          title={seo.title}
+          links={seo.links}
+          faqs={seo.faqs}
+          collapseFaqs
+          disclaimer={MILITARY_SEO_DISCLAIMER}
+          onNavigate={onOpenTab}
+        >
+          {seo.paragraphs.map((text) => (
+            <p key={text}>{text}</p>
+          ))}
+        </SeoIntro>
+      ) : null}
+
+      <section
+        className="account-card military-assessment-info"
+        aria-labelledby={`${assessment.id}-info`}
+      >
+        <h2 id={`${assessment.id}-info`} className="result-section-title">
+          Assessment information
+        </h2>
+        <ul className="result-table">
+          <li>
+            <span>Assessment</span>
+            <strong>{assessment.name}</strong>
+          </li>
+          <li>
+            <span>Status</span>
+            <strong>{assessment.infoStatus || 'Current'}</strong>
+          </li>
+          <li>
+            <span>Official source</span>
+            <strong>
+              {source?.url ? (
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="military-source-link"
+                >
+                  {source.name}
+                </a>
+              ) : (
+                source?.name || '—'
+              )}
+            </strong>
+          </li>
+        </ul>
+        <p className="calc-disclaimer">{MILITARY_ESTIMATE_DISCLAIMER}</p>
+      </section>
     </main>
   )
 }

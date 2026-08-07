@@ -833,7 +833,6 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
 
       <SeoIntro
         relatedNote={SCORING_SEO.relatedNote}
-        links={SCORING_SEO.links}
         onNavigate={onOpenTab}
       />
     </main>

@@ -490,7 +490,7 @@ a.site-footer-link:hover {
   cursor: not-allowed;
 }
 
-/* Preserve KinesoScore™ brand casing against uppercase UI styles. */
+/* Preserve myKinesoScore™ / brand casing against uppercase UI styles. */
 .brand-casing,
 .sub-nav-tab-brand,
 .btn.brand-casing,
@@ -1079,6 +1079,41 @@ a.site-footer-link:hover {
 
 .seo-intro-body p:first-child {
   margin-top: 0.7rem;
+}
+
+.seo-intro-faq {
+  margin-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  padding-top: 0.55rem;
+}
+
+.seo-intro-faq:first-of-type {
+  margin-top: 0.85rem;
+}
+
+.seo-intro-faq summary {
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-strong);
+  list-style-position: outside;
+}
+
+.seo-intro-faq summary::-webkit-details-marker {
+  color: var(--text);
+}
+
+.seo-intro-faq p {
+  margin-top: 0.45rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.military-short-disclaimer {
+  margin: 0 0 0.25rem;
+  max-width: 40rem;
 }
 
 .seo-intro-related {
