@@ -22,6 +22,8 @@ const SKIP_SHELL_TABS = new Set([
   'account',
   'login',
   'reset-password',
+  // Stage 5 route is noindex until Stage 6 finalizes public SEO/nav.
+  'leaderboard',
 ])
 
 function escapeAttr(value) {

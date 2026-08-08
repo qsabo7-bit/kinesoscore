@@ -24,6 +24,7 @@ import AboutPage from './pages/AboutPage'
 import FitnessScorePage from './pages/FitnessScorePage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
+import LeaderboardPage from './pages/LeaderboardPage'
 import { pathForTab, resolveSeoRoute } from './data/seo'
 import {
   getAuthIntent,
@@ -264,6 +265,8 @@ function App() {
         onRequestAuth={requestAuth}
       />
     )
+  } else if (renderTab === 'leaderboard') {
+    content = <LeaderboardPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'about') {
     content = <AboutPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'privacy') {

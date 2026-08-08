@@ -269,6 +269,7 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
         onSaved={syncEstimated5kAutofillFromSaves}
         onDeleted={syncEstimated5kAutofillFromSaves}
         onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
         saveHost={saveHost}
       />
     </main>

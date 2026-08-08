@@ -740,6 +740,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         sampleKind="score"
         lockedPreview={FPC_SCORE_LOCKED_PREVIEW}
         onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
       />
 
       {result.score ? (

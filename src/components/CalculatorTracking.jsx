@@ -2,6 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../auth/AuthContext'
 import { MASS_UNITS } from '../calculations'
+import { fetchLeaderboardName } from '../lib/leaderboardProfile'
+import {
+  deactivateLeaderboardShare,
+  fetchActiveLeaderboardShare,
+  friendlyLeaderboardShareError,
+  resolveLeaderboardShareTarget,
+  upsertLeaderboardShare,
+} from '../lib/leaderboardShares'
 import {
   computePerformanceSummary,
   deletePerformanceRecord,
@@ -21,6 +29,7 @@ import {
   GraphRangeToggle,
   GraphTrackSelector,
   HistoryList,
+  LeaderboardShareControl,
   LockedGraphPreview,
   PerformanceSummary,
   ProgressGraph,
@@ -53,6 +62,7 @@ import {
  * @param {(payload: { recordId: string }) => void} [props.onDeleted]
  * @param {Element | null} [props.saveHost] - Optional DOM node to portal the Save button into
  *   (e.g. above age/gender comparison on Strength / Running).
+ * @param {(tabId: string) => void} [props.onOpenTab] - Account Settings navigation for Leaderboard Name
  */
 function CalculatorTracking({
   calculatorType,
@@ -64,6 +74,7 @@ function CalculatorTracking({
   displayUnit: controlledDisplayUnit,
   onDisplayUnitChange,
   onRequestAuth,
+  onOpenTab,
   hasResult = false,
   summaryVariant = 'default',
   saveLabel = 'Save Result',
@@ -83,11 +94,16 @@ function CalculatorTracking({
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [savedMessage, setSavedMessage] = useState(false)
+  const [shareMessage, setShareMessage] = useState('')
   const [error, setError] = useState('')
   const [localDisplayUnit, setLocalDisplayUnit] = useState(
     resultUnit === 'kg' ? 'kg' : 'lb',
   )
   const [graphRange, setGraphRange] = useState('all')
+  /** @type {'private' | 'global'} */
+  const [shareMode, setShareMode] = useState('private')
+  const [hadActiveShare, setHadActiveShare] = useState(false)
+  const [hasLeaderboardName, setHasLeaderboardName] = useState(true)
   const touchStartX = useRef(null)
 
   const displayUnit =
@@ -198,6 +214,46 @@ function CalculatorTracking({
     Boolean(saveTrack) &&
     !saveTrack.derived
 
+  const shareTarget = useMemo(() => {
+    if (!saveTrack || saveTrack.derived) return null
+    return resolveLeaderboardShareTarget(
+      calculatorType,
+      saveTrack.exerciseName,
+      saveTrack.higherIsBetter !== false,
+    )
+  }, [calculatorType, saveTrack])
+
+  const shareEligible = Boolean(isAuthenticated && shareTarget)
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !shareTarget) return undefined
+
+    let cancelled = false
+    const boardKey = shareTarget.boardKey
+
+    Promise.all([
+      fetchActiveLeaderboardShare(user.id, boardKey),
+      fetchLeaderboardName(user.id),
+    ])
+      .then(([share, name]) => {
+        if (cancelled) return
+        const active = Boolean(share)
+        setHadActiveShare(active)
+        setShareMode(active ? 'global' : 'private')
+        setHasLeaderboardName(Boolean(name))
+      })
+      .catch(() => {
+        if (cancelled) return
+        setHadActiveShare(false)
+        setShareMode('private')
+        setHasLeaderboardName(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, user?.id, shareTarget])
+
   const handleSave = async () => {
     if (!user || !canSave) return
     const track = saveTrack
@@ -206,15 +262,22 @@ function CalculatorTracking({
     setSaving(true)
     setError('')
     setSavedMessage(false)
+    setShareMessage('')
+
+    const unitForSave =
+      valueKind === 'duration' ? 'sec' : resultUnit || displayUnit || null
+    const numericResult = Number(resultValue)
+    const wantsShare = shareEligible && shareMode === 'global'
+    const wantsUnshare =
+      shareEligible && shareMode === 'private' && hadActiveShare
 
     try {
-      await savePerformanceRecord({
+      const saved = await savePerformanceRecord({
         userId: user.id,
         calculatorType,
         exerciseName: track.exerciseName,
-        resultValue: Number(resultValue),
-        resultUnit:
-          valueKind === 'duration' ? 'sec' : resultUnit || displayUnit || null,
+        resultValue: numericResult,
+        resultUnit: unitForSave,
       })
 
       for (const companion of companionSaves) {
@@ -239,7 +302,51 @@ function CalculatorTracking({
 
       setSavedMessage(true)
       setSelectedTrackId(track.id)
-      onSaved?.({ track, resultValue: Number(resultValue) })
+
+      if (wantsShare && shareTarget) {
+        if (!hasLeaderboardName) {
+          setShareMessage(
+            'A Leaderboard Name is required to share results globally. Add one in Account Settings. Your result was saved privately.',
+          )
+        } else {
+          try {
+            await upsertLeaderboardShare({
+              userId: user.id,
+              sourceRecordId: saved.id,
+              boardKey: shareTarget.boardKey,
+              calculatorType: shareTarget.calculatorType,
+              exerciseName: shareTarget.exerciseName,
+              resultValue: numericResult,
+              resultUnit: unitForSave,
+              higherIsBetter: shareTarget.higherIsBetter,
+            })
+            setHadActiveShare(true)
+            setShareMode('global')
+            setShareMessage('Shared to the global leaderboard.')
+          } catch (shareErr) {
+            setShareMessage(friendlyLeaderboardShareError(shareErr))
+            if (/Leaderboard Name is required/i.test(String(shareErr?.message))) {
+              setHasLeaderboardName(false)
+            }
+          }
+        }
+      } else if (wantsUnshare && shareTarget) {
+        try {
+          await deactivateLeaderboardShare(user.id, shareTarget.boardKey)
+          setHadActiveShare(false)
+          setShareMode('private')
+          setShareMessage('Removed from the global leaderboard. Your private history is unchanged.')
+        } catch (shareErr) {
+          setShareMessage(
+            friendlyLeaderboardShareError(
+              shareErr,
+              'Could not update sharing. Your result was saved privately.',
+            ),
+          )
+        }
+      }
+
+      onSaved?.({ track, resultValue: numericResult })
       await loadHistory()
     } catch (err) {
       setError(err.message || 'Could not save this result.')
@@ -309,23 +416,62 @@ function CalculatorTracking({
   // Signed-in: always show history/graph for this calculator (even before a new calc).
   if (!tracks.length) return null
 
-  const saveButton =
-    canSave ? (
+  const saveBlock = canSave ? (
+    <div className="save-result-block">
+      {shareEligible ? (
+        <LeaderboardShareControl
+          mode={shareMode}
+          onChange={(next) => {
+            setShareMode(next)
+            setShareMessage('')
+          }}
+          disabled={saving}
+          hasLeaderboardName={hasLeaderboardName}
+          onRequestAccount={
+            onOpenTab ? () => onOpenTab('account') : undefined
+          }
+        />
+      ) : null}
       <SaveResultButton
         onSave={handleSave}
         saving={saving}
         savedMessage={savedMessage}
         label={saveLabel}
       />
-    ) : null
+      {shareMessage ? (
+        <p
+          className={`feedback${
+            /^(Shared to|Removed from)/i.test(shareMessage)
+              ? ' feedback-success'
+              : ' feedback-error'
+          }`}
+          role="status"
+        >
+          {shareMessage}
+          {/Account Settings/i.test(shareMessage) && onOpenTab ? (
+            <>
+              {' '}
+              <button
+                type="button"
+                className="text-link-button"
+                onClick={() => onOpenTab('account')}
+              >
+                Open Account Settings
+              </button>
+            </>
+          ) : null}
+        </p>
+      ) : null}
+    </div>
+  ) : null
 
   const externalSave =
-    saveHost && saveButton ? createPortal(saveButton, saveHost) : null
+    saveHost && saveBlock ? createPortal(saveBlock, saveHost) : null
 
   return (
     <div className="tracking-panel">
       {externalSave}
-      {!saveHost ? saveButton : null}
+      {!saveHost ? saveBlock : null}
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 

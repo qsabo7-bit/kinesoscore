@@ -1374,6 +1374,76 @@ a.site-footer-link:hover {
   gap: 0.85rem;
 }
 
+.save-result-block {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.leaderboard-share-control {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 36rem;
+}
+
+.leaderboard-share-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.leaderboard-share-hint {
+  margin: 0;
+}
+
+.leaderboard-share-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.leaderboard-share-option {
+  min-height: 2.35rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.leaderboard-share-option:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.leaderboard-share-option.is-active {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.leaderboard-share-option:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.text-link-button {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-link-button:hover {
+  color: color-mix(in srgb, var(--accent) 80%, white);
+}
+
 .save-result-slot:not(:empty) {
   margin: 0.85rem 0 0.35rem;
 }
@@ -2401,6 +2471,141 @@ a.site-footer-link:hover {
 /* Legacy under-field helper removed from the design system */
 .shared-data-indicator {
   display: none;
+}
+
+/* Stage 5 — public Leaderboard */
+.leaderboard-page {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.leaderboard-filters {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.leaderboard-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.leaderboard-subboards {
+  max-width: 100%;
+}
+
+.leaderboard-chip {
+  min-height: 2.35rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.86rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.leaderboard-chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.leaderboard-chip.is-active {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.leaderboard-board-caption {
+  margin: 0;
+}
+
+.leaderboard-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.leaderboard-table {
+  width: 100%;
+  min-width: 18rem;
+  border-collapse: collapse;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.7rem 0.55rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.leaderboard-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.leaderboard-rank {
+  width: 3.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.leaderboard-name {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.leaderboard-result {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.locked-leaderboard-preview {
+  position: relative;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.locked-leaderboard-sample {
+  padding: 0.75rem 1rem 5.5rem;
+  filter: blur(1.5px);
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}
+
+.locked-leaderboard-cta {
+  position: absolute;
+  inset: auto 0.85rem 0.85rem;
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 640px) {
+  .leaderboard-subboards {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.15rem;
+  }
+
+  .leaderboard-chip {
+    flex: 0 0 auto;
+  }
+
+  .locked-leaderboard-cta {
+    inset: auto 0.5rem 0.5rem;
+  }
 }
 
 .strength-mode-tabs {

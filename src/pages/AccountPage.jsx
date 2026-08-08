@@ -1,5 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import {
+  clearLeaderboardName,
+  fetchLeaderboardName,
+  friendlyLeaderboardError,
+  LEADERBOARD_NAME_MAX,
+  saveLeaderboardName,
+  validateLeaderboardName,
+} from '../lib/leaderboardProfile'
 
 function formatDate(iso) {
   if (!iso) return '—'
@@ -20,6 +28,46 @@ function AccountPage({ onOpenTab }) {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const [lbDraft, setLbDraft] = useState('')
+  const [lbSaved, setLbSaved] = useState(null)
+  const [lbLoadedFor, setLbLoadedFor] = useState(null)
+  const [lbBusy, setLbBusy] = useState(false)
+  const [lbError, setLbError] = useState('')
+  const [lbMessage, setLbMessage] = useState('')
+
+  useEffect(() => {
+    if (!user?.id) return undefined
+
+    const userId = user.id
+    let cancelled = false
+
+    fetchLeaderboardName(userId)
+      .then((name) => {
+        if (cancelled) return
+        setLbSaved(name)
+        setLbDraft(name || '')
+        setLbError('')
+        setLbMessage('')
+        setLbLoadedFor(userId)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setLbSaved(null)
+        setLbDraft('')
+        setLbMessage('')
+        setLbError(
+          friendlyLeaderboardError(err, 'Could not load Leaderboard Name.'),
+        )
+        setLbLoadedFor(userId)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
+  const lbLoading = Boolean(user?.id) && lbLoadedFor !== user.id
 
   const handleLogout = async () => {
     setBusy(true)
@@ -46,6 +94,58 @@ function AccountPage({ onOpenTab }) {
       )
       setBusy(false)
       setConfirmDelete(false)
+    }
+  }
+
+  const handleSaveLeaderboardName = async (event) => {
+    event.preventDefault()
+    if (!user?.id || lbBusy) return
+
+    setLbBusy(true)
+    setLbError('')
+    setLbMessage('')
+
+    const checked = validateLeaderboardName(lbDraft)
+    if (!checked.ok) {
+      setLbError(checked.error)
+      setLbBusy(false)
+      return
+    }
+
+    try {
+      const name = await saveLeaderboardName(user.id, checked.name)
+      setLbSaved(name)
+      setLbDraft(name)
+      setLbMessage(
+        lbSaved ? 'Leaderboard Name updated.' : 'Leaderboard Name saved.',
+      )
+    } catch (err) {
+      if (err?.code === 'VALIDATION') {
+        setLbError(err.message)
+      } else {
+        setLbError(friendlyLeaderboardError(err))
+      }
+    } finally {
+      setLbBusy(false)
+    }
+  }
+
+  const handleClearLeaderboardName = async () => {
+    if (!user?.id || lbBusy || !lbSaved) return
+
+    setLbBusy(true)
+    setLbError('')
+    setLbMessage('')
+
+    try {
+      await clearLeaderboardName(user.id)
+      setLbSaved(null)
+      setLbDraft('')
+      setLbMessage('Leaderboard Name removed.')
+    } catch (err) {
+      setLbError(friendlyLeaderboardError(err, 'Could not clear Leaderboard Name.'))
+    } finally {
+      setLbBusy(false)
     }
   }
 
@@ -79,6 +179,15 @@ function AccountPage({ onOpenTab }) {
     )
   }
 
+  const lbUnchanged =
+    (lbSaved || '') === String(lbDraft ?? '').trim() && Boolean(lbSaved)
+  const canClear = Boolean(lbSaved) && !lbBusy && !lbLoading
+  const canSave =
+    !lbBusy &&
+    !lbLoading &&
+    String(lbDraft ?? '').trim().length > 0 &&
+    !lbUnchanged
+
   return (
     <main className="page account-page">
       <header className="page-header">
@@ -110,6 +219,79 @@ function AccountPage({ onOpenTab }) {
             </strong>
           </li>
         </ul>
+      </section>
+
+      <section className="account-card" aria-labelledby="leaderboard-name-heading">
+        <h2 id="leaderboard-name-heading" className="result-section-title">
+          Leaderboard Name
+        </h2>
+        <p className="calc-hint">
+          Optional — required to appear on global leaderboards.
+        </p>
+        <p className="calc-hint">
+          This public handle is separate from your first name and email. Use
+          3–24 characters: letters, numbers, underscores, or hyphens.
+        </p>
+
+        {lbLoading ? (
+          <p className="calc-hint">Loading Leaderboard Name…</p>
+        ) : (
+          <form className="auth-form" onSubmit={handleSaveLeaderboardName}>
+            <label>
+              Leaderboard Name
+              <input
+                type="text"
+                name="leaderboardName"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={LEADERBOARD_NAME_MAX}
+                value={lbDraft}
+                onChange={(event) => {
+                  setLbDraft(event.target.value)
+                  setLbError('')
+                  setLbMessage('')
+                }}
+                placeholder="e.g. TrailRunner_7"
+                disabled={lbBusy}
+                aria-describedby="leaderboard-name-help"
+              />
+            </label>
+            <p id="leaderboard-name-help" className="calc-hint">
+              {lbSaved
+                ? `Current: ${lbSaved}`
+                : 'No Leaderboard Name set yet.'}
+            </p>
+
+            {lbError ? (
+              <p className="feedback feedback-error" role="alert">
+                {lbError}
+              </p>
+            ) : null}
+            {lbMessage ? (
+              <p className="feedback feedback-success" role="status">
+                {lbMessage}
+              </p>
+            ) : null}
+
+            <div className="confirm-actions">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!canSave}
+              >
+                {lbBusy ? 'Saving…' : lbSaved ? 'Update name' : 'Save name'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={handleClearLeaderboardName}
+                disabled={!canClear}
+              >
+                Clear name
+              </button>
+            </div>
+          </form>
+        )}
       </section>
 
       <section className="account-card account-controls">

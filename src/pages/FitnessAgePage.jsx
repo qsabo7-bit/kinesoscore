@@ -369,6 +369,7 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
             : []
         }
         onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
       />
     </main>
   )

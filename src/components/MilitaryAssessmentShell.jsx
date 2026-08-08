@@ -248,6 +248,7 @@ function MilitaryAssessmentShell({
           lockedPreview={lockedPreview}
           companionSaves={result?.companionSaves ?? []}
           onRequestAuth={onRequestAuth}
+          onOpenTab={onOpenTab}
         />
       ) : null}
 

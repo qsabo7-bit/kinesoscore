@@ -331,6 +331,17 @@ export const PAGE_SEO = {
     ogType: 'website',
     breadcrumb: null,
   },
+  // Stage 5: route for local/prod testing. Stage 6 will finalize nav + public SEO.
+  leaderboard: {
+    tab: 'leaderboard',
+    path: '/leaderboard',
+    title: 'Leaderboard | KinesoScore',
+    description:
+      'Global KinesoScore leaderboards for opted-in strength, running, myKinesoScore, and fitness assessment results.',
+    robots: 'noindex,nofollow',
+    ogType: 'website',
+    breadcrumb: null,
+  },
 }
 
 /** Paths that should not be indexed. */

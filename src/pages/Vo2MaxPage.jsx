@@ -344,6 +344,7 @@ function Vo2MaxPage({ onRequestAuth, onOpenTab }) {
         resultUnit="ml/kg/min"
         hasResult={Boolean(result?.vo2Max)}
         onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
       />
 
       <SeoIntro relatedNote={VO2_SEO.relatedNote} onNavigate={onOpenTab} />

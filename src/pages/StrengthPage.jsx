@@ -931,6 +931,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
         onDisplayUnitChange={handleMassUnitChange}
         hasResult={hasResult}
         onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
         saveHost={saveHost}
       />
     </main>

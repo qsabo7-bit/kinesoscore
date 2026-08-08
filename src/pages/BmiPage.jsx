@@ -167,6 +167,7 @@ function BmiPage({ onRequestAuth, onOpenTab }) {
         sampleKind="bmi"
         lockedPreview={BMI_LOCKED_PREVIEW}
         onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
       />
     </main>
   )

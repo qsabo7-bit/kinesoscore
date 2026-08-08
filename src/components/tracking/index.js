@@ -11,4 +11,5 @@ export {
 } from './lockedPreviewCopy'
 export { default as PerformanceSummary } from './PerformanceSummary'
 export { default as ProgressGraph } from './ProgressGraph'
+export { default as LeaderboardShareControl } from './LeaderboardShareControl'
 export { default as SaveResultButton } from './SaveResultButton'
