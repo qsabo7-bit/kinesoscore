@@ -79,6 +79,45 @@ function formatDate(iso) {
 
 const RECENT_ACTIVITY_PREVIEW = 5
 
+function DashboardMetricCard({ card, onOpenTab }) {
+  const toneClass =
+    card.trend?.tone === 'good'
+      ? ' is-trend-good'
+      : card.trend?.tone === 'bad'
+        ? ' is-trend-bad'
+        : ''
+
+  return (
+    <button
+      type="button"
+      className={`dashboard-metric-card${
+        card.isPrompt || card.isSample ? ' is-prompt' : ''
+      }${card.isSample ? ' is-sample' : ''}`}
+      onClick={() => onOpenTab?.(card.tab)}
+    >
+      <p className="result-label">
+        {card.title}
+        {card.isSample ? (
+          <span className="dashboard-card-sample-badge">Sample</span>
+        ) : null}
+        {card.badge ? (
+          <span
+            className={`nav-badge nav-badge-${String(card.badge).toLowerCase()}`}
+            style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }}
+          >
+            {card.badge}
+          </span>
+        ) : null}
+      </p>
+      <p className="dashboard-metric-value">{card.primary}</p>
+      <p className="dashboard-metric-secondary">{card.secondary}</p>
+      {card.trend ? (
+        <p className={`dashboard-metric-trend${toneClass}`}>{card.trend.value}</p>
+      ) : null}
+    </button>
+  )
+}
+
 function DashboardPage({ onOpenTab, onRequestAuth }) {
   const {
     user,
@@ -400,7 +439,8 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
       {!loadingData && !model.hasAnyData ? (
         <section className="dashboard-empty account-card">
           <p className="dashboard-empty-copy">
-            Complete your first assessment to begin tracking progress.
+            Complete your first assessment to begin tracking progress. Sample
+            cards below show where your results will appear.
           </p>
           <button
             type="button"
@@ -415,138 +455,56 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
 
       {!loadingData || model.hasAnyData ? (
         <>
-      {model.summaryCards.length ? (
-        <section className="dashboard-section" aria-labelledby="dash-summary">
-          <h2 id="dash-summary" className="result-section-title">
-            Performance summary
-          </h2>
-          <div className="dashboard-card-grid">
-            {model.summaryCards.map((card) => (
-              <button
-                key={card.id}
-                type="button"
-                className={`dashboard-metric-card${
-                  card.isPrompt ? ' is-prompt' : ''
-                }`}
-                onClick={() => onOpenTab?.(card.tab)}
-              >
-                <p className="result-label">{card.title}</p>
-                <p className="dashboard-metric-value">{card.primary}</p>
-                <p className="dashboard-metric-secondary">{card.secondary}</p>
-                {card.trend ? (
-                  <p
-                    className={`dashboard-metric-trend${
-                      card.trend.tone === 'good'
-                        ? ' is-trend-good'
-                        : card.trend.tone === 'bad'
-                          ? ' is-trend-bad'
-                          : ''
-                    }`}
-                  >
-                    {card.trend.value}
-                  </p>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <section className="dashboard-section" aria-labelledby="dash-summary">
+        <h2 id="dash-summary" className="result-section-title">
+          Performance summary
+        </h2>
+        <div className="dashboard-card-grid">
+          {model.summaryCards.map((card) => (
+            <DashboardMetricCard
+              key={card.id}
+              card={card}
+              onOpenTab={onOpenTab}
+            />
+          ))}
+        </div>
+      </section>
 
-      {model.fitnessAssessmentSummaryCards?.length ? (
-        <section
-          className="dashboard-section"
-          aria-labelledby="dash-fitness-assessments"
-        >
-          <h2 id="dash-fitness-assessments" className="result-section-title">
-            Fitness Assessments
-          </h2>
-          <div className="dashboard-card-grid">
-            {model.fitnessAssessmentSummaryCards.map((card) => (
-              <button
-                key={card.id}
-                type="button"
-                className="dashboard-metric-card"
-                onClick={() => onOpenTab?.(card.tab)}
-              >
-                <p className="result-label">
-                  {card.title}
-                  {card.badge ? (
-                    <span
-                      className={`nav-badge nav-badge-${String(card.badge).toLowerCase()}`}
-                      style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }}
-                    >
-                      {card.badge}
-                    </span>
-                  ) : null}
-                </p>
-                <p className="dashboard-metric-value">{card.primary}</p>
-                <p className="dashboard-metric-secondary">{card.secondary}</p>
-                {card.trend ? (
-                  <p
-                    className={`dashboard-metric-trend${
-                      card.trend.tone === 'good'
-                        ? ' is-trend-good'
-                        : card.trend.tone === 'bad'
-                          ? ' is-trend-bad'
-                          : ''
-                    }`}
-                  >
-                    {card.trend.value}
-                  </p>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <section
+        className="dashboard-section"
+        aria-labelledby="dash-fitness-assessments"
+      >
+        <h2 id="dash-fitness-assessments" className="result-section-title">
+          Fitness Assessments
+        </h2>
+        <div className="dashboard-card-grid">
+          {model.fitnessAssessmentSummaryCards.map((card) => (
+            <DashboardMetricCard
+              key={card.id}
+              card={card}
+              onOpenTab={onOpenTab}
+            />
+          ))}
+        </div>
+      </section>
 
-      {model.assessmentSummaryCards.length ? (
-        <section
-          className="dashboard-section"
-          aria-labelledby="dash-military-assessments"
-        >
-          <h2 id="dash-military-assessments" className="result-section-title">
-            Military Assessments
-          </h2>
-          <div className="dashboard-card-grid">
-            {model.assessmentSummaryCards.map((card) => (
-              <button
-                key={card.id}
-                type="button"
-                className="dashboard-metric-card"
-                onClick={() => onOpenTab?.(card.tab)}
-              >
-                <p className="result-label">
-                  {card.title}
-                  {card.badge ? (
-                    <span
-                      className={`nav-badge nav-badge-${String(card.badge).toLowerCase()}`}
-                      style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }}
-                    >
-                      {card.badge}
-                    </span>
-                  ) : null}
-                </p>
-                <p className="dashboard-metric-value">{card.primary}</p>
-                <p className="dashboard-metric-secondary">{card.secondary}</p>
-                {card.trend ? (
-                  <p
-                    className={`dashboard-metric-trend${
-                      card.trend.tone === 'good'
-                        ? ' is-trend-good'
-                        : card.trend.tone === 'bad'
-                          ? ' is-trend-bad'
-                          : ''
-                    }`}
-                  >
-                    {card.trend.value}
-                  </p>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <section
+        className="dashboard-section"
+        aria-labelledby="dash-military-assessments"
+      >
+        <h2 id="dash-military-assessments" className="result-section-title">
+          Military Assessments
+        </h2>
+        <div className="dashboard-card-grid">
+          {model.assessmentSummaryCards.map((card) => (
+            <DashboardMetricCard
+              key={card.id}
+              card={card}
+              onOpenTab={onOpenTab}
+            />
+          ))}
+        </div>
+      </section>
 
       {model.recentActivity.length ? (
         <section className="dashboard-section" aria-labelledby="dash-activity">

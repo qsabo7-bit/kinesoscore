@@ -1,12 +1,20 @@
 import { BRAND } from '../data/brand'
-import {
-  fitnessCalculators,
-  militaryCalculators,
-} from '../data/calculators'
+import { militaryCalculators } from '../data/calculators'
 import { DASHBOARD_GRAPH_METRICS, ACTIVITY_META } from '../data/dashboardMetrics'
 import {
+  CINDY_CALCULATOR_TYPE,
+  CINDY_TRACKS,
   FITNESS_AGE_CALCULATOR_TYPE,
+  FRAN_CALCULATOR_TYPE,
+  FRAN_TRACKS,
+  MAX_PULLUPS_CALCULATOR_TYPE,
+  MAX_PULLUPS_TRACKS,
+  MAX_PUSHUPS_CALCULATOR_TYPE,
+  MAX_PUSHUPS_TRACKS,
+  MURPH_CALCULATOR_TYPE,
+  MURPH_TRACKS,
   RESTING_HEART_RATE_EXERCISE_NAME,
+  STRENGTH_GRAPH_TRACKS,
 } from '../data/trackingTracks'
 import {
   computePerformanceSummary,
@@ -23,6 +31,81 @@ import {
 
 const MILITARY_OVERALL_EXERCISE = 'Overall Score'
 
+/** One dashboard card slot per fitness track (Fran/Murph keep Rx + Scaled separate). */
+const FITNESS_ASSESSMENT_CARD_SLOTS = [
+  ...MAX_PUSHUPS_TRACKS.map((track) => ({
+    id: track.id,
+    calculatorType: MAX_PUSHUPS_CALCULATOR_TYPE,
+    exerciseName: track.exerciseName,
+    title: track.label,
+    higherIsBetter: track.higherIsBetter !== false,
+  })),
+  ...MAX_PULLUPS_TRACKS.map((track) => ({
+    id: track.id,
+    calculatorType: MAX_PULLUPS_CALCULATOR_TYPE,
+    exerciseName: track.exerciseName,
+    title: track.label,
+    higherIsBetter: track.higherIsBetter !== false,
+  })),
+  ...FRAN_TRACKS.map((track) => ({
+    id: track.id,
+    calculatorType: FRAN_CALCULATOR_TYPE,
+    exerciseName: track.exerciseName,
+    title: track.label,
+    higherIsBetter: track.higherIsBetter !== false,
+  })),
+  ...MURPH_TRACKS.map((track) => ({
+    id: track.id,
+    calculatorType: MURPH_CALCULATOR_TYPE,
+    exerciseName: track.exerciseName,
+    title: track.label,
+    higherIsBetter: track.higherIsBetter !== false,
+  })),
+  ...CINDY_TRACKS.map((track) => ({
+    id: track.id,
+    calculatorType: CINDY_CALCULATOR_TYPE,
+    exerciseName: track.exerciseName,
+    title: track.label,
+    higherIsBetter: track.higherIsBetter !== false,
+  })),
+]
+
+const PERFORMANCE_SAMPLE_CARD = {
+  id: 'performance-sample',
+  title: 'Performance',
+  primary: 'Sample',
+  secondary:
+    'Save strength, running, VO₂ Max, BMR, or body-composition results to fill this section.',
+  trend: null,
+  tab: 'strength',
+  isSample: true,
+  isPrompt: true,
+}
+
+const FITNESS_SAMPLE_CARD = {
+  id: 'fitness-sample',
+  title: 'Fitness Assessments',
+  primary: 'Sample',
+  secondary:
+    'Save Max Push-ups, Max Pull-ups, Fran, Murph, or Cindy to unlock assessment cards.',
+  trend: null,
+  tab: 'fran',
+  isSample: true,
+  isPrompt: true,
+}
+
+const MILITARY_SAMPLE_CARD = {
+  id: 'military-sample',
+  title: 'Military Assessments',
+  primary: 'Sample',
+  secondary:
+    'Save an Air Force, Army, Marine Corps, or Navy assessment overall score.',
+  trend: null,
+  tab: 'army-aft',
+  isSample: true,
+  isPrompt: true,
+}
+
 function recordsForMetric(allRecords, metric) {
   return allRecords.filter(
     (record) =>
@@ -35,6 +118,62 @@ function recordsForMetric(allRecords, metric) {
 function latestRecord(records) {
   if (!records?.length) return null
   return records[records.length - 1]
+}
+
+function withSampleFallback(cards, sampleCard) {
+  return cards.length ? cards : [sampleCard]
+}
+
+function pushMassCard(cards, { id, title, rows, tab }) {
+  const summary = computePerformanceSummary(rows, true)
+  if (!summary) return
+  const unit =
+    rows[rows.length - 1]?.result_unit || rows[0]?.result_unit || 'lb'
+  const previous =
+    rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
+  const delta = previous == null ? null : summary.latestValue - previous
+  cards.push({
+    id,
+    title,
+    primary: formatRecordValue(summary.latestValue, 'mass', unit),
+    secondary:
+      previous == null
+        ? `PR ${formatRecordValue(summary.personalRecord, 'mass', unit)}`
+        : `Previous ${formatRecordValue(previous, 'mass', unit)} · PR ${formatRecordValue(summary.personalRecord, 'mass', unit)}`,
+    trend:
+      delta == null ? null : getTrendDisplay(delta, 'number', unit, true),
+    tab,
+  })
+}
+
+function pushNumberMetricCard(
+  cards,
+  {
+    id,
+    title,
+    rows,
+    tab,
+    higherIsBetter,
+    unit = null,
+    secondary = 'Latest result',
+  },
+) {
+  const summary = computePerformanceSummary(rows, higherIsBetter)
+  if (!summary) return
+  const trend = getTrendDisplay(
+    summary.improvementSinceFirst,
+    'number',
+    unit,
+    higherIsBetter,
+  )
+  cards.push({
+    id,
+    title,
+    primary: formatRecordValue(summary.latestValue, 'number', unit),
+    secondary,
+    trend,
+    tab,
+  })
 }
 
 /**
@@ -172,52 +311,19 @@ export function buildDashboardModel(allRecords, options = {}) {
     }
   }
 
-  // Strength — prefer SBD Total; otherwise prompt when individual lifts exist
-  {
-    const sbdRows = byMetric['sbd-total'] || []
-    const sbdSummary = computePerformanceSummary(sbdRows, true)
-    const individualStrength = ascending.filter(
+  // Strength — SBD Total plus each individual 1RM when saved
+  for (const track of STRENGTH_GRAPH_TRACKS) {
+    const rows = ascending.filter(
       (record) =>
         record.calculator_type === 'strength' &&
-        record.exercise_name !== 'SBD Total',
+        record.exercise_name === track.exerciseName,
     )
-
-    if (sbdSummary) {
-      const previous =
-        sbdRows.length > 1
-          ? Number(sbdRows[sbdRows.length - 2].result_value)
-          : null
-      const delta =
-        previous == null ? null : sbdSummary.latestValue - previous
-      const trend =
-        delta == null ? null : getTrendDisplay(delta, 'mass', 'lb', true)
-      const unit =
-        sbdRows[sbdRows.length - 1]?.result_unit ||
-        sbdRows[0]?.result_unit ||
-        'lb'
-      summaryCards.push({
-        id: 'strength',
-        title: 'Strength',
-        primary: formatRecordValue(sbdSummary.latestValue, 'mass', unit),
-        secondary:
-          previous == null
-            ? `PR ${formatRecordValue(sbdSummary.personalRecord, 'mass', unit)}`
-            : `Previous ${formatRecordValue(previous, 'mass', unit)} · PR ${formatRecordValue(sbdSummary.personalRecord, 'mass', unit)}`,
-        trend,
-        tab: 'strength',
-      })
-    } else if (individualStrength.length) {
-      summaryCards.push({
-        id: 'strength',
-        title: 'Strength',
-        primary: 'SBD Total',
-        secondary:
-          'Complete an SBD Total assessment for a more accurate overall strength profile.',
-        trend: null,
-        tab: 'strength',
-        isPrompt: true,
-      })
-    }
+    pushMassCard(summaryCards, {
+      id: track.id,
+      title: track.label,
+      rows,
+      tab: 'strength',
+    })
   }
 
   // Endurance (latest actual running distance — ignore legacy Estimated 5K rows)
@@ -240,83 +346,117 @@ export function buildDashboardModel(allRecords, options = {}) {
     }
   }
 
+  // VO₂ Max
+  {
+    const rows = ascending.filter(
+      (record) => record.calculator_type === 'vo2max',
+    )
+    pushNumberMetricCard(summaryCards, {
+      id: 'vo2max',
+      title: 'VO₂ Max',
+      rows,
+      tab: 'vo2max',
+      higherIsBetter: true,
+      unit: 'ml/kg/min',
+      secondary: 'Latest estimate',
+    })
+  }
+
+  // BMR
+  {
+    const rows = ascending.filter((record) => record.calculator_type === 'bmr')
+    pushNumberMetricCard(summaryCards, {
+      id: 'bmr',
+      title: 'BMR',
+      rows,
+      tab: 'bmr',
+      higherIsBetter: false,
+      unit: 'kcal/day',
+      secondary: 'Latest estimate',
+    })
+  }
+
   // Military assessments — last Overall Score per military variant
-  const assessmentSummaryCards = militaryCalculators
-    .map((tool) => {
+  const assessmentSummaryCards = withSampleFallback(
+    militaryCalculators
+      .map((tool) => {
+        const rows = ascending.filter(
+          (record) =>
+            record.calculator_type === tool.id &&
+            record.exercise_name === MILITARY_OVERALL_EXERCISE,
+        )
+        const latest = latestRecord(rows)
+        if (!latest) return null
+
+        const previous =
+          rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
+        const delta =
+          previous == null ? null : Number(latest.result_value) - previous
+        const trend = getTrendDisplay(delta, 'number', 'points', true)
+
+        return {
+          id: tool.id,
+          title: tool.name,
+          // Match public leaderboard formatting (bare score, no "pts").
+          primary: formatRecordValue(latest.result_value, 'number', null),
+          secondary: `Last taken ${formatRecordDate(latest.created_at)}`,
+          trend,
+          tab: tool.id,
+          badge: tool.badge || null,
+        }
+      })
+      .filter(Boolean),
+    MILITARY_SAMPLE_CARD,
+  )
+
+  // Fitness Assessments — one card per track (Fran/Murph Rx + Scaled separate).
+  const fitnessAssessmentSummaryCards = withSampleFallback(
+    FITNESS_ASSESSMENT_CARD_SLOTS.map((slot) => {
       const rows = ascending.filter(
         (record) =>
-          record.calculator_type === tool.id &&
-          record.exercise_name === MILITARY_OVERALL_EXERCISE,
-      )
-      const latest = latestRecord(rows)
-      if (!latest) return null
-
-      const previous =
-        rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
-      const delta =
-        previous == null ? null : Number(latest.result_value) - previous
-      const trend = getTrendDisplay(delta, 'number', 'points', true)
-
-      return {
-        id: tool.id,
-        title: tool.name,
-        // Match public leaderboard formatting (bare score, no "pts").
-        primary: formatRecordValue(latest.result_value, 'number', null),
-        secondary: `Last taken ${formatRecordDate(latest.created_at)}`,
-        trend,
-        tab: tool.id,
-        badge: tool.badge || null,
-      }
-    })
-    .filter(Boolean)
-
-  // Fitness Assessments — latest save per tool (Rx/Scaled share one card;
-  // trend compares only the same exercise_name so Rx↔Scaled does not fake deltas).
-  const fitnessAssessmentSummaryCards = fitnessCalculators
-    .map((tool) => {
-      const rows = ascending.filter(
-        (record) => record.calculator_type === tool.id,
+          record.calculator_type === slot.calculatorType &&
+          record.exercise_name === slot.exerciseName,
       )
       const latest = latestRecord(rows)
       if (!latest) return null
 
       const unit = String(latest.result_unit || '').toLowerCase()
       const isTime = unit === 'sec'
-      const sameExercise = rows.filter(
-        (record) =>
-          String(record.exercise_name || '') ===
-          String(latest.exercise_name || ''),
-      )
-      const previousRecord =
-        sameExercise.length > 1 ? sameExercise[sameExercise.length - 2] : null
+      const isCindy = isCindyResult(latest)
       const previous =
-        previousRecord == null ? null : Number(previousRecord.result_value)
+        rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
       const delta =
         previous == null ? null : Number(latest.result_value) - previous
+      const valueKind = isTime ? 'duration' : isCindy ? 'cindy' : 'number'
       const trend = getTrendDisplay(
         delta,
-        isTime ? 'duration' : 'number',
-        isTime ? null : 'reps',
-        !isTime,
+        valueKind,
+        isTime || isCindy ? null : 'reps',
+        slot.higherIsBetter,
       )
 
       const primary = isTime
         ? formatRecordValue(latest.result_value, 'duration', null, 'clock')
-        : isCindyResult(latest)
+        : isCindy
           ? formatRecordValue(latest.result_value, 'cindy')
           : formatRecordValue(latest.result_value, 'number', null)
 
       return {
-        id: tool.id,
-        title: tool.name,
+        id: slot.id,
+        title: slot.title,
         primary,
-        secondary: `${latest.exercise_name || tool.name} · ${formatRecordDate(latest.created_at)}`,
+        secondary: `Last logged ${formatRecordDate(latest.created_at)}`,
         trend,
-        tab: tool.id,
-        badge: tool.badge || null,
+        tab: slot.calculatorType,
       }
-    })
-    .filter(Boolean)
+    }).filter(Boolean),
+    FITNESS_SAMPLE_CARD,
+  )
+
+  const performanceSummaryCards = withSampleFallback(
+    summaryCards,
+    PERFORMANCE_SAMPLE_CARD,
+  )
 
   // Keep a larger pool so the dashboard can expand past the default 5.
   // Omit legacy stored Estimated 5K companion rows from activity.
@@ -439,7 +579,7 @@ export function buildDashboardModel(allRecords, options = {}) {
     ascending,
     byMetric,
     fpcScore,
-    summaryCards,
+    summaryCards: performanceSummaryCards,
     fitnessAssessmentSummaryCards,
     assessmentSummaryCards,
     recentActivity,

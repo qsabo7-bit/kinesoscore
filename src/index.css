@@ -3870,6 +3870,27 @@ a:focus-visible {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.75rem;
+  /* Allow every saved card to wrap into view — no max-height clip. */
+  align-items: stretch;
+}
+
+.dashboard-card-sample-badge {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--border);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.dashboard-metric-card.is-sample {
+  border-style: dashed;
+  opacity: 0.92;
 }
 
 .dashboard-metric-card {
@@ -4431,6 +4452,12 @@ a:focus-visible {
 @media (min-width: 980px) {
   .dashboard-card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
