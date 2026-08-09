@@ -62,10 +62,6 @@ function MilitaryAssessmentShell({
         <p className="page-lead">{assessment.lead}</p>
       </header>
 
-      <p className="calc-disclaimer military-short-disclaimer">
-        {MILITARY_ESTIMATE_DISCLAIMER}
-      </p>
-
       {!scoringReady ? (
         <section className="military-coming-soon" role="status">
           <p className="military-coming-soon-title">

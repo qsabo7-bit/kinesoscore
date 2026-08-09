@@ -14,6 +14,7 @@ import {
   fetchPublicHabitStreaks,
   friendlyPublicHabitStreakError,
 } from '../lib/publicHabitStreaks'
+import { resolveLeaderboardRows } from '../lib/leaderboardSamples'
 
 /**
  * Stage 5 public Leaderboard page (Habits tab reuses Stage 8 public streak RPC).
@@ -136,8 +137,12 @@ function LeaderboardPage({ onOpenTab, initialCategoryId }) {
   ])
 
   const loadingBoard = canViewLive && live.key !== requestKey
-  const rows = live.key === requestKey ? live.rows : []
+  const liveRows = live.key === requestKey ? live.rows : []
   const error = live.key === requestKey ? live.error : ''
+  const { rows, isSample } = resolveLeaderboardRows(
+    isHabitsCategory ? 'habits:streak' : effectiveBoardKey,
+    liveRows,
+  )
 
   const selectCategory = (item) => {
     setCategoryId(item.id)
@@ -296,54 +301,16 @@ function LeaderboardPage({ onOpenTab, initialCategoryId }) {
           {error ? (
             <p className="feedback feedback-error">{error}</p>
           ) : null}
-          {!loadingBoard && !error && rows.length === 0 ? (
-            <div className="leaderboard-empty">
-              <p className="calc-hint">
-                {isHabitsCategory
-                  ? 'No shared habit streaks yet. Be the first to opt in from Habits.'
-                  : 'No global results yet. Be the first to share from an eligible calculator.'}
-              </p>
-              <div className="confirm-actions">
-                {isHabitsCategory ? (
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => onOpenTab?.('habits')}
-                  >
-                    Open Habits
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => onOpenTab?.('scoring')}
-                  >
-                    Open {BRAND.scoreName}
-                  </button>
-                )}
-                {!isAuthenticated ? (
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => onOpenTab?.('login')}
-                  >
-                    Create Account
-                  </button>
-                ) : hasLeaderboardName === false ? (
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => onOpenTab?.('account')}
-                  >
-                    Add Leaderboard Name
-                  </button>
-                ) : null}
-              </div>
-            </div>
+          {!loadingBoard && !error && isSample ? (
+            <p className="leaderboard-sample-note" role="status">
+              Sample rankings for preview — these disappear as soon as real
+              athletes share on this board.
+            </p>
           ) : null}
           {!loadingBoard && !error && rows.length > 0 ? (
             <LeaderboardTable
               rows={rows}
+              isSample={isSample}
               caption={
                 isHabitsCategory
                   ? 'Habit streak leaderboard'
@@ -351,6 +318,44 @@ function LeaderboardPage({ onOpenTab, initialCategoryId }) {
               }
               resultLabel={isHabitsCategory ? 'Current Streak' : 'Result'}
             />
+          ) : null}
+          {!loadingBoard && !error && isSample ? (
+            <div className="confirm-actions">
+              {isHabitsCategory ? (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => onOpenTab?.('habits')}
+                >
+                  Open Habits
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => onOpenTab?.('scoring')}
+                >
+                  Be the first real entry
+                </button>
+              )}
+              {!isAuthenticated ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => onOpenTab?.('login')}
+                >
+                  Create Account
+                </button>
+              ) : hasLeaderboardName === false ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => onOpenTab?.('account')}
+                >
+                  Add Leaderboard Name
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </section>
       ) : (
@@ -395,9 +400,16 @@ function resolveInitialCategoryId(initialCategoryId) {
   return LEADERBOARD_UI_CATEGORIES[0].id
 }
 
-function LeaderboardTable({ rows, caption, resultLabel = 'Result' }) {
+function LeaderboardTable({
+  rows,
+  caption,
+  resultLabel = 'Result',
+  isSample = false,
+}) {
   return (
-    <div className="leaderboard-table-wrap">
+    <div
+      className={`leaderboard-table-wrap${isSample ? ' is-sample' : ''}`}
+    >
       <table className="leaderboard-table">
         <caption className="sr-only">{caption}</caption>
         <thead>
@@ -413,7 +425,12 @@ function LeaderboardTable({ rows, caption, resultLabel = 'Result' }) {
               key={`${row.rank}-${row.leaderboard_name}-${row.result_display}`}
             >
               <td className="leaderboard-rank">{row.rank}</td>
-              <td className="leaderboard-name">{row.leaderboard_name}</td>
+              <td className="leaderboard-name">
+                {row.leaderboard_name}
+                {isSample ? (
+                  <span className="leaderboard-sample-badge">Sample</span>
+                ) : null}
+              </td>
               <td className="leaderboard-result">{row.result_display}</td>
             </tr>
           ))}

@@ -4,7 +4,9 @@ import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
 import PeerComparison from '../components/PeerComparison'
+import ResultShareActions from '../components/ResultShareActions'
 import SeoIntro from '../components/SeoIntro'
+import { BRAND } from '../data/brand'
 import { isHighRepEpleyInput } from '../lib/epleyAccuracy'
 import SharedDataNotification, {
   SharedInputShell,
@@ -613,17 +615,6 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
         </p>
       </header>
 
-      <SeoIntro
-        title={STRENGTH_SEO.title}
-        relatedNote={STRENGTH_SEO.relatedNote}
-        faqs={STRENGTH_SEO.faqs}
-        onNavigate={onOpenTab}
-      >
-        {STRENGTH_SEO.paragraphs.map((text) => (
-          <p key={text}>{text}</p>
-        ))}
-      </SeoIntro>
-
       <div
         className="strength-mode-tabs"
         role="tablist"
@@ -806,6 +797,18 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
 
           <div ref={setSaveHost} className="save-result-slot" />
 
+          <ResultShareActions
+            title={`${STRENGTH_LIFTS.find((l) => l.id === activeLift)?.name || '1RM'} on ${BRAND.short}`}
+            text={`My estimated ${STRENGTH_LIFTS.find((l) => l.id === activeLift)?.name || 'lift'} 1RM is ${liftResult.oneRepMax} ${massUnit}${
+              liftResult.hasBodyweight ? ` (${liftResult.level})` : ''
+            }. Calculate yours on KinesoScore.`}
+            url={
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/strength`
+                : 'https://kinesoscore.com/strength'
+            }
+          />
+
           {liftResult.peer ? (
             <PeerComparison
               title="Age & gender comparison"
@@ -886,6 +889,18 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
 
           <div ref={setSaveHost} className="save-result-slot" />
 
+          <ResultShareActions
+            title={`SBD Total on ${BRAND.short}`}
+            text={`My SBD Total is ${sbdResult.sbdTotal} ${massUnit}${
+              sbdResult.hasBodyweight ? ` (${sbdResult.level})` : ''
+            }. Calculate yours on KinesoScore.`}
+            url={
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/strength`
+                : 'https://kinesoscore.com/strength'
+            }
+          />
+
           {sbdResult.peer ? (
             <PeerComparison
               title="Age & gender comparison"
@@ -942,6 +957,17 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
         onOpenTab={onOpenTab}
         saveHost={saveHost}
       />
+
+      <SeoIntro
+        title={STRENGTH_SEO.title}
+        relatedNote={STRENGTH_SEO.relatedNote}
+        faqs={STRENGTH_SEO.faqs}
+        onNavigate={onOpenTab}
+      >
+        {STRENGTH_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
     </main>
   )
 }

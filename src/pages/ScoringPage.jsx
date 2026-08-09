@@ -10,6 +10,8 @@ import FitnessAwardsDisplay, {
 } from '../components/FitnessAwardsDisplay'
 import FpcScoreRing from '../components/FpcScoreRing'
 import SeoIntro from '../components/SeoIntro'
+import SoftReveal from '../components/SoftReveal'
+import ResultShareActions from '../components/ResultShareActions'
 import DemographicFields from '../components/DemographicFields'
 import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
 import PeerComparison from '../components/PeerComparison'
@@ -105,6 +107,13 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
   const [sbdInputMode, setSbdInputMode] = useSyncedDefault(
     'sbdInputMode',
     'calculate',
+  )
+  // Progressive disclosure: common path first; advanced strength modes on demand.
+  const [showAdvancedStrength, setShowAdvancedStrength] = useState(
+    () =>
+      scoreStrengthMode !== 'sbd' ||
+      sbdInputMode !== 'calculate' ||
+      massUnit !== 'lb',
   )
   // Canonical endurance input: Estimated 5K from latest running save.
   const [hours, setHours, hoursShared] = useSyncedDefault('fiveKHours', '')
@@ -317,22 +326,9 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         <p className="page-eyebrow">Overall performance</p>
         <h1 className={BRAND_CASING_CLASS}>{BRAND.scoreName}</h1>
         <p className="page-lead">
-          Calculate a transparent overall fitness score from recreational
-          strength and running percentiles — one number to track how you compare
-          across both domains.
+          One overall score from your strength and running percentiles.
         </p>
       </header>
-
-      <SeoIntro
-        title={SCORING_SEO.title}
-        faqs={SCORING_SEO.faqs}
-        relatedNote={SCORING_SEO.learnMoreNote}
-        onNavigate={onOpenTab}
-      >
-        {SCORING_SEO.paragraphs.map((text) => (
-          <p key={text}>{text}</p>
-        ))}
-      </SeoIntro>
 
       <form
         className="calc-form calc-form-wide"
@@ -359,50 +355,70 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         />
 
         <fieldset className="score-block">
-          <legend>Strength input</legend>
+          <legend>Strength</legend>
           <p className="optional-note">
-            Prefer SBD Total when you have Bench, Squat, and Deadlift. Bodyweight
-            is required so relative strength can feed the composite score.
+            Enter Bench, Squat, and Deadlift (weight × reps). Bodyweight is
+            required for relative strength.
           </p>
 
-          <UnitToggle
-            label="Strength metric"
-            value={scoreStrengthMode}
-            options={[
-              { value: 'sbd', label: 'SBD Total' },
-              { value: 'lift', label: 'Single Lift' },
-            ]}
-            onChange={setScoreStrengthMode}
-          />
+          <div className="advanced-options-bar">
+            <button
+              type="button"
+              className="text-link-button"
+              aria-expanded={showAdvancedStrength}
+              onClick={() => setShowAdvancedStrength((open) => !open)}
+            >
+              {showAdvancedStrength
+                ? 'Hide options (units, single lift, known 1RMs)'
+                : 'More options — single lift, units, known 1RMs'}
+            </button>
+          </div>
 
-          {showSbdRecommendation ? (
-            <p className="score-recommendation">
-              For the most accurate {BRAND.scoreName} results, use your SBD
-              Total.
-            </p>
-          ) : null}
+          <SoftReveal open={showAdvancedStrength}>
+            <div className="advanced-options-panel">
+              <UnitToggle
+                label="Strength metric"
+                value={scoreStrengthMode}
+                options={[
+                  { value: 'sbd', label: 'SBD Total' },
+                  { value: 'lift', label: 'Single Lift' },
+                ]}
+                onChange={setScoreStrengthMode}
+              />
 
-          <UnitToggle
-            label="Weight units"
-            value={massUnit}
-            options={MASS_UNITS}
-            onChange={handleMassUnitChange}
-          />
+              {showSbdRecommendation ? (
+                <p className="score-recommendation">
+                  For the most accurate {BRAND.scoreName} results, use your SBD
+                  Total.
+                </p>
+              ) : null}
+
+              <UnitToggle
+                label="Weight units"
+                value={massUnit}
+                options={MASS_UNITS}
+                onChange={handleMassUnitChange}
+              />
+
+              {scoreStrengthMode === 'sbd' ? (
+                <UnitToggle
+                  label="SBD Total input"
+                  value={sbdInputMode}
+                  options={[
+                    {
+                      value: 'calculate',
+                      label: 'Calculate my SBD total',
+                    },
+                    { value: 'enter', label: 'I know my SBD total' },
+                  ]}
+                  onChange={setSbdInputMode}
+                />
+              ) : null}
+            </div>
+          </SoftReveal>
 
           {scoreStrengthMode === 'sbd' ? (
             <>
-              <UnitToggle
-                label="SBD Total input"
-                value={sbdInputMode}
-                options={[
-                  {
-                    value: 'calculate',
-                    label: 'Calculate my SBD total',
-                  },
-                  { value: 'enter', label: 'I know my SBD total' },
-                ]}
-                onChange={setSbdInputMode}
-              />
               {sbdInputMode === 'calculate' ? (
                 <>
                   <fieldset className="sbd-lift-block">
@@ -642,11 +658,10 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         </fieldset>
 
         <fieldset className="score-block">
-          <legend>Running input</legend>
+          <legend>Running</legend>
           <p className="optional-note">
-            Uses your Estimated 5K from the most recently saved running
-            performance (autofilled from Running). You can adjust the time here
-            for scoring without changing your distance graphs.
+            Estimated 5K finish time (autofills from a saved Running result when
+            available).
           </p>
 
           <label className="field">
@@ -733,6 +748,15 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
             </FitnessAwardsDisplay>
             <FitnessAwardsLegend awards={liveAwards} />
           </div>
+          <ResultShareActions
+            title={BRAND.scoreName}
+            text={`My ${BRAND.scoreName} is ${result.score.FPCScore} (${result.score.band}). Measure yours on KinesoScore.`}
+            url={
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/scoring`
+                : 'https://kinesoscore.com/scoring'
+            }
+          />
         </section>
       ) : (
         <p className="calc-hint">{hint}</p>
@@ -858,9 +882,15 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       ) : null}
 
       <SeoIntro
-        relatedNote={SCORING_SEO.relatedNote}
+        title={SCORING_SEO.title}
+        faqs={SCORING_SEO.faqs}
+        relatedNote={SCORING_SEO.learnMoreNote || SCORING_SEO.relatedNote}
         onNavigate={onOpenTab}
-      />
+      >
+        {SCORING_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
     </main>
   )
 }

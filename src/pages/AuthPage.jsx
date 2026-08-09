@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import SoftReveal from '../components/SoftReveal'
+import { BRAND } from '../data/brand'
 import { friendlyAuthError } from '../lib/authErrors'
-
 
 const RESET_SENT_MESSAGE =
   "If an account exists for this email, we've sent password reset instructions."
@@ -53,7 +53,6 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
     if (!authUrlError) return
     const friendly = friendlyAuthError(authUrlError)
     setError(friendly)
-    // Expired/invalid reset links → offer request-new-link; other errors stay on login.
     if (/reset link|expired|invalid/i.test(friendly)) {
       setMode('forgot')
     } else {
@@ -121,7 +120,6 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
         ) {
           setError(friendlyAuthError(err))
         } else {
-          // Avoid revealing whether the email exists.
           setMessage(RESET_SENT_MESSAGE)
         }
       } else {
@@ -141,161 +139,161 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
   const lead = isForgot
     ? 'Enter your email and we’ll send reset instructions if an account exists.'
     : isSignup
-      ? 'Create a free account to save calculator results and track improvement over time.'
-      : 'Welcome back. Sign in to access your saved progress and dashboard.'
+      ? `Save ${BRAND.scoreName}, track progress, and join the leaderboard when you’re ready.`
+      : 'Welcome back — your scores and habits are waiting.'
 
   return (
-    <main className="page auth-page">
-      <header className="page-header">
-        <p className="page-eyebrow">Account</p>
-        <h1>{title}</h1>
-        <p className="page-lead">{lead}</p>
-      </header>
+    <main className="page auth-page auth-page-brand">
+      <div className="auth-brand-panel">
+        <p className="auth-brand-mark">{BRAND.short}</p>
+        <h1 className="auth-brand-title">{title}</h1>
+        <p className="auth-brand-lead">{lead}</p>
 
-      {!isConfigured ? (
-        <p className="feedback feedback-error" role="alert">
-          Account sign-in is temporarily unavailable. Please try again later.
-        </p>
-      ) : null}
-
-      <form
-        className="calc-form auth-form"
-        onSubmit={handleSubmit}
-        noValidate
-        aria-describedby={[error ? errorId : null, message ? messageId : null]
-          .filter(Boolean)
-          .join(' ') || undefined}
-      >
-        <SoftReveal open={isSignup}>
-          <label className="field" htmlFor={firstNameId}>
-            <span>First name</span>
-            <input
-              id={firstNameId}
-              type="text"
-              name="firstName"
-              autoComplete="given-name"
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
-              required={isSignup}
-              tabIndex={isSignup ? undefined : -1}
-            />
-          </label>
-        </SoftReveal>
-
-        <label className="field" htmlFor={emailId}>
-          <span>Email</span>
-          <input
-            id={emailId}
-            type="email"
-            name="email"
-            autoComplete="email"
-            inputMode="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-            aria-invalid={error ? true : undefined}
-          />
-        </label>
-
-        <SoftReveal open={!isForgot}>
-          <label className="field" htmlFor={passwordId}>
-            <span>Password</span>
-            <input
-              id={passwordId}
-              type="password"
-              name="password"
-              autoComplete={isSignup ? 'new-password' : 'current-password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required={!isForgot}
-              minLength={6}
-              aria-invalid={error ? true : undefined}
-              tabIndex={isForgot ? -1 : undefined}
-            />
-          </label>
-        </SoftReveal>
-
-        <SoftReveal open={!isSignup && !isForgot}>
-          <p className="auth-forgot">
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => switchMode('forgot')}
-              tabIndex={!isSignup && !isForgot ? undefined : -1}
-            >
-              Forgot your password?
-            </button>
+        {!isConfigured ? (
+          <p className="feedback feedback-error" role="alert">
+            Account sign-in is temporarily unavailable. Please try again later.
           </p>
-        </SoftReveal>
+        ) : null}
 
-        <div
-          ref={errorRef}
-          id={errorId}
-          className="auth-status"
-          role="alert"
-          aria-live="assertive"
-          tabIndex={error ? -1 : undefined}
+        <form
+          className="calc-form auth-form"
+          onSubmit={handleSubmit}
+          noValidate
+          aria-describedby={[error ? errorId : null, message ? messageId : null]
+            .filter(Boolean)
+            .join(' ') || undefined}
         >
-          {error ? <p className="feedback feedback-error">{error}</p> : null}
-        </div>
+          <SoftReveal open={isSignup}>
+            <label className="field" htmlFor={firstNameId}>
+              <span>First name</span>
+              <input
+                id={firstNameId}
+                type="text"
+                name="firstName"
+                autoComplete="given-name"
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+                required={isSignup}
+                tabIndex={isSignup ? undefined : -1}
+              />
+            </label>
+          </SoftReveal>
 
-        <div
-          ref={statusRef}
-          id={messageId}
-          className="auth-status"
-          role="status"
-          aria-live="polite"
-          tabIndex={message && !error ? -1 : undefined}
-        >
-          {message ? (
-            <p className="feedback feedback-success">{message}</p>
-          ) : null}
-        </div>
+          <label className="field" htmlFor={emailId}>
+            <span>Email</span>
+            <input
+              id={emailId}
+              type="email"
+              name="email"
+              autoComplete="email"
+              inputMode="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              aria-invalid={error ? true : undefined}
+            />
+          </label>
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-block"
-          disabled={submitting || !isConfigured}
-        >
-          {submitting
-            ? isForgot
-              ? 'Sending…'
-              : isSignup
-                ? 'Creating account…'
-                : 'Signing in…'
-            : isForgot
-              ? 'Send reset link'
-              : isSignup
-                ? 'Create Account'
-                : 'Log in'}
-        </button>
-      </form>
+          <SoftReveal open={!isForgot}>
+            <label className="field" htmlFor={passwordId}>
+              <span>Password</span>
+              <input
+                id={passwordId}
+                type="password"
+                name="password"
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required={!isForgot}
+                minLength={6}
+                aria-invalid={error ? true : undefined}
+                tabIndex={isForgot ? -1 : undefined}
+              />
+            </label>
+          </SoftReveal>
 
-      <p className="auth-switch">
-        {isForgot ? (
-          <>
-            Remembered your password?{' '}
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => switchMode('login')}
-            >
-              Back to log in
-            </button>
-          </>
-        ) : (
-          <>
-            {isSignup ? 'Already have an account?' : 'New to KinesoScore?'}{' '}
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => switchMode(isSignup ? 'login' : 'signup')}
-            >
-              {isSignup ? 'Log in' : 'Create Account'}
-            </button>
-          </>
-        )}
-      </p>
+          <SoftReveal open={!isSignup && !isForgot}>
+            <p className="auth-forgot">
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => switchMode('forgot')}
+                tabIndex={!isSignup && !isForgot ? undefined : -1}
+              >
+                Forgot your password?
+              </button>
+            </p>
+          </SoftReveal>
+
+          <div
+            ref={errorRef}
+            id={errorId}
+            className="auth-status"
+            role="alert"
+            aria-live="assertive"
+            tabIndex={error ? -1 : undefined}
+          >
+            {error ? <p className="feedback feedback-error">{error}</p> : null}
+          </div>
+
+          <div
+            ref={statusRef}
+            id={messageId}
+            className="auth-status"
+            role="status"
+            aria-live="polite"
+            tabIndex={message && !error ? -1 : undefined}
+          >
+            {message ? (
+              <p className="feedback feedback-success">{message}</p>
+            ) : null}
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary btn-block"
+            disabled={submitting || !isConfigured}
+          >
+            {submitting
+              ? isForgot
+                ? 'Sending…'
+                : isSignup
+                  ? 'Creating account…'
+                  : 'Signing in…'
+              : isForgot
+                ? 'Send reset link'
+                : isSignup
+                  ? 'Create Account'
+                  : 'Log in'}
+          </button>
+        </form>
+
+        <p className="auth-switch">
+          {isForgot ? (
+            <>
+              Remembered your password?{' '}
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => switchMode('login')}
+              >
+                Back to log in
+              </button>
+            </>
+          ) : (
+            <>
+              {isSignup ? 'Already have an account?' : `New to ${BRAND.short}?`}{' '}
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => switchMode(isSignup ? 'login' : 'signup')}
+              >
+                {isSignup ? 'Log in' : 'Create Account'}
+              </button>
+            </>
+          )}
+        </p>
+      </div>
     </main>
   )
 }

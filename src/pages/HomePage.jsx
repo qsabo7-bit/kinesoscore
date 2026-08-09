@@ -150,7 +150,7 @@ function HomePage({ onOpenTab, onRequestAuth }) {
         </h2>
         <p className="home-dashboard-summary">
           Strength, endurance, {BRAND.scoreName}, and military fitness
-          assessments — free educational tools with optional progress tracking.
+          assessments — with optional progress tracking when you sign in.
         </p>
 
         <div className="home-tools-group">

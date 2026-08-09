@@ -69,7 +69,7 @@ function CalculatorsHubPage({ onOpenTab }) {
         <p className="page-eyebrow">Tools</p>
         <h1>Calculators</h1>
         <p className="page-lead">
-          Free educational tools for strength, endurance,{' '}
+          Strength, endurance,{' '}
           <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>, and
           military fitness assessments — with optional private progress tracking.
         </p>
