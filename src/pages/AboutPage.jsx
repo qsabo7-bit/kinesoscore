@@ -57,7 +57,7 @@ function AboutPage({ onOpenTab }) {
             How scoring works
           </a>
         </div>
-        <p className="calc-hint">
+        <p className="calc-hint about-guides">
           Guides:{' '}
           <a
             className="seo-intro-link"

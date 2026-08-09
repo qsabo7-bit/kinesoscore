@@ -122,6 +122,18 @@ input:focus,
 select:focus {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+}
+
+/* Auth SoftReveal fields: keep rings visible even if a parent clips outlines. */
+.auth-form .soft-reveal-clip {
+  overflow: visible;
+  padding: 0.2rem;
+  margin: -0.2rem;
+}
+
+.auth-form .soft-reveal:not(.is-open) .soft-reveal-clip {
+  overflow: hidden;
 }
 
 .app-shell {
@@ -222,6 +234,11 @@ select:focus {
 .soft-reveal-clip {
   overflow: hidden;
   min-height: 0;
+}
+
+/* When open, don’t clip focus rings (outline-offset) on nested inputs. */
+.soft-reveal.is-open > .soft-reveal-clip {
+  overflow: visible;
 }
 
 /* Soft appear when result panels / confirms mount */
@@ -1034,7 +1051,7 @@ a.sub-nav-tab.is-active:visited {
 }
 
 .home-tools-group:first-of-type {
-  margin-top: 0;
+  margin-top: 1.5rem;
 }
 
 .home-tools-group-label {
@@ -1369,6 +1386,10 @@ a.sub-nav-tab.is-active:visited {
 
 .about-section p:last-child {
   margin-bottom: 0;
+}
+
+.about-guides {
+  margin-top: 1.5rem;
 }
 
 .about-methodology-cta .confirm-actions {
