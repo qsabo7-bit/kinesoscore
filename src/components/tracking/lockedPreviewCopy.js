@@ -14,15 +14,13 @@ export const DEFAULT_LOCKED_PREVIEW = {
 
 /** Guest CTA for the Dashboard page. */
 export const DASHBOARD_LOCKED_PREVIEW = {
-  title: 'Track your fitness progress',
-  lead: 'Create a free account to unlock your dashboard:',
+  title: 'Your progress, in one place',
+  lead: 'Sign in to open a private dashboard with:',
   benefits: [
-    `Personal ${BRAND.scoreName} ring`,
-    'Progress graphs across metrics',
-    'Habits streak tracking',
+    `Your latest ${BRAND.scoreName}`,
+    'Trends across strength & running',
     'Personal records',
-    'Recent activity timeline',
-    'Saved results history',
+    'Recent saved results',
   ],
 }
 
@@ -61,13 +59,13 @@ export const BMR_LOCKED_PREVIEW = {
 }
 
 export const HABITS_LOCKED_PREVIEW = {
-  title: 'Private habit tracking',
-  lead: 'Create a free account to unlock:',
+  title: 'Build a private routine',
+  lead: 'Sign in to track habits on your account — nothing is public unless you opt in:',
   benefits: [
-    'Daily habit checklist',
-    'Completion streaks',
-    'Optional Habit Streak sharing',
-    'Private check-in history',
+    'Daily checklist',
+    'Streak tracking',
+    'Optional streak sharing',
+    'Private history',
   ],
 }
 

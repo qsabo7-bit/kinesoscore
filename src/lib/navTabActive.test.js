@@ -3,7 +3,8 @@ import { describe, it } from 'node:test'
 import { isNavTabActive } from './navTabActive.js'
 
 describe('isNavTabActive', () => {
-  it('does not mark Dashboard active on home', () => {
+  it('marks Home active only on home; Dashboard stays off', () => {
+    assert.equal(isNavTabActive('home', 'home'), true)
     assert.equal(isNavTabActive('dashboard', 'home'), false)
     assert.equal(isNavTabActive('calculators', 'home'), false)
     assert.equal(isNavTabActive('about', 'home'), false)

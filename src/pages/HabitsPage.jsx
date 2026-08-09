@@ -238,8 +238,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           <p className="page-eyebrow">Routine</p>
           <h1>Habits</h1>
           <p className="page-lead">
-            Build a private daily routine and track completion. Sign in to get
-            started — habit data stays on your account.
+            Optional private routines for signed-in athletes. Nothing is shared
+            unless you opt in later.
           </p>
         </header>
         <LockedAuthCard
