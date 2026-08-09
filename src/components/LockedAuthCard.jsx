@@ -30,9 +30,9 @@ function LockedAuthCard({
       >
         {sampleKind === 'habits' ? (
           <ul className="locked-auth-sample-list">
-            <li className="is-done">Morning movement</li>
-            <li className="is-done">Protein target</li>
-            <li>Sleep window</li>
+            <li className="is-done">Morning movement 🚶</li>
+            <li className="is-done">Protein target 🥩</li>
+            <li>Sleep window 😴</li>
           </ul>
         ) : (
           <div className="locked-auth-sample-profile">

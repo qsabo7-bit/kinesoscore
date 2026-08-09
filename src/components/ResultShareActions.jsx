@@ -1,8 +1,21 @@
 import { useState } from 'react'
 import { BRAND } from '../data/brand'
 
+const DEFAULT_SHARE_URL = 'https://kinesoscore.com'
+
+/**
+ * Build a short, channel-ready caption from the calculator result line.
+ */
+function buildShareCaption(text, title) {
+  const line = String(text || '').trim()
+  if (line) return line
+  return `Check out my ${title} on ${BRAND.short}.`
+}
+
 /**
  * Post-result share climax: copy, native share, and social intents.
+ *
+ * Instagram has no web post intent, so that action copies a caption and opens Instagram.
  *
  * @param {{
  *   title?: string,
@@ -15,25 +28,34 @@ function ResultShareActions({
   text,
   url,
 }) {
-  const [copied, setCopied] = useState(false)
+  const [status, setStatus] = useState('')
   const shareUrl =
     url ||
-    (typeof window !== 'undefined' ? window.location.href : 'https://kinesoscore.com')
-  const shareText = String(text || '').trim()
-  const composed = shareText
-    ? `${shareText}\n${shareUrl}`
-    : `${title} on ${BRAND.short}\n${shareUrl}`
+    (typeof window !== 'undefined' ? window.location.href : DEFAULT_SHARE_URL)
+  const caption = buildShareCaption(text, title)
+  const captionWithLink = `${caption}\n\n${shareUrl}`
+  const xText = `${caption}\n\n${shareUrl}`
 
   const canNativeShare =
     typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
-  const copy = async () => {
+  const flash = (message) => {
+    setStatus(message)
+    window.setTimeout(() => {
+      setStatus((current) => (current === message ? '' : current))
+    }, 2500)
+  }
+
+  const writeCaption = async () => {
+    await navigator.clipboard.writeText(captionWithLink)
+  }
+
+  const copyCaption = async () => {
     try {
-      await navigator.clipboard.writeText(composed)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
+      await writeCaption()
+      flash('Link copied')
     } catch {
-      setCopied(false)
+      flash('Couldn’t copy — try again')
     }
   }
 
@@ -41,7 +63,7 @@ function ResultShareActions({
     try {
       await navigator.share({
         title,
-        text: shareText || title,
+        text: caption,
         url: shareUrl,
       })
     } catch {
@@ -49,19 +71,27 @@ function ResultShareActions({
     }
   }
 
-  const xHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    shareText || title,
-  )}&url=${encodeURIComponent(shareUrl)}`
+  const shareInstagram = async () => {
+    try {
+      await writeCaption()
+      flash('Caption copied — paste in Instagram')
+    } catch {
+      flash('Open Instagram and paste your result manually')
+    }
+    window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')
+  }
+
+  const xHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(xText)}`
   const facebookHref = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
     shareUrl,
-  )}&quote=${encodeURIComponent(shareText || title)}`
+  )}&quote=${encodeURIComponent(caption)}`
 
   return (
     <div className="result-share" aria-label="Share your result">
       <p className="result-share-label">Share your result</p>
       <div className="result-share-actions">
-        <button type="button" className="btn btn-ghost" onClick={copy}>
-          {copied ? 'Copied' : 'Copy'}
+        <button type="button" className="btn btn-ghost" onClick={copyCaption}>
+          {status === 'Link copied' ? 'Copied' : 'Copy link'}
         </button>
         {canNativeShare ? (
           <button type="button" className="btn btn-ghost" onClick={nativeShare}>
@@ -74,7 +104,7 @@ function ResultShareActions({
           target="_blank"
           rel="noopener noreferrer"
         >
-          X / Twitter
+          X
         </a>
         <a
           className="btn btn-ghost"
@@ -84,7 +114,20 @@ function ResultShareActions({
         >
           Facebook
         </a>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={shareInstagram}
+          aria-label="Copy caption and open Instagram"
+        >
+          Instagram
+        </button>
       </div>
+      {status ? (
+        <p className="result-share-status" role="status" aria-live="polite">
+          {status}
+        </p>
+      ) : null}
     </div>
   )
 }

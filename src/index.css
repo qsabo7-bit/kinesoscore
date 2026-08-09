@@ -4380,6 +4380,19 @@ a:focus-visible {
   padding: 0;
   display: grid;
   gap: 0.55rem;
+  grid-template-columns: 1fr;
+}
+
+/* When a routine grows past one short column, flow into side-by-side columns. */
+@media (min-width: 640px) {
+  .habits-check-list:has(> :nth-child(10)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25rem;
+  }
+
+  .habits-check-list:has(> :nth-child(16)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .habits-check-list-compact {
@@ -4389,6 +4402,7 @@ a:focus-visible {
 
 .habits-check-item {
   margin: 0;
+  min-width: 0;
 }
 
 .habits-check-label {
@@ -4397,6 +4411,11 @@ a:focus-visible {
   gap: 0.65rem;
   min-height: 2.5rem;
   cursor: pointer;
+}
+
+.habits-check-label span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .habits-check-label input {
@@ -4695,5 +4714,11 @@ a:focus-visible {
 
 .result-share-actions .btn {
   min-height: 2.5rem;
+}
+
+.result-share-status {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted-strong);
 }
 

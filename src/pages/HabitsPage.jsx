@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import LockedAuthCard from '../components/LockedAuthCard'
 import { HABITS_LOCKED_PREVIEW } from '../components/tracking'
+import { habitDisplayName } from '../data/habitCatalog'
 import { formatLocalDateLabel, localDateKey, shiftLocalDateKey } from '../lib/habitDates'
 import {
   addHabitFromCatalog,
@@ -370,7 +371,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
             <ul className="habits-edit-list">
               {activeHabits.map((habit, index) => (
                 <li key={habit.id} className="habits-edit-item">
-                  <span>{habit.habit_name}</span>
+                  <span>{habitDisplayName(habit)}</span>
                   <div className="habits-edit-actions">
                     <button
                       type="button"
@@ -450,7 +451,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
             {catalogAvailable.map((item) => (
               <li key={item.key} className="habits-catalog-item">
                 <div>
-                  <strong>{item.name}</strong>
+                  <strong>{habitDisplayName(item)}</strong>
                   <p className="calc-hint">{item.description}</p>
                 </div>
                 <button
@@ -505,7 +506,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
                         toggleCheckin(habit.id, event.target.checked)
                       }
                     />
-                    <span>{habit.habit_name}</span>
+                    <span>{habitDisplayName(habit)}</span>
                   </label>
                 </li>
               )

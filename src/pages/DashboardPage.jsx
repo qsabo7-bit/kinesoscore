@@ -44,6 +44,7 @@ import {
   buildDerivedEstimated5kRecords,
   isActualRunningExerciseName,
 } from '../lib/runningTracking'
+import { habitDisplayName } from '../data/habitCatalog'
 import { localDateKey, shiftLocalDateKey } from '../lib/habitDates'
 import {
   fetchActiveHabits,
@@ -848,7 +849,7 @@ function DashboardHabitsSection({
                         }
                       }}
                     />
-                    <span>{habit.habit_name}</span>
+                    <span>{habitDisplayName(habit)}</span>
                   </label>
                 </li>
               )

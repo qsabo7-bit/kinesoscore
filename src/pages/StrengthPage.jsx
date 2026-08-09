@@ -799,9 +799,9 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
 
           <ResultShareActions
             title={`${STRENGTH_LIFTS.find((l) => l.id === activeLift)?.name || '1RM'} on ${BRAND.short}`}
-            text={`My estimated ${STRENGTH_LIFTS.find((l) => l.id === activeLift)?.name || 'lift'} 1RM is ${liftResult.oneRepMax} ${massUnit}${
-              liftResult.hasBodyweight ? ` (${liftResult.level})` : ''
-            }. Calculate yours on KinesoScore.`}
+            text={`Estimated ${STRENGTH_LIFTS.find((l) => l.id === activeLift)?.name || 'lift'} 1RM: ${liftResult.oneRepMax} ${massUnit}${
+              liftResult.hasBodyweight ? ` · ${liftResult.level}` : ''
+            }. What’s your number?`}
             url={
               typeof window !== 'undefined'
                 ? `${window.location.origin}/strength`
@@ -891,9 +891,9 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
 
           <ResultShareActions
             title={`SBD Total on ${BRAND.short}`}
-            text={`My SBD Total is ${sbdResult.sbdTotal} ${massUnit}${
-              sbdResult.hasBodyweight ? ` (${sbdResult.level})` : ''
-            }. Calculate yours on KinesoScore.`}
+            text={`SBD Total: ${sbdResult.sbdTotal} ${massUnit}${
+              sbdResult.hasBodyweight ? ` · ${sbdResult.level}` : ''
+            }. What’s your total?`}
             url={
               typeof window !== 'undefined'
                 ? `${window.location.origin}/strength`

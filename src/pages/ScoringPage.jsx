@@ -750,7 +750,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
           </div>
           <ResultShareActions
             title={BRAND.scoreName}
-            text={`My ${BRAND.scoreName} is ${result.score.FPCScore} (${result.score.band}). Measure yours on KinesoScore.`}
+            text={`Just scored ${result.score.FPCScore} on ${BRAND.scoreName} — ${result.score.band}. What’s yours?`}
             url={
               typeof window !== 'undefined'
                 ? `${window.location.origin}/scoring`
