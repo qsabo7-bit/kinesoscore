@@ -57,6 +57,24 @@ function AboutPage({ onOpenTab }) {
             How scoring works
           </a>
         </div>
+        <p className="calc-hint">
+          Guides:{' '}
+          <a
+            className="seo-intro-link"
+            href={pathForTab('one-rep-max')}
+            onClick={(event) => handleLink(event, 'one-rep-max')}
+          >
+            One-rep max / Epley
+          </a>
+          {' · '}
+          <a
+            className="seo-intro-link"
+            href={pathForTab('army-aft-guide')}
+            onClick={(event) => handleLink(event, 'army-aft-guide')}
+          >
+            Army AFT explained
+          </a>
+        </p>
       </section>
 
       <section className="about-section">

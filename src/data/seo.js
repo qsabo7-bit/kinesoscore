@@ -127,6 +127,36 @@ export const PAGE_SEO = {
       { name: 'What Is myKinesoScore™?', path: '/fitness-score' },
     ],
   },
+  'one-rep-max': {
+    tab: 'one-rep-max',
+    path: '/one-rep-max',
+    title: 'One-Rep Max Explained | Epley 1RM Formula Guide | KinesoScore',
+    description:
+      'Learn what a one-rep max (1RM) is, how the Epley formula estimates 1RM from weight and reps, and when to use estimates vs a tested max — then calculate bench, squat, deadlift, and SBD total on KinesoScore.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Strength', path: '/strength' },
+      { name: 'One-Rep Max Guide', path: '/one-rep-max' },
+    ],
+  },
+  'army-aft-guide': {
+    tab: 'army-aft-guide',
+    path: '/army-aft-guide',
+    title: 'Army AFT Explained | Events, Scoring & Prep Guide | KinesoScore',
+    description:
+      'A plain-language guide to the Army Fitness Test (AFT): events, how scoring estimates work, AFT vs ACFT naming, and how to use the free KinesoScore AFT calculator for unofficial training prep.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Army AFT', path: '/army-aft' },
+      { name: 'Army AFT Guide', path: '/army-aft-guide' },
+    ],
+  },
   vo2max: {
     tab: 'vo2max',
     path: '/vo2max',

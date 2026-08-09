@@ -28,7 +28,17 @@ export const STRENGTH_SEO = {
         'SBD Total is squat + bench press + deadlift one-rep maxes added together. It is a common way to summarize overall barbell strength and track progress across the three main lifts.',
     },
   ],
-  relatedNote: KINESOSCORE_RELATED_NOTE,
+  relatedNote: {
+    before: 'Want the full explainer? ',
+    tab: 'one-rep-max',
+    label: 'One-rep max & Epley formula guide',
+    after: '. Or combine strength and running with ',
+    trailingLink: {
+      tab: 'scoring',
+      label: 'myKinesoScore™',
+      after: '.',
+    },
+  },
 }
 
 export const RUNNING_SEO = {
@@ -257,6 +267,12 @@ export const MILITARY_SEO = {
       'Treat the output as a practice score for prep and progress tracking — not a record score. Weak events usually matter as much as the total, so use the breakdown to guide training priorities.',
       'KinesoScore does not provide official military scoring. Official Army results come only from authorized testing under current Army guidance and command procedures.',
     ],
+    relatedNote: {
+      before: 'New to the test? ',
+      tab: 'army-aft-guide',
+      label: 'Army AFT explained',
+      after: '.',
+    },
     faqs: [
       {
         question: 'Is Army AFT the same as ACFT?',
@@ -518,6 +534,169 @@ export const LEADERBOARD_SEO = {
   },
 }
 
+/** Educational landing page for /one-rep-max (not the calculator). */
+export const ONE_REP_MAX_SEO = {
+  eyebrow: 'Strength education',
+  heroTitle: 'What Is a One-Rep Max?',
+  heroLead:
+    'A one-rep max (1RM) is the heaviest load you can lift once with solid form — a simple way to measure and track strength.',
+  heroSupport:
+    'You can test a true 1RM carefully, or estimate it from a submaximal set using formulas like Epley. KinesoScore uses that estimate for bench, squat, deadlift, and SBD total.',
+  ctaTab: 'strength',
+  ctaLabel: 'Open the 1RM calculator',
+  sections: [
+    {
+      id: 'what-is-1rm',
+      title: 'What a one-rep max measures',
+      paragraphs: [
+        'One-rep max is a practical strength yardstick for a specific lift. Lifters use it to set training loads (for example percentages of 1RM), compare sessions over time, and see whether strength is improving independently of bodyweight or race fitness.',
+        '1RM is lift-specific: your bench 1RM and squat 1RM answer different questions. An SBD total (squat + bench + deadlift) summarizes overall barbell strength when you want one combined number.',
+      ],
+    },
+    {
+      id: 'epley-formula',
+      title: 'How the Epley formula estimates 1RM',
+      paragraphs: [
+        'Testing a true max every week is hard on recovery. Submaximal formulas estimate 1RM from a weight you can lift for several reps. KinesoScore uses the Epley equation: 1RM ≈ weight × (1 + reps ÷ 30).',
+        'Example: 225 lb for 5 reps → 225 × (1 + 5/30) ≈ 262 lb. The estimate works best on moderate rep ranges; very high-rep sets are less reliable for max strength.',
+        'You can also enter a known tested 1RM directly when you already have one. Estimates are tools for planning and tracking — not a guarantee of a successful single attempt.',
+      ],
+    },
+    {
+      id: 'when-to-use',
+      title: 'When to estimate vs test',
+      paragraphs: [
+        'Estimate from a hard but clean set when you want a quick progress check without a max-out session. Retest a true 1RM less often, with good warm-ups and conservative jumps, especially on squat and deadlift.',
+        'Add bodyweight if you want a relative strength ratio (1RM ÷ bodyweight) and a recreational strength level. Age and gender unlock peer comparison against recreational lifter norms on KinesoScore.',
+      ],
+    },
+    {
+      id: 'use-with-kinesoscore',
+      title: 'Use it on KinesoScore',
+      paragraphs: [
+        'Open the Strength calculator to estimate bench, squat, or deadlift 1RM, or build an SBD total. Save results when signed in to watch lifts move over time, then optionally combine strength with a race result in myKinesoScore™.',
+      ],
+    },
+  ],
+  faqTitle: 'One-rep max FAQs',
+  faqs: [
+    {
+      question: 'What is a one-rep max (1RM)?',
+      answer:
+        'A one-rep max is the heaviest weight you can lift once with acceptable technique for a given exercise. It is a common way to measure absolute strength and prescribe training intensities.',
+    },
+    {
+      question: 'How does the Epley 1RM formula work?',
+      answer:
+        'Epley estimates 1RM as weight × (1 + reps ÷ 30). For example, 225 lb for 5 reps estimates about 262 lb. KinesoScore uses this for submaximal sets and also lets you enter a known 1RM.',
+    },
+    {
+      question: 'Is an estimated 1RM as accurate as a tested max?',
+      answer:
+        'Estimates are convenient and usually close for moderate reps, but they are still estimates. Technique, fatigue, and high-rep sets can widen the gap. Use them for training guidance; confirm with a careful test when the exact number matters.',
+    },
+    {
+      question: 'What is an SBD total?',
+      answer:
+        'SBD Total is squat + bench press + deadlift one-rep maxes added together. It summarizes overall barbell strength across the three main lifts.',
+    },
+  ],
+  relatedNote: {
+    before: 'Ready to run the numbers? ',
+    tab: 'strength',
+    label: 'Open the Strength / 1RM calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'scoring', label: 'myKinesoScore™ calculator' },
+    { tab: 'sources-methodology', label: 'Sources & Methodology' },
+  ],
+  disclaimer:
+    '1RM estimates are educational training tools, not medical advice. Lift safely and stop if form breaks down.',
+}
+
+/** Educational landing page for /army-aft-guide (not the calculator). */
+export const ARMY_AFT_GUIDE_SEO = {
+  eyebrow: 'Military fitness',
+  heroTitle: 'Army AFT Explained',
+  heroLead:
+    'A plain-language overview of the Army Fitness Test — events, scoring estimates, and how to use KinesoScore for unofficial training prep.',
+  heroSupport:
+    'This guide is educational. Official record scores come only from authorized Army testing under current guidance — not from any website calculator.',
+  ctaTab: 'army-aft',
+  ctaLabel: 'Open the Army AFT calculator',
+  sections: [
+    {
+      id: 'what-is-aft',
+      title: 'What the Army Fitness Test is',
+      paragraphs: [
+        'The Army Fitness Test (AFT) is the Army’s physical readiness assessment for soldiers. It samples strength, muscular endurance, power-endurance, and aerobic capacity across a short set of events rather than a single run or push-up test.',
+        'People still search for “ACFT” because the Army Combat Fitness Test was the prior widely used name. Event lists and standards can change — always confirm the latest official Army materials for your component and duty requirements.',
+      ],
+    },
+    {
+      id: 'aft-events',
+      title: 'Events covered in the KinesoScore calculator',
+      paragraphs: [
+        'The free Army AFT calculator on KinesoScore estimates the common general-standard event set: 3-rep max deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run.',
+        'You select age band and gender, enter each result, and review an unofficial event-by-event and total estimate. Specialty or alternate standards in official guidance may not all appear here.',
+      ],
+    },
+    {
+      id: 'how-scoring-works',
+      title: 'How scoring estimates work',
+      paragraphs: [
+        'Published age- and gender-normed tables map event performances to points. KinesoScore uses those tables to return a practice estimate so you can see which events limit your total.',
+        'Weak events usually matter as much as the headline score. Use the breakdown to prioritize training — for example deadlift strength work, plank capacity, or 2-mile pacing — then retest after a training block.',
+      ],
+    },
+    {
+      id: 'prep-tips',
+      title: 'Using the calculator for prep',
+      paragraphs: [
+        'Treat every result as training feedback, not a record score. Log practice attempts under similar conditions when you can, and pair the AFT page with the Strength and Running calculators for supporting lift and aerobic tracking.',
+        'KinesoScore is not an Army scorecard and not a Department of the Army product. Official results come only from authorized testing.',
+      ],
+    },
+  ],
+  faqTitle: 'Army AFT FAQs',
+  faqs: [
+    {
+      question: 'Is Army AFT the same as ACFT?',
+      answer:
+        'ACFT (Army Combat Fitness Test) was the prior widely used name. The current test discussed here is the Army Fitness Test (AFT). Standards can change — verify official Army sources. KinesoScore estimates AFT-style performance for education and training prep only.',
+    },
+    {
+      question: 'What events does the Army AFT calculator include?',
+      answer:
+        'The calculator covers 3-rep max deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run for general-standard estimates. Official specialty or alternate events may exist outside this tool.',
+    },
+    {
+      question: 'Is the KinesoScore Army AFT calculator official?',
+      answer:
+        'No. It is an educational training tool — not an Army scorecard, not a substitute for record testing, and not an official Department of the Army product.',
+    },
+    {
+      question: 'How should I use the estimate for training?',
+      answer:
+        'Retest after training blocks, note limiting events, and focus practice there. Pair with Strength and Running calculators for supporting lift and aerobic progress.',
+    },
+  ],
+  relatedNote: {
+    before: 'Ready to estimate a practice score? ',
+    tab: 'army-aft',
+    label: 'Open the Army AFT calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'strength', label: 'Strength calculator' },
+    { tab: 'running', label: 'Running calculator' },
+    { tab: 'sources-methodology', label: 'Sources & Methodology' },
+  ],
+  disclaimer:
+    'Army AFT estimates on KinesoScore are educational training tools only — not official scores or medical advice.',
+}
+
 /** FAQs attached to document JSON-LD by App tab / PAGE_SEO key. */
 export const PAGE_FAQS_BY_TAB = {
   home: [
@@ -551,6 +730,8 @@ export const PAGE_FAQS_BY_TAB = {
   running: RUNNING_SEO.faqs,
   scoring: SCORING_SEO.faqs,
   'fitness-score': FITNESS_SCORE_SEO.faqs,
+  'one-rep-max': ONE_REP_MAX_SEO.faqs,
+  'army-aft-guide': ARMY_AFT_GUIDE_SEO.faqs,
   vo2max: VO2_SEO.faqs,
   'fitness-age': FITNESS_AGE_SEO.faqs,
   'army-aft': MILITARY_SEO['army-aft'].faqs,

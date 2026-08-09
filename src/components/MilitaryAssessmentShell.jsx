@@ -253,6 +253,7 @@ function MilitaryAssessmentShell({
           title={seo.title}
           links={seo.links}
           faqs={seo.faqs}
+          relatedNote={seo.relatedNote}
           collapseFaqs
           disclaimer={MILITARY_SEO_DISCLAIMER}
           onNavigate={onOpenTab}

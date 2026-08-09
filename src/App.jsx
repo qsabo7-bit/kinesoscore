@@ -41,6 +41,8 @@ const SourcesMethodologyPage = lazy(
   () => import('./pages/SourcesMethodologyPage'),
 )
 const FitnessScorePage = lazy(() => import('./pages/FitnessScorePage'))
+const OneRepMaxPage = lazy(() => import('./pages/OneRepMaxPage'))
+const ArmyAftGuidePage = lazy(() => import('./pages/ArmyAftGuidePage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
@@ -329,6 +331,10 @@ function App() {
     content = <TermsPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'fitness-score') {
     content = <FitnessScorePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'one-rep-max') {
+    content = <OneRepMaxPage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'army-aft-guide') {
+    content = <ArmyAftGuidePage onOpenTab={handleTabChange} />
   } else if (renderTab === 'not-found') {
     content = <NotFoundPage onOpenTab={handleTabChange} />
   } else {
