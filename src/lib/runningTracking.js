@@ -1,12 +1,12 @@
 import {
   estimateFiveKSeconds,
   RACE_DISTANCES_MILES,
-} from '../calculations/running'
+} from '../calculations/running.js'
 import {
   ESTIMATED_5K_EXERCISE_NAME,
   RUNNING_DISTANCE_TRACKS,
-} from '../data/trackingTracks'
-import { splitDurationParts } from './userDefaults'
+} from '../data/trackingTracks.js'
+import { splitDurationParts } from './userDefaults.js'
 
 const ACTUAL_DISTANCE_BY_NAME = new Map(
   RACE_DISTANCES_MILES.map((race) => [race.name, race]),

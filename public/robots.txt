@@ -4,8 +4,10 @@ Allow: /
 
 # Private / auth surfaces
 Disallow: /dashboard
+Disallow: /habits
 Disallow: /account
 Disallow: /login
 Disallow: /reset-password
+Disallow: /404
 
 Sitemap: https://kinesoscore.com/sitemap.xml

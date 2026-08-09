@@ -20,7 +20,7 @@ export const MILITARY_ASSESSMENTS = {
     lead: 'Estimate your Air Force Physical Fitness Readiness Assessment score from current published standards. Select your age band and gender, then enter each component.',
     infoStatus: 'Current Air Force Fitness Assessment',
     scoringReady: true,
-    scoringStatusMessage: 'Official scoring tables coming soon',
+    scoringStatusMessage: '',
     source: {
       name: 'USAF PFRA Scoring Charts (Effective 1 Mar 2026)',
       detail:
@@ -142,7 +142,7 @@ export const MILITARY_ASSESSMENTS = {
     lead: 'Legacy Air Force PFA. This assessment reflects previous Air Force fitness standards and is retained for historical tracking. Select your age band and gender, then enter each event.',
     infoStatus: 'Legacy Air Force Fitness Assessment',
     scoringReady: true,
-    scoringStatusMessage: 'Official scoring tables coming soon',
+    scoringStatusMessage: '',
     source: {
       name: 'DAFMAN 36-2905 Fitness Charts (26 July 2021)',
       detail:
@@ -218,7 +218,7 @@ export const MILITARY_ASSESSMENTS = {
     lead: 'Estimate your Army Fitness Test score from published AFT standards. Enter age, gender, and each event result.',
     infoStatus: 'Current',
     scoringReady: true,
-    scoringStatusMessage: 'Official scoring tables coming soon',
+    scoringStatusMessage: '',
     source: {
       name: 'Army Fitness Test Scoring Scales (1 June 2025)',
       detail:
@@ -298,7 +298,7 @@ export const MILITARY_ASSESSMENTS = {
     lead: 'Estimate your Marine Corps Physical Fitness Test score from published PFT standards.',
     infoStatus: 'Current',
     scoringReady: true,
-    scoringStatusMessage: 'Official scoring tables coming soon',
+    scoringStatusMessage: '',
     source: {
       name: 'MCO 6100.13A (w/ CH-4) PFT Tables',
       detail:
@@ -370,7 +370,7 @@ export const MILITARY_ASSESSMENTS = {
     lead: 'Estimate your Navy Physical Readiness Test score from published PRT standards.',
     infoStatus: 'Current',
     scoringReady: true,
-    scoringStatusMessage: 'Scoring data coming soon',
+    scoringStatusMessage: '',
     source: {
       name: 'Navy PRT Guide 5 (Table 4-1, Jan 2024)',
       detail:

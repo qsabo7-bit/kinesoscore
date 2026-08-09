@@ -297,21 +297,22 @@ function FitnessAgePage({ onRequestAuth, onOpenTab }) {
 
       {result ? (
         <section className="results" aria-live="polite">
-          <div className="result-stat">
-            <p className="result-label">Actual Age</p>
-            <p className="result-value">
-              {result.actualAge}
-              <span className="result-unit"> years</span>
-            </p>
-          </div>
-
-          <div className="result-stat result-stat-hero">
-            <p className="result-label">Fitness Age</p>
-            <p className="result-value">
-              {result.fitnessAge}
-              <span className="result-unit"> years</span>
-            </p>
-            <p className="result-sub">{result.differenceLabel}</p>
+          <div className="result-stat-pair result-stat-hero">
+            <div className="result-stat">
+              <p className="result-label">Actual Age</p>
+              <p className="result-value result-value-sm">
+                {result.actualAge}
+                <span className="result-unit"> years</span>
+              </p>
+            </div>
+            <div className="result-stat">
+              <p className="result-label">Fitness Age</p>
+              <p className="result-value result-value-sm">
+                {result.fitnessAge}
+                <span className="result-unit"> years</span>
+              </p>
+              <p className="result-sub">{result.differenceLabel}</p>
+            </div>
           </div>
 
           <div className="result-table-wrap">

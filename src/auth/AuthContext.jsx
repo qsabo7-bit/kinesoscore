@@ -271,8 +271,11 @@ export function AuthProvider({ children }) {
 
   const requireConfigured = () => {
     if (!isSupabaseConfigured) {
+      console.error(
+        'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then restart the app.',
+      )
       throw new Error(
-        'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env, then restart the dev server.',
+        'Account features are unavailable right now. Please try again later.',
       )
     }
   }

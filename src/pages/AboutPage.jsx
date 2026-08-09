@@ -1,4 +1,3 @@
-import { sources } from '../data/sources'
 import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
 
@@ -33,8 +32,8 @@ function AboutPage({ onOpenTab }) {
           averages recreational strength and running percentiles.
         </p>
         <p>
-          We keep formulas and comparison datasets documented below so you can
-          see exactly what powers each estimate. {BRAND.scoreName} balances
+          We keep formulas and comparison datasets documented so you can see
+          exactly what powers each estimate. {BRAND.scoreName} balances
           recreational strength and running percentiles into one overall
           performance score. For an educational overview,{' '}
           <a
@@ -44,7 +43,21 @@ function AboutPage({ onOpenTab }) {
           >
             learn how {BRAND.scoreName} works
           </a>
-          .
+          . Athletes who opt in can also compare shared results on the{' '}
+          <a
+            className="seo-intro-link"
+            href={pathForTab('leaderboard')}
+            onClick={(event) => handleLink(event, 'leaderboard')}
+          >
+            global leaderboard
+          </a>
+          , including Habit Streaks.
+        </p>
+        <p>
+          Habits are private by default. You can share a current streak without
+          publishing which habits you track. Private awards on your dashboard
+          reflect Strength and Running components of {BRAND.scoreName} — they
+          are not posted publicly.
         </p>
       </section>
 
@@ -69,30 +82,27 @@ function AboutPage({ onOpenTab }) {
         </p>
       </section>
 
-      <section className="about-section" aria-labelledby="sources-heading">
-        <h2 id="sources-heading" className="result-section-title">
-          Sources & methods
+      <section
+        className="about-section about-methodology-cta"
+        aria-labelledby="methodology-heading"
+      >
+        <h2 id="methodology-heading" className="result-section-title">
+          Sources &amp; methodology
         </h2>
-        <p className="about-intro">
-          These are the citations behind {BRAND.full} formulas and peer
-          comparisons. Percentiles mean “better than X out of 100” people in the
-          stated reference population — recreational lifters for strength, race
-          finishers for running, and Cooper Institute / ACSM adult norms for
-          VO₂ max.
+        <p>
+          See the published equations, reference populations, and peer-comparison
+          datasets behind every calculator — including how strength, running, and
+          VO₂ estimates are derived.
         </p>
-
-        <ul className="source-list">
-          {sources.map((source) => (
-            <li key={source.id} className="source-item">
-              <p className="source-category">{source.category}</p>
-              <h3>{source.title}</h3>
-              <p>{source.detail}</p>
-              <a href={source.url} target="_blank" rel="noreferrer">
-                {source.linkLabel}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="confirm-actions">
+          <a
+            className="btn btn-primary"
+            href={pathForTab('sources-methodology')}
+            onClick={(event) => handleLink(event, 'sources-methodology')}
+          >
+            View Sources &amp; Methodology
+          </a>
+        </div>
       </section>
 
       <section
@@ -144,6 +154,14 @@ function AboutPage({ onOpenTab }) {
             or centimeters; running and Cooper distance support miles or
             kilometers. Values are converted so formulas stay scientifically
             consistent.
+          </li>
+          <li>
+            Habits check-ins and which habits you track stay private. Opt-in Habit
+            Streaks share only your Leaderboard Name and current streak.
+          </li>
+          <li>
+            Dashboard awards are private progress markers from Strength and
+            Running components — not public leaderboard badges.
           </li>
           <li>
             These tools are educational estimates, not medical advice or coaching

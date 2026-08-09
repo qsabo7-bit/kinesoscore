@@ -24,7 +24,8 @@ export function calculateSbdTotal(bench, squat, deadlift) {
 export function getSbdStrengthLevel(sbdTotal, bodyweight) {
   const ratio = Number(sbdTotal) / Number(bodyweight)
   if (!Number.isFinite(ratio) || ratio <= 0) return 'Beginner'
-  if (ratio >= 5.5) return 'Elite'
+  // Aligned with percentile labels: Elite reserved for top recreational band.
+  if (ratio >= 6.0) return 'Elite'
   if (ratio >= 4.0) return 'Advanced'
   if (ratio >= 2.7) return 'Intermediate'
   return 'Beginner'

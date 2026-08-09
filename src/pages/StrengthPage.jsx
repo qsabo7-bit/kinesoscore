@@ -21,6 +21,7 @@ import {
   formatConverted,
   getSbdStrengthLevel,
   getStrengthLevel,
+  getStrengthLevelFromPercentile,
   MASS_UNITS,
 } from '../calculations'
 import {
@@ -272,9 +273,6 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
       bodyweightNum > 0
 
     const ratio = hasBodyweight ? parsed.rawOneRepMax / bodyweightNum : null
-    const level = hasBodyweight
-      ? getStrengthLevel(parsed.rawOneRepMax, bodyweightNum)
-      : null
 
     const ageNum = Number(age)
     const hasDemographics =
@@ -283,6 +281,12 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
     const peer =
       hasBodyweight && hasDemographics
         ? compareStrengthToNorms(ratio, ageNum, gender, activeLift)
+        : null
+
+    const level = peer
+      ? getStrengthLevelFromPercentile(peer.betterThanPercent)
+      : hasBodyweight
+        ? getStrengthLevel(parsed.rawOneRepMax, bodyweightNum)
         : null
 
     return {
@@ -418,9 +422,6 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
       bodyweightNum > 0
 
     const ratio = hasBodyweight ? total / bodyweightNum : null
-    const level = hasBodyweight
-      ? getSbdStrengthLevel(total, bodyweightNum)
-      : null
 
     const ageNum = Number(age)
     const hasDemographics =
@@ -429,6 +430,12 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
     const peer =
       hasBodyweight && hasDemographics
         ? compareSbdToNorms(ratio, ageNum, gender)
+        : null
+
+    const level = peer
+      ? getStrengthLevelFromPercentile(peer.betterThanPercent)
+      : hasBodyweight
+        ? getSbdStrengthLevel(total, bodyweightNum)
         : null
 
     return {
@@ -829,7 +836,7 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
 
       {hasResult && isSbdMode ? (
         <section className="results" aria-live="polite">
-          <div className="result-stat">
+          <div className="result-stat result-stat-hero">
             <p className="result-label">SBD Total</p>
             <p className="result-value">
               {sbdResult.sbdTotal}
@@ -837,44 +844,45 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
             </p>
           </div>
 
-          {sbdResult.breakdown ? (
-            <>
-              <div className="result-stat">
-                <p className="result-label">Bench 1RM</p>
-                <p className="result-value">
-                  {sbdResult.breakdown.bench}
-                  <span className="result-unit"> {massUnit}</span>
-                </p>
-              </div>
-              <div className="result-stat">
-                <p className="result-label">Squat 1RM</p>
-                <p className="result-value">
-                  {sbdResult.breakdown.squat}
-                  <span className="result-unit"> {massUnit}</span>
-                </p>
-              </div>
-              <div className="result-stat">
-                <p className="result-label">Deadlift 1RM</p>
-                <p className="result-value">
-                  {sbdResult.breakdown.deadlift}
-                  <span className="result-unit"> {massUnit}</span>
-                </p>
-              </div>
-            </>
-          ) : null}
-
-          {sbdResult.hasBodyweight ? (
-            <>
-              <div className="result-stat">
-                <p className="result-label">Strength level</p>
-                <p className="result-value">{sbdResult.level}</p>
-              </div>
-              <div className="result-stat">
-                <p className="result-label">Total / bodyweight</p>
-                <p className="result-value">{sbdResult.ratio.toFixed(2)}×</p>
-              </div>
-            </>
-          ) : null}
+          <div className="result-table-wrap">
+            <h2 className="result-section-title">Lift breakdown</h2>
+            <ul className="result-table">
+              {sbdResult.breakdown ? (
+                <>
+                  <li>
+                    <span>Bench 1RM</span>
+                    <strong>
+                      {sbdResult.breakdown.bench} {massUnit}
+                    </strong>
+                  </li>
+                  <li>
+                    <span>Squat 1RM</span>
+                    <strong>
+                      {sbdResult.breakdown.squat} {massUnit}
+                    </strong>
+                  </li>
+                  <li>
+                    <span>Deadlift 1RM</span>
+                    <strong>
+                      {sbdResult.breakdown.deadlift} {massUnit}
+                    </strong>
+                  </li>
+                </>
+              ) : null}
+              {sbdResult.hasBodyweight ? (
+                <>
+                  <li>
+                    <span>Strength level</span>
+                    <strong>{sbdResult.level}</strong>
+                  </li>
+                  <li>
+                    <span>Total / bodyweight</span>
+                    <strong>{sbdResult.ratio.toFixed(2)}×</strong>
+                  </li>
+                </>
+              ) : null}
+            </ul>
+          </div>
 
           <div ref={setSaveHost} className="save-result-slot" />
 

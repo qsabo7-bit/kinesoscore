@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-and-build:
+    name: Unit tests + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_SITE_URL: https://kinesoscore.com
+
+  auth-smoke:
+    name: Authenticated smoke
+    runs-on: ubuntu-latest
+    needs: unit-and-build
+    # Soft-skip when secrets are absent (script exits 0).
+    # To hard-fail without secrets later, set AUTH_SMOKE_REQUIRED=1 below
+    # after adding the STAGE8_SMOKE_* and VITE_SUPABASE_* secrets.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Authenticated smoke (Stage 8 harness)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          STAGE8_SMOKE_USER_A_EMAIL: ${{ secrets.STAGE8_SMOKE_USER_A_EMAIL }}
+          STAGE8_SMOKE_USER_A_PASSWORD: ${{ secrets.STAGE8_SMOKE_USER_A_PASSWORD }}
+          STAGE8_SMOKE_USER_B_EMAIL: ${{ secrets.STAGE8_SMOKE_USER_B_EMAIL }}
+          STAGE8_SMOKE_USER_B_PASSWORD: ${{ secrets.STAGE8_SMOKE_USER_B_PASSWORD }}
+          # Flip to "1" once secrets are configured if you want missing-env to fail CI.
+          AUTH_SMOKE_REQUIRED: '0'
+        run: npm run test:auth-smoke

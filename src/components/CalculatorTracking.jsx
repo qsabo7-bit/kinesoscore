@@ -22,6 +22,7 @@ import {
   buildDerivedEstimated5kRecords,
   excludeStoredEstimated5kRecords,
 } from '../lib/runningTracking'
+import { useFocusTrap } from '../lib/useFocusTrap'
 import FadeSwap from './FadeSwap'
 import UnitToggle from './UnitToggle'
 import {
@@ -58,7 +59,7 @@ import {
  * @param {'number' | 'duration' | 'score' | 'bmi' | 'fitnessAge'} [props.sampleKind]
  * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]
  * @param {Array<{ exerciseName: string, resultValue: number, resultUnit?: string }>} [props.companionSaves]
- * @param {(payload: { track: object, resultValue: number }) => void} [props.onSaved]
+ * @param {(payload: { track: object, resultValue: number, recordId: string }) => void} [props.onSaved]
  * @param {(payload: { recordId: string }) => void} [props.onDeleted]
  * @param {Element | null} [props.saveHost] - Optional DOM node to portal the Save button into
  *   (e.g. above age/gender comparison on Strength / Running).
@@ -93,6 +94,10 @@ function CalculatorTracking({
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState(null)
+  const deleteDialogRef = useFocusTrap(Boolean(pendingDeleteId), () =>
+    setPendingDeleteId(null),
+  )
   const [savedMessage, setSavedMessage] = useState(false)
   const [shareMessage, setShareMessage] = useState('')
   const [error, setError] = useState('')
@@ -103,6 +108,8 @@ function CalculatorTracking({
   /** @type {'private' | 'global'} */
   const [shareMode, setShareMode] = useState('private')
   const [hadActiveShare, setHadActiveShare] = useState(false)
+  /** Active share's source_record_id when one exists for this board. */
+  const [activeShareSourceId, setActiveShareSourceId] = useState(null)
   const [hasLeaderboardName, setHasLeaderboardName] = useState(true)
   const touchStartX = useRef(null)
 
@@ -134,12 +141,15 @@ function CalculatorTracking({
   const selectedTrack =
     tracks.find((track) => track.id === selectedTrackId) || tracks[0]
 
+  const historyLoadGenRef = useRef(0)
+
   const loadHistory = useCallback(async () => {
-    if (!isAuthenticated || !user || !tracks.length) {
+    if (!isAuthenticated || !user?.id || !tracks.length) {
       setRecordsByTrack({})
       return
     }
 
+    const generation = ++historyLoadGenRef.current
     setLoadingHistory(true)
     setError('')
     try {
@@ -168,13 +178,19 @@ function CalculatorTracking({
           return [track.id, rows]
         }),
       )
+      // Drop stale responses so an older in-flight fetch cannot restore a
+      // row the user just deleted.
+      if (generation !== historyLoadGenRef.current) return
       setRecordsByTrack(Object.fromEntries(entries))
     } catch (err) {
+      if (generation !== historyLoadGenRef.current) return
       setError(err.message || 'Could not load your progress.')
     } finally {
-      setLoadingHistory(false)
+      if (generation === historyLoadGenRef.current) {
+        setLoadingHistory(false)
+      }
     }
-  }, [isAuthenticated, user, calculatorType, tracks])
+  }, [isAuthenticated, user?.id, calculatorType, tracks])
 
   useEffect(() => {
     loadHistory()
@@ -239,12 +255,14 @@ function CalculatorTracking({
         if (cancelled) return
         const active = Boolean(share)
         setHadActiveShare(active)
+        setActiveShareSourceId(active ? share?.source_record_id ?? null : null)
         setShareMode(active ? 'global' : 'private')
         setHasLeaderboardName(Boolean(name))
       })
       .catch(() => {
         if (cancelled) return
         setHadActiveShare(false)
+        setActiveShareSourceId(null)
         setShareMode('private')
         setHasLeaderboardName(true)
       })
@@ -321,6 +339,7 @@ function CalculatorTracking({
               higherIsBetter: shareTarget.higherIsBetter,
             })
             setHadActiveShare(true)
+            setActiveShareSourceId(saved.id)
             setShareMode('global')
             setShareMessage('Shared to the global leaderboard.')
           } catch (shareErr) {
@@ -334,6 +353,7 @@ function CalculatorTracking({
         try {
           await deactivateLeaderboardShare(user.id, shareTarget.boardKey)
           setHadActiveShare(false)
+          setActiveShareSourceId(null)
           setShareMode('private')
           setShareMessage('Removed from the global leaderboard. Your private history is unchanged.')
         } catch (shareErr) {
@@ -346,7 +366,7 @@ function CalculatorTracking({
         }
       }
 
-      onSaved?.({ track, resultValue: numericResult })
+      onSaved?.({ track, resultValue: numericResult, recordId: saved.id })
       await loadHistory()
     } catch (err) {
       setError(err.message || 'Could not save this result.')
@@ -355,20 +375,55 @@ function CalculatorTracking({
     }
   }
 
-  const handleDelete = async (recordId) => {
+  const requestDelete = (recordId) => {
+    setError('')
+    setPendingDeleteId(recordId)
+  }
+
+  const removeRecordLocally = (recordId) => {
+    setRecordsByTrack((prev) => {
+      const next = {}
+      for (const [trackId, rows] of Object.entries(prev || {})) {
+        next[trackId] = (rows || []).filter(
+          (row) =>
+            row.id !== recordId &&
+            row.source_record_id !== recordId &&
+            !String(row.id || '').endsWith(`:${recordId}`),
+        )
+      }
+      return next
+    })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteId) return
+    const recordId = pendingDeleteId
+    const previousTracks = recordsByTrack
     setDeletingId(recordId)
     setError('')
+    // Optimistic remove so the row leaves immediately; reload reconciles.
+    removeRecordLocally(recordId)
+    setPendingDeleteId(null)
     try {
       await deletePerformanceRecord(recordId)
-      // Full reload so derived Estimated 5K is recomputed without orphan points.
+      if (recordId === activeShareSourceId) {
+        setHadActiveShare(false)
+        setActiveShareSourceId(null)
+        setShareMode('private')
+      }
+      // Reconcile (derived Estimated 5K, server truth). Stale fetches are ignored.
       await loadHistory()
       onDeleted?.({ recordId })
     } catch (err) {
+      setRecordsByTrack(previousTracks)
       setError(err.message || 'Could not delete that result.')
     } finally {
       setDeletingId(null)
     }
   }
+
+  const pendingDeleteIsShared =
+    Boolean(pendingDeleteId) && pendingDeleteId === activeShareSourceId
 
   const selectByOffset = (offset) => {
     if (tracks.length < 2) return
@@ -552,12 +607,51 @@ function CalculatorTracking({
             <GraphRangeToggle value={graphRange} onChange={setGraphRange} />
             <HistoryList
               records={selectedRecords}
-              onDelete={selectedTrack?.derived ? undefined : handleDelete}
+              onDelete={selectedTrack?.derived ? undefined : requestDelete}
               deletingId={deletingId}
               valueKind={valueKind}
             />
           </FadeSwap>
         )}
+        {/* Outside FadeSwap so track/range swaps don’t remount the dialog. */}
+        {pendingDeleteId ? (
+          <div
+            ref={deleteDialogRef}
+            className="confirm-box confirm-box-danger"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-result-title"
+          >
+            <p id="delete-result-title">
+              <strong>Delete this result?</strong>
+            </p>
+            <p>
+              {pendingDeleteIsShared
+                ? 'This will permanently remove this saved result. Because this result is shared publicly, it will also be removed from the public leaderboard.'
+                : 'This will permanently remove this saved result from your private history.'}
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setPendingDeleteId(null)}
+                disabled={Boolean(deletingId)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleConfirmDelete}
+                disabled={Boolean(deletingId)}
+              >
+                {deletingId === pendingDeleteId
+                  ? 'Deleting…'
+                  : 'Delete Result'}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </section>
     </div>
   )

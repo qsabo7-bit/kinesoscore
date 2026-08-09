@@ -142,17 +142,27 @@ export const navTabs = [
   },
   {
     id: 'calculators',
-    name: 'Calculator',
+    name: 'Calculators',
     status: 'ready',
   },
   {
-    id: 'login',
-    name: 'Login',
+    id: 'leaderboard',
+    name: 'Leaderboard',
+    status: 'ready',
+  },
+  {
+    id: 'habits',
+    name: 'Habits',
     status: 'ready',
   },
   {
     id: 'about',
     name: 'About',
+    status: 'ready',
+  },
+  {
+    id: 'login',
+    name: 'Log in',
     status: 'ready',
   },
 ]

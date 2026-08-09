@@ -58,7 +58,11 @@ function SeoIntro({
               collapseFaqs ? (
                 <details key={faq.question} className="seo-intro-faq">
                   <summary>{faq.question}</summary>
-                  <p>{faq.answer}</p>
+                  <div className="seo-intro-faq-body">
+                    <div className="seo-intro-faq-body-inner">
+                      <p>{faq.answer}</p>
+                    </div>
+                  </div>
                 </details>
               ) : (
                 <div key={faq.question}>

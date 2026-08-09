@@ -74,7 +74,7 @@ export function applyDocumentSeo(tabOrPath) {
   const { page } = asPath
     ? resolveSeoRoute(tabOrPath)
     : {
-        page: PAGE_SEO[tabOrPath] || PAGE_SEO.home,
+        page: PAGE_SEO[tabOrPath] || PAGE_SEO['not-found'] || PAGE_SEO.home,
       }
 
   const canonicalPath = page.canonicalPath || page.path

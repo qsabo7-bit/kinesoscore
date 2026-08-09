@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import SoftReveal from '../components/SoftReveal'
 import { friendlyAuthError } from '../lib/authErrors'
+
 
 const RESET_SENT_MESSAGE =
   "If an account exists for this email, we've sent password reset instructions."
@@ -133,7 +135,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
   const title = isForgot
     ? 'Reset password'
     : isSignup
-      ? 'Create account'
+      ? 'Create Account'
       : 'Log in'
 
   const lead = isForgot
@@ -152,11 +154,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
 
       {!isConfigured ? (
         <p className="feedback feedback-error" role="alert">
-          Supabase is not configured yet. In <code>.env</code>, set{' '}
-          <code>VITE_SUPABASE_URL</code> to your project URL (
-          <code>https://….supabase.co</code>) and{' '}
-          <code>VITE_SUPABASE_ANON_KEY</code> to the anon/publishable key, then
-          restart <code>npm run dev</code>.
+          Account sign-in is temporarily unavailable. Please try again later.
         </p>
       ) : null}
 
@@ -168,7 +166,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
           .filter(Boolean)
           .join(' ') || undefined}
       >
-        {isSignup ? (
+        <SoftReveal open={isSignup}>
           <label className="field" htmlFor={firstNameId}>
             <span>First name</span>
             <input
@@ -178,10 +176,11 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
               autoComplete="given-name"
               value={firstName}
               onChange={(event) => setFirstName(event.target.value)}
-              required
+              required={isSignup}
+              tabIndex={isSignup ? undefined : -1}
             />
           </label>
-        ) : null}
+        </SoftReveal>
 
         <label className="field" htmlFor={emailId}>
           <span>Email</span>
@@ -198,7 +197,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
           />
         </label>
 
-        {!isForgot ? (
+        <SoftReveal open={!isForgot}>
           <label className="field" htmlFor={passwordId}>
             <span>Password</span>
             <input
@@ -208,24 +207,26 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
               autoComplete={isSignup ? 'new-password' : 'current-password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              required
+              required={!isForgot}
               minLength={6}
               aria-invalid={error ? true : undefined}
+              tabIndex={isForgot ? -1 : undefined}
             />
           </label>
-        ) : null}
+        </SoftReveal>
 
-        {!isSignup && !isForgot ? (
+        <SoftReveal open={!isSignup && !isForgot}>
           <p className="auth-forgot">
             <button
               type="button"
               className="text-link"
               onClick={() => switchMode('forgot')}
+              tabIndex={!isSignup && !isForgot ? undefined : -1}
             >
               Forgot your password?
             </button>
           </p>
-        ) : null}
+        </SoftReveal>
 
         <div
           ref={errorRef}
@@ -265,7 +266,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
             : isForgot
               ? 'Send reset link'
               : isSignup
-                ? 'Create account'
+                ? 'Create Account'
                 : 'Log in'}
         </button>
       </form>
@@ -290,7 +291,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
               className="text-link"
               onClick={() => switchMode(isSignup ? 'login' : 'signup')}
             >
-              {isSignup ? 'Log in' : 'Create an account'}
+              {isSignup ? 'Log in' : 'Create Account'}
             </button>
           </>
         )}

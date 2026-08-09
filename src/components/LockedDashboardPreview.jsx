@@ -29,11 +29,11 @@ const SAMPLE_CARDS = [
     tone: 'good',
   },
   {
-    id: 'resting-hr',
-    title: 'Resting Heart Rate',
-    primary: '54 bpm',
-    secondary: 'Last recorded Aug 5',
-    trend: '−2 bpm ↓',
+    id: 'habits',
+    title: 'Habits',
+    primary: '12 days',
+    secondary: 'Current streak',
+    trend: 'On pace',
     tone: 'good',
   },
   {
@@ -228,23 +228,22 @@ function LockedDashboardPreview({ onRequestAuth }) {
               ))}
             </ul>
           ) : null}
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => requestAuth('signup')}
-          >
-            Create Account
-          </button>
-          <p className="locked-graph-login">
-            Already have an account?{' '}
+          <div className="confirm-actions">
             <button
               type="button"
-              className="text-link"
+              className="btn btn-primary"
+              onClick={() => requestAuth('signup')}
+            >
+              Create Account
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
               onClick={() => requestAuth('login')}
             >
               Log in
             </button>
-          </p>
+          </div>
         </div>
       </div>
     </div>

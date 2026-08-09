@@ -1,36 +1,50 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useAuth } from './auth/AuthContext'
 import Footer from './components/Footer'
 import Header from './components/Header'
+import PageChunkFallback from './components/PageChunkFallback'
+import PageErrorBoundary from './components/PageErrorBoundary'
 import PageTransition from './components/PageTransition'
+import ScrollToTopButton from './components/ScrollToTopButton'
 import HomePage from './pages/HomePage'
-import StrengthPage from './pages/StrengthPage'
-import RunningPage from './pages/RunningPage'
-import ScoringPage from './pages/ScoringPage'
-import Vo2MaxPage from './pages/Vo2MaxPage'
-import BmrPage from './pages/BmrPage'
-import BmiPage from './pages/BmiPage'
-import FitnessAgePage from './pages/FitnessAgePage'
-import AirForcePfraPage from './pages/military/AirForcePfraPage'
-import AirForcePfaPage from './pages/military/AirForcePfaPage'
-import ArmyAftPage from './pages/military/ArmyAftPage'
-import MarinePftPage from './pages/military/MarinePftPage'
-import NavyPrtPage from './pages/military/NavyPrtPage'
 import AuthPage from './pages/AuthPage'
-import AccountPage from './pages/AccountPage'
-import DashboardPage from './pages/DashboardPage'
-import ResetPasswordPage from './pages/ResetPasswordPage'
-import AboutPage from './pages/AboutPage'
-import FitnessScorePage from './pages/FitnessScorePage'
-import PrivacyPage from './pages/PrivacyPage'
-import TermsPage from './pages/TermsPage'
-import LeaderboardPage from './pages/LeaderboardPage'
+import NotFoundPage from './pages/NotFoundPage'
 import { pathForTab, resolveSeoRoute } from './data/seo'
 import {
   getAuthIntent,
   hasPendingAuthCallbackInUrl,
 } from './lib/authCallback'
 import { applyDocumentSeo } from './lib/documentSeo'
+import { scrollWindowToTop } from './lib/windowScroll'
+
+/** Route chunks — keep Home/Auth/404 eager for first paint + auth redirects. */
+const CalculatorsHubPage = lazy(() => import('./pages/CalculatorsHubPage'))
+const StrengthPage = lazy(() => import('./pages/StrengthPage'))
+const RunningPage = lazy(() => import('./pages/RunningPage'))
+const ScoringPage = lazy(() => import('./pages/ScoringPage'))
+const Vo2MaxPage = lazy(() => import('./pages/Vo2MaxPage'))
+const BmrPage = lazy(() => import('./pages/BmrPage'))
+const BmiPage = lazy(() => import('./pages/BmiPage'))
+const FitnessAgePage = lazy(() => import('./pages/FitnessAgePage'))
+const AirForcePfraPage = lazy(
+  () => import('./pages/military/AirForcePfraPage'),
+)
+const AirForcePfaPage = lazy(() => import('./pages/military/AirForcePfaPage'))
+const ArmyAftPage = lazy(() => import('./pages/military/ArmyAftPage'))
+const MarinePftPage = lazy(() => import('./pages/military/MarinePftPage'))
+const NavyPrtPage = lazy(() => import('./pages/military/NavyPrtPage'))
+const AccountPage = lazy(() => import('./pages/AccountPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const SourcesMethodologyPage = lazy(
+  () => import('./pages/SourcesMethodologyPage'),
+)
+const FitnessScorePage = lazy(() => import('./pages/FitnessScorePage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
+const HabitsPage = lazy(() => import('./pages/HabitsPage'))
 
 const EMAIL_CONFIRMED_MESSAGE =
   'Email confirmed. Log in to access your KinesoScore account.'
@@ -82,6 +96,16 @@ function App() {
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
+
+  // Premium SPA navigation: land at top + move focus into the page shell.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    scrollWindowToTop()
+    const main = document.getElementById('main-content')
+    if (main && typeof main.focus === 'function') {
+      main.focus({ preventScroll: true })
+    }
+  }, [activeTab])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -156,9 +180,8 @@ function App() {
       return
     }
 
-    if (!isAuthenticated && activeTab === 'account') {
-      setActiveTab('home')
-    }
+    // Guest /account keeps the locked Account Settings preview (same pattern
+    // as Dashboard / Habits) instead of silently bouncing to home.
 
     // Only bounce off reset when there's no active recovery session.
     if (!isAuthenticated && activeTab === 'reset-password') {
@@ -166,8 +189,7 @@ function App() {
     }
   }, [isAuthenticated, loading, activeTab, passwordRecovery])
 
-  const renderTab =
-    activeTab === 'calculators' ? 'strength' : activeTab
+  const renderTab = activeTab
 
   let content
   if (passwordRecovery) {
@@ -191,6 +213,8 @@ function App() {
         }}
       />
     )
+  } else if (renderTab === 'calculators') {
+    content = <CalculatorsHubPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'strength') {
     content = (
       <StrengthPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
@@ -257,7 +281,12 @@ function App() {
       />
     )
   } else if (renderTab === 'account') {
-    content = <AccountPage onOpenTab={handleTabChange} />
+    content = (
+      <AccountPage
+        onOpenTab={handleTabChange}
+        onRequestAuth={requestAuth}
+      />
+    )
   } else if (renderTab === 'dashboard') {
     content = (
       <DashboardPage
@@ -265,27 +294,66 @@ function App() {
         onRequestAuth={requestAuth}
       />
     )
-  } else if (renderTab === 'leaderboard') {
-    content = <LeaderboardPage onOpenTab={handleTabChange} />
+  } else if (
+    renderTab === 'leaderboard' ||
+    renderTab === 'leaderboard-habits'
+  ) {
+    content = (
+      <LeaderboardPage
+        onOpenTab={handleTabChange}
+        initialCategoryId={
+          renderTab === 'leaderboard-habits' ? 'habits' : undefined
+        }
+      />
+    )
+  } else if (renderTab === 'habits') {
+    content = (
+      <HabitsPage
+        onOpenTab={handleTabChange}
+        onRequestAuth={requestAuth}
+      />
+    )
   } else if (renderTab === 'about') {
     content = <AboutPage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'sources-methodology') {
+    content = <SourcesMethodologyPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'privacy') {
     content = <PrivacyPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'terms') {
     content = <TermsPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'fitness-score') {
     content = <FitnessScorePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'not-found') {
+    content = <NotFoundPage onOpenTab={handleTabChange} />
   } else {
-    content = <HomePage onOpenTab={handleTabChange} />
+    content = (
+      <HomePage
+        onOpenTab={handleTabChange}
+        onRequestAuth={requestAuth}
+      />
+    )
   }
 
   return (
-    <div className="app">
+    <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <Header activeTab={activeTab} onTabChange={handleTabChange} />
-      <div className="app-content">
-        <PageTransition pageKey={activeTab}>{content}</PageTransition>
+      <div className="app">
+        <div className="app-content" id="main-content" tabIndex={-1}>
+          <PageTransition pageKey={activeTab}>
+            <PageErrorBoundary
+              key={activeTab}
+              onGoHome={() => handleTabChange('home')}
+            >
+              <Suspense fallback={<PageChunkFallback />}>{content}</Suspense>
+            </PageErrorBoundary>
+          </PageTransition>
+        </div>
+        <Footer onOpenTab={handleTabChange} />
       </div>
-      <Footer onOpenTab={setActiveTab} />
+      <ScrollToTopButton />
     </div>
   )
 }

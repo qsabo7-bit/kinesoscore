@@ -1,27 +1,15 @@
 import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
+import { handleNavLinkClick } from '../lib/navLinkClick'
 
 function Footer({ onOpenTab }) {
-  const handleLink = (event, tab) => {
-    if (
-      !onOpenTab ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
-      return
-    }
-    event.preventDefault()
-    onOpenTab(tab)
-  }
+  const handleLink = (event, tab) => handleNavLinkClick(event, tab, onOpenTab)
 
   return (
     <footer className="site-footer">
       <div className="site-footer-main">
         <div className="site-footer-brand">
           <p className="site-footer-brand-mark">{BRAND.short}</p>
-          <p className="site-footer-brand-name">{BRAND.tagline}</p>
           <p className="site-footer-brand-lead">
             Track your strength, endurance, and fitness progress over time.
           </p>
@@ -42,10 +30,55 @@ function Footer({ onOpenTab }) {
             <li>
               <a
                 className="site-footer-link"
+                href={pathForTab('dashboard')}
+                onClick={(event) => handleLink(event, 'dashboard')}
+              >
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                className="site-footer-link"
+                href={pathForTab('calculators')}
+                onClick={(event) => handleLink(event, 'calculators')}
+              >
+                Calculators
+              </a>
+            </li>
+            <li>
+              <a
+                className="site-footer-link"
+                href={pathForTab('leaderboard')}
+                onClick={(event) => handleLink(event, 'leaderboard')}
+              >
+                Leaderboard
+              </a>
+            </li>
+            <li>
+              <a
+                className="site-footer-link"
+                href={pathForTab('habits')}
+                onClick={(event) => handleLink(event, 'habits')}
+              >
+                Habits
+              </a>
+            </li>
+            <li>
+              <a
+                className="site-footer-link"
                 href={pathForTab('about')}
                 onClick={(event) => handleLink(event, 'about')}
               >
                 About
+              </a>
+            </li>
+            <li>
+              <a
+                className="site-footer-link"
+                href={pathForTab('sources-methodology')}
+                onClick={(event) => handleLink(event, 'sources-methodology')}
+              >
+                Sources &amp; Methodology
               </a>
             </li>
           </ul>

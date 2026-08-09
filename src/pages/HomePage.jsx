@@ -1,10 +1,12 @@
+import { useAuth } from '../auth/AuthContext'
 import {
   CALCULATOR_CATEGORIES,
   calculatorsByCategory,
   DEFAULT_CALCULATOR_ID,
 } from '../data/calculators'
-import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
+import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
+
 function ToolList({ tools, onOpenTab }) {
   const handleToolClick = (event, tabId) => {
     if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
@@ -47,7 +49,8 @@ function ToolList({ tools, onOpenTab }) {
   )
 }
 
-function HomePage({ onOpenTab }) {
+function HomePage({ onOpenTab, onRequestAuth }) {
+  const { isAuthenticated, loading, firstName } = useAuth()
   const performanceTools = calculatorsByCategory('performance')
   const militaryTools = calculatorsByCategory('military')
   const performanceLabel =
@@ -56,59 +59,84 @@ function HomePage({ onOpenTab }) {
   const militaryLabel =
     CALCULATOR_CATEGORIES.find((c) => c.id === 'military')?.label ||
     'Military Fitness Assessments'
+  const showAuthCtas = !loading && !isAuthenticated
+  const showMemberCtas = !loading && isAuthenticated
 
   return (
     <main className="home">
       <section className="home-hero">
-        <p className="home-eyebrow">Performance tools</p>
-        <h1 className="home-brand">{BRAND.full}</h1>
-        <p className="home-tagline">
-          KinesoScore is a comprehensive fitness performance platform combining
-          strength, endurance, fitness assessment standards, and an intuitive{' '}
-          <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>.
-        </p>
-        <p className="home-tagline">
-          Measure where you are-Improve where you&apos;re going.
-        </p>
-        <p>
-          <a
-            className="seo-intro-link"
-            href={pathForTab('fitness-score')}
-            onClick={(event) => {
-              if (
-                !onOpenTab ||
-                event.metaKey ||
-                event.ctrlKey ||
-                event.shiftKey ||
-                event.altKey
-              ) {
-                return
-              }
-              event.preventDefault()
-              onOpenTab('fitness-score')
-            }}
-          >
-            Learn how{' '}
-            <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span> works
-          </a>
-        </p>
+        <div className="home-hero-media" aria-hidden="true" />
+        <div className="home-hero-content">
+          {showMemberCtas ? (
+            <p className="home-eyebrow home-hero-welcome">
+              Welcome, {firstName || 'Athlete'}
+            </p>
+          ) : null}
+          <h1 className="home-brand">{BRAND.full}</h1>
+          <p className="home-tagline home-tagline-hero">
+            Measure where you are — Improve where you&apos;re going.
+          </p>
+          {loading ? (
+            <div
+              className="confirm-actions home-auth-actions"
+              aria-busy="true"
+              aria-hidden="true"
+            >
+              <span className="btn btn-primary home-auth-placeholder">
+                Create Account
+              </span>
+              <span className="btn btn-ghost home-auth-placeholder">
+                Log in
+              </span>
+            </div>
+          ) : null}
+          {showAuthCtas ? (
+            <div className="confirm-actions home-auth-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => onRequestAuth?.('signup')}
+              >
+                Create Account
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => onRequestAuth?.('login')}
+              >
+                Log in
+              </button>
+            </div>
+          ) : null}
+        </div>
       </section>
 
-      <section className="home-dashboard" aria-labelledby="dashboard-heading">
-        <h2 id="dashboard-heading">
+      {showMemberCtas ? (
+        <section className="home-member-strip" aria-label="Member shortcuts">
           <button
             type="button"
-            className="home-section-link"
+            className="home-member-link"
             onClick={() => onOpenTab('dashboard')}
           >
-            Dashboard
+            <span className="home-member-label">Dashboard</span>
+            <span className="home-member-copy">
+              Your hub for {BRAND.scoreName}, trends, records, and recent
+              activity.
+            </span>
           </button>
-        </h2>
-        <p className="home-dashboard-summary">
-          Your personal hub for {BRAND.scoreName}, trends, records, and recent
-          activity.
-        </p>
-      </section>
+          <button
+            type="button"
+            className="home-member-link"
+            onClick={() => onOpenTab('habits')}
+          >
+            <span className="home-member-label">Habits</span>
+            <span className="home-member-copy">
+              Private daily routines with optional Habit Streaks — check-ins stay
+              private unless you opt in.
+            </span>
+          </button>
+        </section>
+      ) : null}
 
       <section className="home-tools" aria-labelledby="tools-heading">
         <h2 id="tools-heading">
@@ -117,9 +145,13 @@ function HomePage({ onOpenTab }) {
             className="home-section-link"
             onClick={() => onOpenTab(DEFAULT_CALCULATOR_ID)}
           >
-            Tools
+            Calculators
           </button>
         </h2>
+        <p className="home-dashboard-summary">
+          Strength, endurance, {BRAND.scoreName}, and military fitness
+          assessments — free educational tools with optional progress tracking.
+        </p>
 
         <div className="home-tools-group">
           <h3 className="home-tools-group-label">{performanceLabel}</h3>

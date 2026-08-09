@@ -4,6 +4,7 @@ import {
   formatRaceTime,
 } from '../calculations/running.js'
 import { clearCachedDashboardRecords } from './dashboardRecordsCache'
+import { deleteFitnessScoreSnapshotForSource } from './fitnessScoreSnapshots.js'
 import { supabase } from '../supabaseClient'
 
 /**
@@ -91,17 +92,87 @@ export async function fetchAllPerformanceRecords(userId) {
   return data ?? []
 }
 
+function isMissingRpcError(err) {
+  return /PGRST202|Could not find the function|function .* does not exist/i.test(
+    String(err?.message || err || ''),
+  )
+}
+
 /**
+ * Hard-delete one of the current user's performance records.
+ * Prefers delete_own_performance_record RPC (clears myKinesoScore snapshot +
+ * record atomically). Falls back to table deletes when the RPC is not deployed.
+ *
  * @param {string} recordId
  */
 export async function deletePerformanceRecord(recordId) {
-  const { error } = await supabase
+  const id = String(recordId || '').trim()
+  if (!id) throw new Error('Missing result id.')
+
+  const { data: rpcId, error: rpcError } = await supabase.rpc(
+    'delete_own_performance_record',
+    { p_record_id: id },
+  )
+
+  if (!rpcError) {
+    if (!rpcId) {
+      throw new Error(
+        'Could not delete that result. Refresh your history and try again.',
+      )
+    }
+    clearCachedDashboardRecords()
+    return { id: rpcId }
+  }
+
+  if (!isMissingRpcError(rpcError)) {
+    const text = String(rpcError.message || '')
+    if (/foreign key|23503|snapshot/i.test(text)) {
+      throw new Error(
+        'Could not delete this myKinesoScore save because related data is still linked. Please try again.',
+      )
+    }
+    throw rpcError
+  }
+
+  // Fallback when migration 011 is not applied yet.
+  try {
+    await deleteFitnessScoreSnapshotForSource(id)
+  } catch (snapErr) {
+    const text = String(snapErr?.message || snapErr || '')
+    throw new Error(
+      /fitness_score_snapshots|snapshot/i.test(text)
+        ? 'Could not delete this myKinesoScore save (linked awards snapshot). Please try again.'
+        : text || 'Could not delete that result.',
+    )
+  }
+
+  const { data, error } = await supabase
     .from('performance_records')
     .delete()
-    .eq('id', recordId)
+    .eq('id', id)
+    .select('id')
 
-  if (error) throw error
+  if (error) {
+    const text = String(error.message || '')
+    if (/foreign key|23503/i.test(text)) {
+      throw new Error(
+        'Could not delete this myKinesoScore save because related data is still linked. Please try again.',
+      )
+    }
+    if (/Leaderboard Name|shared source|cannot be shared/i.test(text)) {
+      throw new Error(
+        'Could not delete this shared result. Run the latest delete SQL in Supabase, then try again.',
+      )
+    }
+    throw error
+  }
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(
+      'Could not delete that result. Refresh your history and try again.',
+    )
+  }
   clearCachedDashboardRecords()
+  return data[0]
 }
 
 export function formatRecordDate(iso) {

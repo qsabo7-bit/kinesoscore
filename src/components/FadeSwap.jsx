@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-const EXIT_MS = 140
+/** Match `--motion-base` so content doesn’t swap mid-fade. */
+const EXIT_MS = 280
 
 /**
  * Soft crossfade when `swapKey` changes (graph tracks, summary panels).

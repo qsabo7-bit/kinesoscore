@@ -1,10 +1,14 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import {
   useSyncedDefault,
   useUserDefaults,
 } from '../auth/UserDefaultsContext'
 import CalculatorTracking from '../components/CalculatorTracking'
+import FitnessAwardsDisplay, {
+  FitnessAwardsLegend,
+} from '../components/FitnessAwardsDisplay'
+import FpcScoreRing from '../components/FpcScoreRing'
 import SeoIntro from '../components/SeoIntro'
 import DemographicFields from '../components/DemographicFields'
 import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
@@ -28,9 +32,14 @@ import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { SCORING_SEO } from '../data/seoCopy'
 import { FPC_SCORE_LOCKED_PREVIEW } from '../components/tracking'
 import {
+  friendlyFitnessSnapshotError,
+  saveFitnessScoreSnapshot,
+} from '../lib/fitnessScoreSnapshots'
+import {
   FPC_SCORE_CALCULATOR_TYPE,
   SCORING_TRACKS,
 } from '../data/trackingTracks'
+import { deriveAwards } from '../lib/fitnessAwards'
 import { fetchPerformanceRecords } from '../lib/performanceRecords'
 import { estimated5kAutofillPatch } from '../lib/runningTracking'
 
@@ -109,6 +118,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
   )
   const [age, setAge, ageShared] = useSyncedDefault('age', '')
   const [gender, setGender, genderShared] = useSyncedDefault('gender', '')
+  const [snapshotWarning, setSnapshotWarning] = useState('')
 
   // Seed Estimated 5K from latest saved run (or clear). Skip if user is mid-edit.
   useEffect(() => {
@@ -292,6 +302,14 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       patchDefaults({ strengthScore: next })
     })
   }, [result.score?.strengthScore, patchDefaults])
+
+  const liveAwards = useMemo(() => {
+    if (!result.score) return null
+    return deriveAwards({
+      runningScore: result.score.runningScore,
+      strengthScore: result.score.strengthScore,
+    })
+  }, [result.score])
 
   return (
     <main className="page">
@@ -702,31 +720,29 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
 
       {result.score ? (
         <section className="results" aria-live="polite">
-          <div className="result-stat result-stat-hero">
-            <p className={`result-label ${BRAND_CASING_CLASS}`}>{BRAND.scoreName}</p>
-            <p className="result-value">{result.score.FPCScore}</p>
-            <p className="result-sub">
-              {result.score.band} · {result.score.balance}
-            </p>
-          </div>
-
-          <div className="result-stat">
-            <p className="result-label">Strength side</p>
-            <p className="result-value result-value-sm">
-              {result.score.strengthScore}
-            </p>
-          </div>
-
-          <div className="result-stat">
-            <p className="result-label">Running side</p>
-            <p className="result-value result-value-sm">
-              {result.score.runningScore}
-            </p>
+          <div className="scoring-awards-block">
+            <FitnessAwardsDisplay
+              awards={liveAwards}
+              runningScore={result.score.runningScore}
+              strengthScore={result.score.strengthScore}
+            >
+              <FpcScoreRing
+                score={result.score.FPCScore}
+                secondary={`${result.score.band} · ${result.score.balance}`}
+              />
+            </FitnessAwardsDisplay>
+            <FitnessAwardsLegend awards={liveAwards} />
           </div>
         </section>
       ) : (
         <p className="calc-hint">{hint}</p>
       )}
+
+      {snapshotWarning ? (
+        <p className="feedback feedback-error" role="status">
+          {snapshotWarning}
+        </p>
+      ) : null}
 
       <CalculatorTracking
         calculatorType={FPC_SCORE_CALCULATOR_TYPE}
@@ -741,6 +757,30 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         lockedPreview={FPC_SCORE_LOCKED_PREVIEW}
         onRequestAuth={onRequestAuth}
         onOpenTab={onOpenTab}
+        onSaved={async ({ recordId }) => {
+          if (!user?.id || !recordId || !result.score) return
+          setSnapshotWarning('')
+          try {
+            await saveFitnessScoreSnapshot({
+              userId: user.id,
+              sourceRecordId: recordId,
+              fitnessScore: result.score.FPCScore,
+              strengthScore: result.score.strengthScore,
+              runningScore: result.score.runningScore,
+            })
+          } catch (err) {
+            // Performance save already succeeded; snapshot is private enrichment.
+            setSnapshotWarning(
+              friendlyFitnessSnapshotError(
+                err,
+                'Score saved, but awards snapshot could not be stored. Dashboard awards may be incomplete until you save again.',
+              ),
+            )
+          }
+        }}
+        onDeleted={() => {
+          setSnapshotWarning('')
+        }}
       />
 
       {result.score ? (

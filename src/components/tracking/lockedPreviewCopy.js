@@ -19,6 +19,7 @@ export const DASHBOARD_LOCKED_PREVIEW = {
   benefits: [
     `Personal ${BRAND.scoreName} ring`,
     'Progress graphs across metrics',
+    'Habits streak tracking',
     'Personal records',
     'Recent activity timeline',
     'Saved results history',
@@ -45,6 +46,39 @@ export const BMI_LOCKED_PREVIEW = {
     'Progress graphs',
     'Lowest / highest tracking',
     'Change over time',
+  ],
+}
+
+export const BMR_LOCKED_PREVIEW = {
+  title: 'Save your BMR history',
+  lead: 'Create a free account to unlock:',
+  benefits: [
+    'BMR history',
+    'Progress graphs',
+    'Personal records',
+    'Change over time',
+  ],
+}
+
+export const HABITS_LOCKED_PREVIEW = {
+  title: 'Private habit tracking',
+  lead: 'Create a free account to unlock:',
+  benefits: [
+    'Daily habit checklist',
+    'Completion streaks',
+    'Optional Habit Streak sharing',
+    'Private check-in history',
+  ],
+}
+
+export const ACCOUNT_LOCKED_PREVIEW = {
+  title: 'Account Settings',
+  lead: 'Create a free account to unlock:',
+  benefits: [
+    'Profile & Leaderboard Name',
+    'Saved calculator history',
+    'Habits and progress sync',
+    'Account security controls',
   ],
 }
 

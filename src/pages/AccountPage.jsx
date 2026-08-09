@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import LockedAuthCard from '../components/LockedAuthCard'
+import { ACCOUNT_LOCKED_PREVIEW } from '../components/tracking'
 import {
   clearLeaderboardName,
   fetchLeaderboardName,
@@ -8,6 +10,7 @@ import {
   saveLeaderboardName,
   validateLeaderboardName,
 } from '../lib/leaderboardProfile'
+import { useFocusTrap } from '../lib/useFocusTrap'
 
 function formatDate(iso) {
   if (!iso) return '—'
@@ -22,12 +25,13 @@ function formatDate(iso) {
   }
 }
 
-function AccountPage({ onOpenTab }) {
+function AccountPage({ onOpenTab, onRequestAuth }) {
   const { user, profile, firstName, signOut, deleteAccount, loading } =
     useAuth()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmClearName, setConfirmClearName] = useState(false)
 
   const [lbDraft, setLbDraft] = useState('')
   const [lbSaved, setLbSaved] = useState(null)
@@ -35,6 +39,12 @@ function AccountPage({ onOpenTab }) {
   const [lbBusy, setLbBusy] = useState(false)
   const [lbError, setLbError] = useState('')
   const [lbMessage, setLbMessage] = useState('')
+  const clearNameDialogRef = useFocusTrap(confirmClearName, () =>
+    setConfirmClearName(false),
+  )
+  const deleteDialogRef = useFocusTrap(confirmDelete, () =>
+    setConfirmDelete(false),
+  )
 
   useEffect(() => {
     if (!user?.id) return undefined
@@ -90,7 +100,7 @@ function AccountPage({ onOpenTab }) {
     } catch (err) {
       setError(
         err.message ||
-          'Could not delete account. Run supabase/schema.sql in the Supabase SQL Editor so delete_own_account exists.',
+          'Could not delete account right now. Please try again later.',
       )
       setBusy(false)
       setConfirmDelete(false)
@@ -142,6 +152,7 @@ function AccountPage({ onOpenTab }) {
       setLbSaved(null)
       setLbDraft('')
       setLbMessage('Leaderboard Name removed.')
+      setConfirmClearName(false)
     } catch (err) {
       setLbError(friendlyLeaderboardError(err, 'Could not clear Leaderboard Name.'))
     } finally {
@@ -159,22 +170,23 @@ function AccountPage({ onOpenTab }) {
 
   if (!user) {
     return (
-      <main className="page">
+      <main className="page account-page">
         <header className="page-header">
           <p className="page-eyebrow">Account</p>
           <h1>Account Settings</h1>
           <p className="page-lead">
-            Create an account or log in to manage your profile and saved
-            progress.
+            Create an account or log in to manage your profile, Leaderboard
+            Name, and saved progress.
           </p>
         </header>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => onOpenTab?.('login')}
-        >
-          Log In
-        </button>
+        <LockedAuthCard
+          title={ACCOUNT_LOCKED_PREVIEW.title}
+          lead={ACCOUNT_LOCKED_PREVIEW.lead}
+          benefits={ACCOUNT_LOCKED_PREVIEW.benefits}
+          sampleKind="account"
+          onRequestAuth={onRequestAuth}
+          onOpenTab={onOpenTab}
+        />
       </main>
     )
   }
@@ -277,19 +289,60 @@ function AccountPage({ onOpenTab }) {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={!canSave}
+                disabled={!canSave || confirmClearName}
               >
                 {lbBusy ? 'Saving…' : lbSaved ? 'Update name' : 'Save name'}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={handleClearLeaderboardName}
-                disabled={!canClear}
+                onClick={() => {
+                  setLbError('')
+                  setLbMessage('')
+                  setConfirmClearName(true)
+                }}
+                disabled={!canClear || confirmClearName}
               >
                 Clear name
               </button>
             </div>
+
+            {confirmClearName ? (
+              <div
+                ref={clearNameDialogRef}
+                className="confirm-box confirm-box-danger"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="clear-name-title"
+              >
+                <p id="clear-name-title">
+                  <strong>Clear your Leaderboard Name?</strong>
+                </p>
+                <p>
+                  You&apos;ll leave all public leaderboards until you set a new
+                  name and choose to share your results again. Your private
+                  calculator history and habit data will not be deleted.
+                </p>
+                <div className="confirm-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setConfirmClearName(false)}
+                    disabled={lbBusy}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleClearLeaderboardName}
+                    disabled={lbBusy}
+                  >
+                    {lbBusy ? 'Clearing…' : 'Clear Name'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </form>
         )}
       </section>
@@ -319,8 +372,14 @@ function AccountPage({ onOpenTab }) {
         </div>
 
         {confirmDelete ? (
-          <div className="confirm-box confirm-box-danger" role="alertdialog">
-            <p>
+          <div
+            ref={deleteDialogRef}
+            className="confirm-box confirm-box-danger"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-account-title"
+          >
+            <p id="delete-account-title">
               <strong>Delete your account permanently?</strong> This ends your
               session and removes your account and associated data. This cannot
               be undone.

@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
-import { useAuth } from '../auth/AuthContext'
 import { useSyncedDefault } from '../auth/UserDefaultsContext'
+import CalculatorTracking from '../components/CalculatorTracking'
 import SeoIntro from '../components/SeoIntro'
 import UnitToggle from '../components/UnitToggle'
-import { LockedGraphPreview } from '../components/tracking'
+import { BMR_LOCKED_PREVIEW } from '../components/tracking'
 import { BMR_SEO } from '../data/seoCopy'
+import { BMR_CALCULATOR_TYPE, BMR_TRACKS } from '../data/trackingTracks'
 import {
   ACTIVITY_LEVELS,
   calculateBmr,
@@ -16,7 +17,6 @@ import {
 } from '../calculations'
 
 function BmrPage({ onRequestAuth, onOpenTab }) {
-  const { isAuthenticated, loading: authLoading } = useAuth()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [heightUnit, setHeightUnit] = useSyncedDefault('heightUnit', 'in')
   const [weight, setWeight] = useSyncedDefault('bodyweight', '')
@@ -89,16 +89,6 @@ function BmrPage({ onRequestAuth, onOpenTab }) {
           (TDEE).
         </p>
       </header>
-
-      <SeoIntro
-        title={BMR_SEO.title}
-        faqs={BMR_SEO.faqs}
-        onNavigate={onOpenTab}
-      >
-        {BMR_SEO.paragraphs.map((text) => (
-          <p key={text}>{text}</p>
-        ))}
-      </SeoIntro>
 
       <form className="calc-form" onSubmit={(event) => event.preventDefault()}>
         <UnitToggle
@@ -234,17 +224,29 @@ function BmrPage({ onRequestAuth, onOpenTab }) {
         </p>
       )}
 
-      {!authLoading && !isAuthenticated ? (
-        <div className="tracking-panel">
-          <h2 className="result-section-title">Your Progress</h2>
-          <LockedGraphPreview
-            onRequestAuth={onRequestAuth}
-            yAxisLabel="kcal/day"
-            valueKind="number"
-            sampleKind="number"
-          />
-        </div>
-      ) : null}
+      <CalculatorTracking
+        calculatorType={BMR_CALCULATOR_TYPE}
+        tracks={BMR_TRACKS}
+        activeTrackId="bmr"
+        resultValue={result?.bmr}
+        resultUnit="kcal/day"
+        hasResult={Boolean(result)}
+        saveLabel="Save BMR"
+        sampleKind="number"
+        lockedPreview={BMR_LOCKED_PREVIEW}
+        onRequestAuth={onRequestAuth}
+        onOpenTab={onOpenTab}
+      />
+
+      <SeoIntro
+        title={BMR_SEO.title}
+        faqs={BMR_SEO.faqs}
+        onNavigate={onOpenTab}
+      >
+        {BMR_SEO.paragraphs.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </SeoIntro>
     </main>
   )
 }

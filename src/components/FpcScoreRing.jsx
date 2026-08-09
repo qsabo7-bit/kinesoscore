@@ -32,13 +32,19 @@ function FpcScoreRing({
   const start = mix(light, mid, t)
   const end = mix(mid, dark, t)
   const toRgb = (c) => `rgb(${c.r}, ${c.g}, ${c.b})`
+  const interactive = typeof onClick === 'function'
+  const Tag = interactive ? 'button' : 'div'
 
   return (
-    <button
-      type="button"
-      className="fpc-score-ring"
-      onClick={onClick}
-      aria-label={`${BRAND.scoreName} ${clamped}. Open ${BRAND.scoreName} calculator.`}
+    <Tag
+      type={interactive ? 'button' : undefined}
+      className={`fpc-score-ring${interactive ? '' : ' is-static'}`}
+      onClick={interactive ? onClick : undefined}
+      aria-label={
+        interactive
+          ? `${BRAND.scoreName} ${clamped}. Open ${BRAND.scoreName} calculator.`
+          : `${BRAND.scoreName} ${clamped}`
+      }
       style={{ '--fpc-ring-size': `${size}px` }}
     >
       <div className="fpc-score-ring-meter" aria-hidden="true">
@@ -104,7 +110,7 @@ function FpcScoreRing({
           </p>
         ) : null}
       </div>
-    </button>
+    </Tag>
   )
 }
 

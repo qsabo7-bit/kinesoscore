@@ -35,10 +35,16 @@ export const LEADERBOARD_UI_CATEGORIES = [
       t.boardKey.startsWith('assessment:'),
     ).map((t) => t.boardKey),
   },
+  {
+    id: 'habits',
+    label: 'Habit Streaks',
+    boardKeys: ['habits:streak'],
+  },
 ]
 
 const BOARD_LABELS = {
   mykinesoscore: BRAND.scoreName,
+  'habits:streak': 'Habit Streaks',
   'strength:Bench Press': 'Bench Press',
   'strength:Squat': 'Squat',
   'strength:Deadlift': 'Deadlift',
@@ -92,6 +98,15 @@ export const SAMPLE_LEADERBOARD_ROWS = [
   { rank: 3, leaderboard_name: 'SteadyState', result_display: '61' },
   { rank: 4, leaderboard_name: 'BaseBuilder', result_display: '54' },
   { rank: 5, leaderboard_name: 'WeekendPR', result_display: '49' },
+]
+
+/** Habit streak locked preview — same shape as live streak rows; never mixed with RPC data. */
+export const SAMPLE_HABIT_STREAK_ROWS = [
+  { rank: 1, leaderboard_name: 'TrailRunner_7', result_display: '48 days' },
+  { rank: 2, leaderboard_name: 'IronPace', result_display: '36 days' },
+  { rank: 3, leaderboard_name: 'SteadyState', result_display: '29 days' },
+  { rank: 4, leaderboard_name: 'BaseBuilder', result_display: '21 days' },
+  { rank: 5, leaderboard_name: 'WeekendPR', result_display: '14 days' },
 ]
 
 /**

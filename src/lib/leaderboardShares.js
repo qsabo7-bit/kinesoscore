@@ -1,5 +1,12 @@
 import { BRAND } from '../data/brand.js'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
+import { friendlyLeaderboardShareRateLimitMessage } from './leaderboardNameRules.js'
+import {
+  canonicalizeLeaderboardShareValue,
+  LEADERBOARD_MASS_UNIT,
+} from './leaderboardShareUnits.js'
+
+export { canonicalizeLeaderboardShareValue, LEADERBOARD_MASS_UNIT }
 
 /**
  * Stage 3 allowlist — board_key + frozen performance_records identity.
@@ -161,6 +168,9 @@ export function friendlyLeaderboardShareError(
   const code = err?.code || err?.error?.code
   const text = String(err?.message || err || '')
 
+  const rateLimited = friendlyLeaderboardShareRateLimitMessage(text)
+  if (rateLimited) return rateLimited
+
   if (
     /Leaderboard Name is required/i.test(text) ||
     (/P0001/.test(String(code)) && /Leaderboard Name/i.test(text))
@@ -193,7 +203,7 @@ export function friendlyLeaderboardShareError(
   }
 
   if (/permission denied|42501|row-level security|Not allowed to write/i.test(text)) {
-    return 'Could not share this result (permission denied). Your result was saved privately.'
+    return 'Could not share this result right now. Your result was saved privately — try again later.'
   }
 
   if (/failed to fetch|networkerror|network request failed|load failed/i.test(text)) {
@@ -206,7 +216,7 @@ export function friendlyLeaderboardShareError(
 /**
  * @param {string} userId
  * @param {string} boardKey
- * @returns {Promise<{ id: string, is_active: boolean } | null>}
+ * @returns {Promise<{ id: string, is_active: boolean, source_record_id: string | null } | null>}
  */
 export async function fetchActiveLeaderboardShare(userId, boardKey) {
   requireConfigured()
@@ -214,7 +224,7 @@ export async function fetchActiveLeaderboardShare(userId, boardKey) {
 
   const { data, error } = await supabase
     .from('leaderboard_shares')
-    .select('id, is_active')
+    .select('id, is_active, source_record_id')
     .eq('user_id', userId)
     .eq('board_key', boardKey)
     .maybeSingle()
@@ -240,6 +250,8 @@ export async function upsertLeaderboardShare({
 }) {
   requireConfigured()
 
+  const canonical = canonicalizeLeaderboardShareValue(resultValue, resultUnit)
+
   const { data, error } = await supabase
     .from('leaderboard_shares')
     .upsert(
@@ -249,8 +261,8 @@ export async function upsertLeaderboardShare({
         board_key: boardKey,
         calculator_type: calculatorType,
         exercise_name: exerciseName,
-        result_value: resultValue,
-        result_unit: resultUnit,
+        result_value: canonical.resultValue,
+        result_unit: canonical.resultUnit,
         higher_is_better: higherIsBetter,
         is_active: true,
         shared_at: new Date().toISOString(),

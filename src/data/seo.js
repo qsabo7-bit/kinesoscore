@@ -57,8 +57,7 @@ export const PAGE_SEO = {
     breadcrumb: [{ name: 'Home', path: '/' }],
   },
   /**
-   * Nav / breadcrumb entry that currently renders the Strength calculator.
-   * Kept as a useful URL, but not indexed separately — canonical points at /strength.
+   * Calculators hub — index of all performance and military tools.
    */
   calculators: {
     tab: 'calculators',
@@ -66,9 +65,7 @@ export const PAGE_SEO = {
     title: 'Fitness Calculators | 1RM, Running, VO₂, Military Tests | KinesoScore',
     description:
       'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, myKinesoScore™, and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
-    robots: 'noindex,follow',
-    /** Consolidate duplicate Strength UI under the dedicated strength URL. */
-    canonicalPath: '/strength',
+    robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
       { name: 'Home', path: '/' },
@@ -269,6 +266,20 @@ export const PAGE_SEO = {
       { name: 'About', path: '/about' },
     ],
   },
+  'sources-methodology': {
+    tab: 'sources-methodology',
+    path: '/sources-methodology',
+    title: 'Sources & Methodology | KinesoScore',
+    description:
+      'Published equations, reference norms, and peer-comparison datasets behind KinesoScore strength, running, VO₂, BMR, and overall fitness calculators.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'About', path: '/about' },
+      { name: 'Sources & Methodology', path: '/sources-methodology' },
+    ],
+  },
   privacy: {
     tab: 'privacy',
     path: '/privacy',
@@ -304,6 +315,15 @@ export const PAGE_SEO = {
     ogType: 'website',
     breadcrumb: null,
   },
+  habits: {
+    tab: 'habits',
+    path: '/habits',
+    title: 'Habits | KinesoScore',
+    description: 'Private KinesoScore Habits tracker and daily routine checklist.',
+    robots: 'noindex,nofollow',
+    ogType: 'website',
+    breadcrumb: null,
+  },
   account: {
     tab: 'account',
     path: '/account',
@@ -331,13 +351,39 @@ export const PAGE_SEO = {
     ogType: 'website',
     breadcrumb: null,
   },
-  // Stage 5: route for local/prod testing. Stage 6 will finalize nav + public SEO.
   leaderboard: {
     tab: 'leaderboard',
     path: '/leaderboard',
-    title: 'Leaderboard | KinesoScore',
+    title: 'KinesoScore Leaderboard | Global Fitness Rankings',
     description:
-      'Global KinesoScore leaderboards for opted-in strength, running, myKinesoScore, and fitness assessment results.',
+      'Compare publicly shared KinesoScore, running, strength, assessment, and habit-streak results on the KinesoScore leaderboard. Rankings include only athletes who opt in with a Leaderboard Name — private saves stay private.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Leaderboard', path: '/leaderboard' },
+    ],
+  },
+  /** Deep link into the Habits tab on the main Leaderboard page. */
+  'leaderboard-habits': {
+    tab: 'leaderboard-habits',
+    path: '/leaderboard/habits',
+    title: 'Habit Streak Leaderboard | KinesoScore',
+    description:
+      'See publicly shared habit streaks on the KinesoScore Leaderboard Habits tab. Opt-in athletes appear by Leaderboard Name and current streak only — never individual habits or private check-ins.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Leaderboard', path: '/leaderboard' },
+      { name: 'Habit Streaks', path: '/leaderboard/habits' },
+    ],
+  },
+  'not-found': {
+    tab: 'not-found',
+    path: '/404',
+    title: 'Page Not Found | KinesoScore',
+    description: 'That KinesoScore page could not be found.',
     robots: 'noindex,nofollow',
     ogType: 'website',
     breadcrumb: null,
@@ -360,7 +406,8 @@ const PATH_INDEX = Object.fromEntries(
 
 /**
  * Resolve SEO page + render tab from a pathname.
- * `/calculators` renders the Strength calculator (default Calculator hub entry).
+ * `/calculators` is the Calculators hub (individual tools keep their own paths).
+ * Unknown paths resolve to the not-found tab (no silent home rewrite).
  */
 export function resolveSeoRoute(pathname) {
   const normalized =
@@ -368,9 +415,17 @@ export function resolveSeoRoute(pathname) {
       ? '/'
       : pathname.replace(/\/+$/, '') || '/'
 
-  const page = PATH_INDEX[normalized] || PAGE_SEO.home
-  const renderTab = page.tab === 'calculators' ? 'strength' : page.tab
-  return { page, renderTab, seoId: page.tab }
+  const page = PATH_INDEX[normalized]
+  if (page) {
+    return { page, renderTab: page.tab, seoId: page.tab, matched: true }
+  }
+  const fallback = PAGE_SEO['not-found']
+  return {
+    page: fallback,
+    renderTab: fallback.tab,
+    seoId: fallback.tab,
+    matched: false,
+  }
 }
 
 export function pathForTab(tabId) {
@@ -418,6 +473,7 @@ export function buildWebApplicationSchema() {
       'Marine Corps PFT calculator',
       'Navy PRT calculator',
       'Air Force PFRA and legacy PFA calculators',
+      'Opt-in global leaderboards for shared fitness results',
     ],
   }
 }

@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useUserDefaults } from '../auth/UserDefaultsContext'
+import FitnessAwardsDisplay, {
+  FitnessAwardsLegend,
+} from '../components/FitnessAwardsDisplay'
 import FpcScoreRing from '../components/FpcScoreRing'
 import LockedDashboardPreview from '../components/LockedDashboardPreview'
+import SoftReveal from '../components/SoftReveal'
 import {
   GraphRangeToggle,
   GraphTrackSelector,
@@ -19,6 +23,15 @@ import {
   loadDashboardRecords,
 } from '../lib/dashboardData'
 import {
+  awardsFromMatchingSnapshot,
+  deriveDashboardAwardsFallback,
+} from '../lib/dashboardAwardsFallback'
+import { deriveAwards } from '../lib/fitnessAwards'
+import {
+  fetchLatestFitnessScoreSnapshot,
+  friendlyFitnessSnapshotError,
+} from '../lib/fitnessScoreSnapshots'
+import {
   clearCachedDashboardRecords,
   readCachedDashboardRecords,
   writeCachedDashboardRecords,
@@ -31,6 +44,18 @@ import {
   buildDerivedEstimated5kRecords,
   isActualRunningExerciseName,
 } from '../lib/runningTracking'
+import { localDateKey, shiftLocalDateKey } from '../lib/habitDates'
+import {
+  fetchActiveHabits,
+  fetchHabitCheckins,
+  friendlyHabitError,
+  setHabitCheckin,
+} from '../lib/habits'
+import {
+  computeHabitStreak,
+  habitDayProgress,
+} from '../lib/habitStreaks'
+import { isSupabaseConfigured } from '../supabaseClient'
 
 const PREFERRED_RUNNING_TRACK_ID =
   DASHBOARD_GRAPH_METRICS.find((metric) => metric.id === 'running')
@@ -59,7 +84,6 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     profile,
     firstName,
     signOut,
-    deleteAccount,
     loading: authLoading,
     isAuthenticated,
   } = useAuth()
@@ -77,8 +101,16 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   const [runningTrackTouched, setRunningTrackTouched] = useState(false)
   const [graphRange, setGraphRange] = useState('all')
   const [busy, setBusy] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const [activityExpanded, setActivityExpanded] = useState(false)
+  const [habitState, setHabitState] = useState({
+    habits: [],
+    checkins: [],
+    loading: false,
+    error: '',
+  })
+  /** @type {[{ awards: object, runningScore: number, strengthScore: number } | null, Function]} */
+  const [awardState, setAwardState] = useState(null)
+  const todayKey = localDateKey()
 
   useEffect(() => {
     setRunningTrackId(PREFERRED_RUNNING_TRACK_ID)
@@ -86,8 +118,42 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   }, [user?.id])
 
   useEffect(() => {
+    if (!isAuthenticated || !user?.id || !isSupabaseConfigured) {
+      return undefined
+    }
+
+    let cancelled = false
+    const fromDate = shiftLocalDateKey(todayKey, -400)
+
+    ;(async () => {
+      setHabitState((prev) => ({ ...prev, loading: true, error: '' }))
+      try {
+        const [habits, checkins] = await Promise.all([
+          fetchActiveHabits(user.id),
+          fetchHabitCheckins(user.id, { fromDate, toDate: todayKey }),
+        ])
+        if (cancelled) return
+        setHabitState({ habits, checkins, loading: false, error: '' })
+      } catch (err) {
+        if (cancelled) return
+        setHabitState({
+          habits: [],
+          checkins: [],
+          loading: false,
+          error: friendlyHabitError(err, 'Could not load habits.'),
+        })
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, user?.id, todayKey])
+
+  useEffect(() => {
     if (!isAuthenticated || !user?.id) {
       setRecords([])
+      setAwardState(null)
       setLoadingData(false)
       return undefined
     }
@@ -117,6 +183,29 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         if (!cancelled) setLoadingData(false)
       })
 
+    fetchLatestFitnessScoreSnapshot(user.id)
+      .then((snapshot) => {
+        if (cancelled) return
+        if (!snapshot) {
+          setAwardState(null)
+          return
+        }
+        const runningScore = Number(snapshot.running_score)
+        const strengthScore = Number(snapshot.strength_score)
+        setAwardState({
+          fitnessScore: Number(snapshot.fitness_score),
+          runningScore,
+          strengthScore,
+          awards: deriveAwards({ runningScore, strengthScore }),
+        })
+      })
+      .catch((err) => {
+        if (cancelled) return
+        // Awards are optional enrichment; do not block the dashboard.
+        console.warn(friendlyFitnessSnapshotError(err, 'Could not load awards.'))
+        setAwardState(null)
+      })
+
     return () => {
       cancelled = true
     }
@@ -129,6 +218,20 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
       }),
     [records, defaults.age],
   )
+
+  const resolvedAwards = useMemo(() => {
+    if (!model.fpcScore) return null
+    const matched = awardsFromMatchingSnapshot(
+      awardState,
+      model.fpcScore.value,
+    )
+    if (matched) return matched
+    return deriveDashboardAwardsFallback({
+      savedFpcScore: model.fpcScore.value,
+      records,
+      defaults,
+    })
+  }, [awardState, model.fpcScore, records, defaults])
 
   const runningMetricRows = model.byMetric.running || EMPTY_RUNNING_ROWS
   const derivedEstimated5kRows = useMemo(
@@ -232,23 +335,6 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     }
   }
 
-  const handleDeleteAccount = async () => {
-    setBusy(true)
-    setError('')
-    try {
-      clearCachedDashboardRecords()
-      await deleteAccount()
-      onOpenTab?.('home')
-    } catch (err) {
-      setError(
-        err.message ||
-          'Could not delete account. Run supabase/schema.sql so delete_own_account exists.',
-      )
-      setBusy(false)
-      setConfirmDelete(false)
-    }
-  }
-
   if (authLoading) {
     return (
       <main className="page">
@@ -284,12 +370,21 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         </div>
 
         {model.fpcScore ? (
-          <FpcScoreRing
-            score={model.fpcScore.value}
-            secondary={model.fpcScore.secondary}
-            trend={model.fpcScore.trend}
-            onClick={() => onOpenTab?.(model.fpcScore.tab)}
-          />
+          <div className="dashboard-score-block">
+            <FitnessAwardsDisplay
+              awards={resolvedAwards?.awards ?? null}
+              runningScore={resolvedAwards?.runningScore}
+              strengthScore={resolvedAwards?.strengthScore}
+            >
+              <FpcScoreRing
+                score={model.fpcScore.value}
+                secondary={model.fpcScore.secondary}
+                trend={model.fpcScore.trend}
+                onClick={() => onOpenTab?.(model.fpcScore.tab)}
+              />
+            </FitnessAwardsDisplay>
+            <FitnessAwardsLegend awards={resolvedAwards?.awards ?? null} />
+          </div>
         ) : null}
       </header>
 
@@ -410,38 +505,66 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
             Recent activity
           </h2>
           <ul className="dashboard-activity-list">
-            {(activityExpanded
-              ? model.recentActivity
-              : model.recentActivity.slice(0, RECENT_ACTIVITY_PREVIEW)
-            ).map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className="dashboard-activity-item"
-                  onClick={() => onOpenTab?.(item.tab)}
-                >
-                  <span className="dashboard-activity-date">
-                    {item.dateLabel}
-                  </span>
-                  <span className="dashboard-activity-title">{item.title}</span>
-                  <strong className="dashboard-activity-value">
-                    {item.valueLabel}
-                  </strong>
-                </button>
-              </li>
-            ))}
+            {model.recentActivity
+              .slice(0, RECENT_ACTIVITY_PREVIEW)
+              .map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className="dashboard-activity-item"
+                    onClick={() => onOpenTab?.(item.tab)}
+                  >
+                    <span className="dashboard-activity-date">
+                      {item.dateLabel}
+                    </span>
+                    <span className="dashboard-activity-title">
+                      {item.title}
+                    </span>
+                    <strong className="dashboard-activity-value">
+                      {item.valueLabel}
+                    </strong>
+                  </button>
+                </li>
+              ))}
           </ul>
           {model.recentActivity.length > RECENT_ACTIVITY_PREVIEW ? (
-            <button
-              type="button"
-              className="dashboard-activity-expand"
-              onClick={() => setActivityExpanded((open) => !open)}
-              aria-expanded={activityExpanded}
-            >
-              {activityExpanded
-                ? 'Show less'
-                : `Show more (${model.recentActivity.length - RECENT_ACTIVITY_PREVIEW} more)`}
-            </button>
+            <>
+              <SoftReveal open={activityExpanded}>
+                <ul className="dashboard-activity-list dashboard-activity-list-more">
+                  {model.recentActivity
+                    .slice(RECENT_ACTIVITY_PREVIEW)
+                    .map((item) => (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          className="dashboard-activity-item"
+                          onClick={() => onOpenTab?.(item.tab)}
+                        >
+                          <span className="dashboard-activity-date">
+                            {item.dateLabel}
+                          </span>
+                          <span className="dashboard-activity-title">
+                            {item.title}
+                          </span>
+                          <strong className="dashboard-activity-value">
+                            {item.valueLabel}
+                          </strong>
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              </SoftReveal>
+              <button
+                type="button"
+                className="dashboard-activity-expand"
+                onClick={() => setActivityExpanded((open) => !open)}
+                aria-expanded={activityExpanded}
+              >
+                {activityExpanded
+                  ? 'Show less'
+                  : `Show more (${model.recentActivity.length - RECENT_ACTIVITY_PREVIEW} more)`}
+              </button>
+            </>
           ) : null}
         </section>
       ) : null}
@@ -529,6 +652,44 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         </>
       ) : null}
 
+      <DashboardHabitsSection
+        habitState={habitState}
+        setHabitState={setHabitState}
+        todayKey={todayKey}
+        userId={user?.id}
+        onOpenTab={onOpenTab}
+      />
+
+      <section
+        className="dashboard-section account-card"
+        aria-labelledby="dash-leaderboard"
+      >
+        <h2 id="dash-leaderboard" className="result-section-title">
+          Global leaderboard
+        </h2>
+        <p className="dashboard-empty-copy">
+          Compare opted-in shared results for {BRAND.scoreName}, running,
+          strength, fitness assessments, and Habit Streaks. Private saves and
+          habit check-ins stay private.
+        </p>
+        <div className="confirm-actions">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => onOpenTab?.('leaderboard')}
+          >
+            View Leaderboard
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => onOpenTab?.('leaderboard-habits')}
+          >
+            Habit Streaks
+          </button>
+        </div>
+      </section>
+
       <section
         className="dashboard-section account-card"
         aria-labelledby="dash-account"
@@ -558,53 +719,153 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           <button
             type="button"
             className="btn btn-ghost"
-            onClick={handleLogout}
+            onClick={() => onOpenTab?.('account')}
             disabled={busy}
           >
-            {busy && !confirmDelete ? 'Logging out…' : 'Log out'}
+            Account Settings
           </button>
           <button
             type="button"
-            className="btn btn-danger"
-            onClick={() => {
-              setError('')
-              setConfirmDelete(true)
-            }}
+            className="btn btn-ghost"
+            onClick={handleLogout}
             disabled={busy}
           >
-            Delete Account
+            {busy ? 'Logging out…' : 'Log out'}
           </button>
         </div>
-
-        {confirmDelete ? (
-          <div className="confirm-box confirm-box-danger" role="alertdialog">
-            <p>
-              <strong>Delete your account permanently?</strong> This ends your
-              session and removes your account and associated data. This cannot
-              be undone.
-            </p>
-            <div className="confirm-actions">
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={handleDeleteAccount}
-                disabled={busy}
-              >
-                {busy ? 'Deleting…' : 'Yes, delete my account'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setConfirmDelete(false)}
-                disabled={busy}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : null}
       </section>
     </main>
+  )
+}
+
+function DashboardHabitsSection({
+  habitState,
+  setHabitState,
+  todayKey,
+  userId,
+  onOpenTab,
+}) {
+  const progress = habitDayProgress(
+    todayKey,
+    habitState.habits,
+    habitState.checkins,
+    todayKey,
+  )
+  const streak = computeHabitStreak(habitState.habits, habitState.checkins, {
+    todayKey,
+  })
+
+  return (
+    <section
+      className="dashboard-section account-card dashboard-habits"
+      aria-labelledby="dash-habits"
+    >
+      <h2 id="dash-habits" className="result-section-title">
+        Habits
+      </h2>
+      {habitState.loading ? <p className="calc-hint">Loading habits…</p> : null}
+      {habitState.error ? (
+        <p className="feedback feedback-error">{habitState.error}</p>
+      ) : null}
+      {!habitState.loading && habitState.habits.length === 0 ? (
+        <p className="dashboard-empty-copy">
+          Start a habit in your routine to track daily completion.
+        </p>
+      ) : null}
+      {!habitState.loading && habitState.habits.length > 0 ? (
+        <>
+          <p className="calc-hint">
+            Today {progress.ratioLabel}
+            {' · '}
+            Streak {streak} day{streak === 1 ? '' : 's'}
+          </p>
+          <ul className="habits-check-list habits-check-list-compact">
+            {habitState.habits.map((habit) => {
+              const checked = habitState.checkins.some(
+                (row) =>
+                  row.habit_id === habit.id &&
+                  String(row.checkin_date) === todayKey &&
+                  row.completed,
+              )
+              return (
+                <li key={habit.id} className="habits-check-item">
+                  <label className="habits-check-label">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={async (event) => {
+                        if (!userId) return
+                        const next = event.target.checked
+                        const previous = habitState.checkins
+                        setHabitState((prev) => ({
+                          ...prev,
+                          error: '',
+                          checkins: [
+                            ...prev.checkins.filter(
+                              (row) =>
+                                !(
+                                  row.habit_id === habit.id &&
+                                  String(row.checkin_date) === todayKey
+                                ),
+                            ),
+                            {
+                              habit_id: habit.id,
+                              checkin_date: todayKey,
+                              completed: next,
+                              user_id: userId,
+                            },
+                          ],
+                        }))
+                        try {
+                          const saved = await setHabitCheckin(
+                            userId,
+                            habit.id,
+                            next,
+                            todayKey,
+                          )
+                          setHabitState((prev) => ({
+                            ...prev,
+                            checkins: [
+                              ...prev.checkins.filter(
+                                (row) =>
+                                  !(
+                                    row.habit_id === habit.id &&
+                                    String(row.checkin_date) === todayKey
+                                  ),
+                              ),
+                              saved,
+                            ],
+                          }))
+                        } catch (err) {
+                          setHabitState((prev) => ({
+                            ...prev,
+                            checkins: previous,
+                            error: friendlyHabitError(
+                              err,
+                              'Could not save check-in.',
+                            ),
+                          }))
+                        }
+                      }}
+                    />
+                    <span>{habit.habit_name}</span>
+                  </label>
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      ) : null}
+      <div className="confirm-actions">
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => onOpenTab?.('habits')}
+        >
+          Open Habits
+        </button>
+      </div>
+    </section>
   )
 }
 

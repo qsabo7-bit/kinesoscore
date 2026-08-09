@@ -13,8 +13,8 @@ function LeaderboardShareControl({
     <div className="leaderboard-share-control">
       <p className="leaderboard-share-label">Global leaderboard</p>
       <p className="calc-hint leaderboard-share-hint">
-        Private by default. Sharing only publishes your Leaderboard Name and
-        this result — never your email or first name.
+        Private by default. Applies when you save. Sharing only publishes your
+        Leaderboard Name and this result — never your email or first name.
       </p>
       <div
         className="leaderboard-share-toggle"
@@ -28,7 +28,7 @@ function LeaderboardShareControl({
           disabled={disabled}
           aria-pressed={mode === 'private'}
         >
-          Keep private
+          Keep Private
         </button>
         <button
           type="button"

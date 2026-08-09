@@ -477,7 +477,46 @@ export const MILITARY_SEO_DISCLAIMER =
   'Educational estimate only — not an official service scorecard or medical advice. Always confirm with current official standards and command guidance.'
 
 export const HOME_SEO_TAGLINE =
-  'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, fitness assessment standards, and an intuitive myKinesoScore™. Measure where you are-Improve where you\'re going.'
+  'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, fitness assessment standards, and an intuitive myKinesoScore™. Measure where you are — Improve where you\'re going.'
+
+/** Public Leaderboard page SEO copy (Stage 6). */
+export const LEADERBOARD_SEO = {
+  title: 'About the KinesoScore leaderboard',
+  paragraphs: [
+    'The KinesoScore leaderboard shows global rankings built only from results athletes choose to share. It is a community comparison surface for opted-in performances — not a feed of every calculator save.',
+    'Browse categories such as myKinesoScore™, running distances, strength lifts (bench, squat, deadlift, and SBD total), military fitness assessments, and Habit Streaks. For performance boards, switch between All Time and This Week (UTC). Habit Streaks use All Time only (current streak).',
+    'To appear on a board, create a Leaderboard Name in Account Settings and opt in when saving an eligible result — or share your habit streak from Habits. Private calculator history and habit check-ins stay private by default.',
+  ],
+  faqs: [
+    {
+      question: 'Who appears on the KinesoScore leaderboard?',
+      answer:
+        'Only athletes who create a Leaderboard Name and choose to share an eligible result. Public rows show a Leaderboard Name and the shared performance value — not email or legal name.',
+    },
+    {
+      question: 'What is the difference between All Time and This Week?',
+      answer:
+        'All Time ranks eligible active shares across history for that performance board. This Week limits performance boards to shares from the current week using a UTC Monday week start. Habit Streaks are All Time only and do not use a This Week filter.',
+    },
+    {
+      question: 'Do private calculator saves appear on the leaderboard?',
+      answer:
+        'No. Saves remain private unless you opt in to share globally. You can keep using every calculator without joining the leaderboard.',
+    },
+    {
+      question: 'What do Habit Streaks show?',
+      answer:
+        'Habit Streaks list athletes who opt in from Habits. Public rows show a Leaderboard Name and current streak only — never which habits you track or your check-in history. Habit Streaks use All Time (current streak), not This Week.',
+    },
+  ],
+  relatedNote: {
+    before: 'Eligible shared results often come from calculators such as ',
+    tab: 'scoring',
+    label: 'myKinesoScore™',
+    after:
+      '. Add a Leaderboard Name in Account Settings before opting in to share globally.',
+  },
+}
 
 /** FAQs attached to document JSON-LD by App tab / PAGE_SEO key. */
 export const PAGE_FAQS_BY_TAB = {
@@ -519,4 +558,5 @@ export const PAGE_FAQS_BY_TAB = {
   'navy-prt': MILITARY_SEO['navy-prt'].faqs,
   'air-force-pfra': MILITARY_SEO['air-force-pfra'].faqs,
   'air-force-pfa': MILITARY_SEO['air-force-pfa'].faqs,
+  leaderboard: LEADERBOARD_SEO.faqs,
 }

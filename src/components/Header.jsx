@@ -1,18 +1,24 @@
+import { useEffect } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import {
   CALCULATOR_CATEGORIES,
   calculatorsByCategory,
-  DEFAULT_CALCULATOR_ID,
   isCalculatorTab,
   navTabs,
 } from '../data/calculators'
 import { BRAND } from '../data/brand'
+import { pathForTab } from '../data/seo'
+import { handleNavLinkClick } from '../lib/navLinkClick'
+import { useWindowScrollY } from '../lib/useWindowScrollY'
+import SoftReveal from './SoftReveal'
 
 function Header({ activeTab, onTabChange }) {
   const { isAuthenticated, firstName, loading } = useAuth()
   const calculatorActive = isCalculatorTab(activeTab)
   const brandLabel =
     activeTab === 'home' || activeTab === 'about' ? BRAND.mark : BRAND.short
+  const scrollY = useWindowScrollY(activeTab)
+  const scrolled = scrollY > 8
 
   // Wait for session restore before deciding Login vs Welcome.
   const showLogin = !loading && !isAuthenticated
@@ -23,91 +29,134 @@ function Header({ activeTab, onTabChange }) {
     return true
   })
 
-  const handleMainTab = (tabId) => {
-    if (tabId === 'calculators') {
-      // Hub landing for SEO; same default Strength experience when first opening Calculator.
-      onTabChange(calculatorActive ? activeTab : 'calculators')
-      return
-    }
+  const go = (event, tabId) => handleNavLinkClick(event, tabId, onTabChange)
 
-    onTabChange(tabId)
-  }
+  const calculatorGroups = CALCULATOR_CATEGORIES.map((category) => ({
+    category,
+    // Short sticky labels so each row stays one line on desktop.
+    stickyLabel:
+      category.id === 'performance'
+        ? 'Performance'
+        : category.id === 'military'
+          ? 'Military'
+          : category.label,
+    tools: calculatorsByCategory(category.id),
+  })).filter((group) => group.tools.length > 0)
+
+  // On narrow screens, keep the active chip in view within its row.
+  useEffect(() => {
+    if (!calculatorActive) return undefined
+    const narrow =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 720px)').matches
+    if (!narrow) return undefined
+    const active = document.querySelector(
+      '.site-header-tools .sub-nav-tab.is-active',
+    )
+    if (!(active instanceof HTMLElement)) return undefined
+    active.scrollIntoView({
+      inline: 'center',
+      block: 'nearest',
+      behavior: 'smooth',
+    })
+    return undefined
+  }, [activeTab, calculatorActive])
 
   return (
-    <header className="site-header">
-      {showWelcome ? (
-        <div className="account-welcome-bar">
-          <button
-            type="button"
-            className="account-welcome-link"
-            onClick={() => onTabChange('account')}
-            aria-label="Open account settings"
+    <header
+      className={`site-header${scrolled ? ' is-scrolled' : ''}${calculatorActive ? ' has-tools' : ''}`}
+    >
+      <div className="site-header-inner">
+        <SoftReveal open={showWelcome}>
+          <div className="account-welcome-bar">
+            <a
+              className="account-welcome-link"
+              href={pathForTab('account')}
+              onClick={(event) => go(event, 'account')}
+              aria-label="Open account settings"
+              tabIndex={showWelcome ? undefined : -1}
+            >
+              {`Welcome, ${firstName || 'Athlete'}`}
+            </a>
+          </div>
+        </SoftReveal>
+
+        <div className="site-header-top">
+          <a
+            className="brand"
+            href={pathForTab('home')}
+            onClick={(event) => go(event, 'home')}
+            title={BRAND.full}
+            aria-label={BRAND.full}
           >
-            {activeTab === 'dashboard'
-              ? 'Account'
-              : `Welcome, ${firstName || 'Athlete'}`}
-          </button>
+            {brandLabel}
+          </a>
+
+          <nav className="site-nav" aria-label="Main">
+            {visibleTabs.map((tab) => {
+              const isActive =
+                tab.id === 'calculators'
+                  ? calculatorActive
+                  : tab.id === 'leaderboard'
+                    ? activeTab === 'leaderboard' ||
+                      activeTab === 'leaderboard-habits'
+                    : activeTab === tab.id
+
+              return (
+                <a
+                  key={tab.id}
+                  href={pathForTab(tab.id)}
+                  className={`nav-tab${isActive ? ' is-active' : ''}`}
+                  onClick={(event) => go(event, tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {tab.name}
+                </a>
+              )
+            })}
+          </nav>
         </div>
-      ) : null}
-
-      <div className="site-header-top">
-        <button
-          type="button"
-          className="brand"
-          onClick={() => onTabChange('home')}
-          title={BRAND.full}
-          aria-label={BRAND.full}
-        >
-          {brandLabel}
-        </button>
-
-        <nav className="site-nav" aria-label="Main">
-          {visibleTabs.map((tab) => {
-            const isActive =
-              tab.id === 'calculators'
-                ? calculatorActive
-                : activeTab === tab.id
-
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className={`nav-tab${isActive ? ' is-active' : ''}`}
-                onClick={() => handleMainTab(tab.id)}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                {tab.name}
-              </button>
-            )
-          })}
-        </nav>
       </div>
 
-      {calculatorActive ? (
-        <nav className="sub-nav sub-nav-categorized" aria-label="Calculator tools">
-          {CALCULATOR_CATEGORIES.map((category) => {
-            const tools = calculatorsByCategory(category.id)
-            if (!tools.length) return null
-
-            return (
-              <div key={category.id} className="sub-nav-category">
-                <p className="sub-nav-category-label">{category.label}</p>
-                <div className="sub-nav-category-tools">
-                  {tools.map((tool) => {
-                    const isActive =
-                      activeTab === tool.id ||
-                      (activeTab === 'calculators' &&
-                        tool.id === DEFAULT_CALCULATOR_ID)
+      {/* Always mounted so leaving Calculators → About can animate height instead of jolting. */}
+      <div
+        className="site-header-tools"
+        aria-hidden={!calculatorActive}
+        inert={calculatorActive ? undefined : true}
+      >
+        <div className="site-header-tools-clip">
+          <nav className="site-header-tools-stack" aria-label="Calculators">
+            {calculatorGroups.map((group) => (
+              <div key={group.category.id} className="site-header-tools-row">
+                <span className="site-header-tools-label">
+                  {group.stickyLabel}
+                </span>
+                <div className="site-header-tools-chips">
+                  {group.tools.map((tool) => {
+                    const isActive = activeTab === tool.id
                     const isDev = tool.status === 'development'
 
+                    if (isDev) {
+                      return (
+                        <span
+                          key={tool.id}
+                          className="sub-nav-tab is-dev"
+                          aria-disabled="true"
+                        >
+                          {tool.name}
+                          <span className="nav-badge">Soon</span>
+                        </span>
+                      )
+                    }
+
                     return (
-                      <button
+                      <a
                         key={tool.id}
-                        type="button"
-                        className={`sub-nav-tab${isActive ? ' is-active' : ''}${isDev ? ' is-dev' : ''}${tool.id === 'scoring' ? ' brand-casing' : ''}`}
-                        onClick={() => onTabChange(tool.id)}
+                        href={pathForTab(tool.id)}
+                        tabIndex={calculatorActive ? undefined : -1}
+                        className={`sub-nav-tab${isActive ? ' is-active' : ''}${tool.id === 'scoring' ? ' brand-casing' : ''}`}
+                        onClick={(event) => go(event, tool.id)}
                         aria-current={isActive ? 'page' : undefined}
-                        disabled={isDev}
                       >
                         {tool.name}
                         {tool.badge ? (
@@ -117,16 +166,15 @@ function Header({ activeTab, onTabChange }) {
                             {tool.badge}
                           </span>
                         ) : null}
-                        {isDev ? <span className="nav-badge">Soon</span> : null}
-                      </button>
+                      </a>
                     )
                   })}
                 </div>
               </div>
-            )
-          })}
-        </nav>
-      ) : null}
+            ))}
+          </nav>
+        </div>
+      </div>
     </header>
   )
 }

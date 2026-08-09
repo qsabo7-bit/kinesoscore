@@ -15,10 +15,29 @@ function formatGender(gender) {
   return gender
 }
 
-function timeAtOrAbovePercentile(points, targetPercentile) {
+/**
+ * Time at a target percentile, linearly interpolating when the ladder skips
+ * the exact point (e.g. 70 → 80 for a requested 75th / "top 25%").
+ */
+function timeAtPercentile(points, targetPercentile) {
   const sorted = [...points].sort((a, b) => a.percentile - b.percentile)
-  const hit = sorted.find((point) => point.percentile >= targetPercentile)
-  return hit?.value ?? sorted[sorted.length - 1]?.value
+  if (!sorted.length) return undefined
+
+  if (targetPercentile <= sorted[0].percentile) return sorted[0].value
+  const last = sorted[sorted.length - 1]
+  if (targetPercentile >= last.percentile) return last.value
+
+  for (let i = 1; i < sorted.length; i += 1) {
+    const lo = sorted[i - 1]
+    const hi = sorted[i]
+    if (targetPercentile > hi.percentile) continue
+    const span = hi.percentile - lo.percentile
+    if (span <= 0) return hi.value
+    const t = (targetPercentile - lo.percentile) / span
+    return lo.value + t * (hi.value - lo.value)
+  }
+
+  return last.value
 }
 
 /**
@@ -48,7 +67,7 @@ export function compareRunningToNorms(distanceMiles, timeSeconds, age, gender) {
   )
 
   const ordinal = formatOrdinal(betterThanPercent)
-  const top25Seconds = timeAtOrAbovePercentile(norms.points, 75)
+  const top25Seconds = timeAtPercentile(norms.points, 75)
 
   return {
     fiveKSeconds,

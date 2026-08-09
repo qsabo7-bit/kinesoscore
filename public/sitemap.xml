@@ -6,6 +6,11 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://kinesoscore.com/calculators</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kinesoscore.com/strength</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -76,12 +81,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kinesoscore.com/sources-methodology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kinesoscore.com/privacy</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kinesoscore.com/terms</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kinesoscore.com/leaderboard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kinesoscore.com/leaderboard/habits</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

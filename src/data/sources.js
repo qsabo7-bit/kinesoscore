@@ -14,8 +14,8 @@ import { BRAND } from './brand.js'
 
 /**
  * Public citations for KinesoScore formulas and data.
- * About page renders this list. Live calculator sources are included so
- * About stays aligned with peer-comparison panels.
+ * Sources & Methodology page renders this list. Live calculator sources are
+ * included so citations stay aligned with peer-comparison panels.
  */
 export const sources = [
   {

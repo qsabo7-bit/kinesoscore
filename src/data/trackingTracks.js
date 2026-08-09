@@ -1,5 +1,5 @@
-import { RACE_DISTANCES_MILES } from '../calculations/running'
-import { BRAND } from './brand'
+import { RACE_DISTANCES_MILES } from '../calculations/running.js'
+import { BRAND } from './brand.js'
 
 /** Strength: independent Bench Press / Squat / Deadlift series. */
 export const STRENGTH_TRACKS = [
@@ -117,6 +117,18 @@ export const BMI_TRACKS = [
     label: 'BMI',
     exerciseName: 'BMI',
     yAxisLabel: 'BMI',
+    higherIsBetter: false,
+  },
+]
+
+export const BMR_CALCULATOR_TYPE = 'bmr'
+
+export const BMR_TRACKS = [
+  {
+    id: 'bmr',
+    label: 'BMR',
+    exerciseName: 'BMR',
+    yAxisLabel: 'kcal/day',
     higherIsBetter: false,
   },
 ]

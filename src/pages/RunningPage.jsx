@@ -190,17 +190,18 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
 
       {result ? (
         <section className="results" aria-live="polite">
-          <div className="result-stat">
-            <p className="result-label">Average pace</p>
-            <p className="result-value result-value-sm">{result.paceLabel}</p>
-          </div>
-
           <div className="result-stat-with-save">
-            <div className="result-stat">
-              <p className="result-label">Tracking as {result.trackLabel}</p>
-              <p className="result-value result-value-sm">
-                {result.trackTimeLabel}
-              </p>
+            <div className="result-stat-pair">
+              <div className="result-stat">
+                <p className="result-label">Average pace</p>
+                <p className="result-value result-value-sm">{result.paceLabel}</p>
+              </div>
+              <div className="result-stat">
+                <p className="result-label">Tracking as {result.trackLabel}</p>
+                <p className="result-value result-value-sm">
+                  {result.trackTimeLabel}
+                </p>
+              </div>
             </div>
             <div
               ref={setSaveHost}

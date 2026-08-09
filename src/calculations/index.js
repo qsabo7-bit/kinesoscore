@@ -4,7 +4,10 @@
  */
 
 export { calculateOneRepMax, estimateOneRepMax } from './oneRepMax.js'
-export { getStrengthLevel } from './strengthLevel.js'
+export {
+  getStrengthLevel,
+  getStrengthLevelFromPercentile,
+} from './strengthLevel.js'
 export { compareStrengthToNorms } from './strengthComparison.js'
 export {
   calculateSbdTotal,
