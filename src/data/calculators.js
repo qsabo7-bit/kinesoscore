@@ -4,6 +4,7 @@
  *
  * category:
  * - performance → Fitness Performance group
+ * - fitness → Fitness Assessments group (benchmark WODs / max tests)
  * - military → Military Fitness Assessments group
  */
 
@@ -11,10 +12,17 @@ export const CALCULATOR_CATEGORIES = [
   {
     id: 'performance',
     label: 'Fitness Performance',
+    stickyLabel: 'Performance',
+  },
+  {
+    id: 'fitness',
+    label: 'Fitness Assessments',
+    stickyLabel: 'Fitness',
   },
   {
     id: 'military',
     label: 'Military Fitness Assessments',
+    stickyLabel: 'Military',
   },
 ]
 
@@ -75,6 +83,51 @@ export const calculators = [
     category: 'performance',
   },
   {
+    id: 'max-pushups',
+    name: 'Max Push-ups',
+    description:
+      'Max push-ups in one minute — track unbroken capacity and compare on the leaderboard.',
+    status: 'ready',
+    category: 'fitness',
+    badge: 'NEW',
+  },
+  {
+    id: 'max-pullups',
+    name: 'Max Pull-ups',
+    description:
+      'Max pull-ups in one minute — track hanging strength and pull-up capacity over time.',
+    status: 'ready',
+    category: 'fitness',
+    badge: 'NEW',
+  },
+  {
+    id: 'fran',
+    name: 'Fran',
+    description:
+      'Fran benchmark WOD calculator — 21-15-9 thrusters and pull-ups for time with Rx standards.',
+    status: 'ready',
+    category: 'fitness',
+    badge: 'NEW',
+  },
+  {
+    id: 'murph',
+    name: 'Murph',
+    description:
+      'Murph benchmark WOD calculator — mile, pull-ups, push-ups, squats, mile for time with Rx vest notes.',
+    status: 'ready',
+    category: 'fitness',
+    badge: 'NEW',
+  },
+  {
+    id: 'cindy',
+    name: 'Cindy',
+    description:
+      'Cindy AMRAP calculator — 20-minute rounds of pull-ups, push-ups, and air squats.',
+    status: 'ready',
+    category: 'fitness',
+    badge: 'NEW',
+  },
+  {
     id: 'air-force-pfra',
     name: 'Air Force PFRA',
     description:
@@ -131,7 +184,16 @@ export function calculatorsByCategory(categoryId) {
 }
 
 export const performanceCalculators = calculatorsByCategory('performance')
+export const fitnessCalculators = calculatorsByCategory('fitness')
 export const militaryCalculators = calculatorsByCategory('military')
+
+/** Short sticky-nav label for calculator tool rows. */
+export function calculatorCategoryStickyLabel(category) {
+  if (!category) return ''
+  if (category.stickyLabel) return category.stickyLabel
+  if (category.id === 'performance') return 'Performance'
+  return category.label
+}
 
 /** Top-level navigation: Calculators grouped under one parent tab. */
 export const navTabs = [

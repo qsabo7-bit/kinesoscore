@@ -1,5 +1,8 @@
 import { BRAND } from '../data/brand'
-import { militaryCalculators } from '../data/calculators'
+import {
+  fitnessCalculators,
+  militaryCalculators,
+} from '../data/calculators'
 import { DASHBOARD_GRAPH_METRICS, ACTIVITY_META } from '../data/dashboardMetrics'
 import {
   FITNESS_AGE_CALCULATOR_TYPE,
@@ -236,7 +239,7 @@ export function buildDashboardModel(allRecords, options = {}) {
     }
   }
 
-  // Fitness assessments — last Overall Score per military variant
+  // Military assessments — last Overall Score per military variant
   const assessmentSummaryCards = militaryCalculators
     .map((tool) => {
       const rows = ascending.filter(
@@ -258,6 +261,42 @@ export function buildDashboardModel(allRecords, options = {}) {
         title: tool.name,
         primary: formatRecordValue(latest.result_value, 'number', 'pts'),
         secondary: `Last taken ${formatRecordDate(latest.created_at)}`,
+        trend,
+        tab: tool.id,
+        badge: tool.badge || null,
+      }
+    })
+    .filter(Boolean)
+
+  // Fitness Assessments — latest save per tool (Rx/Scaled share one card)
+  const fitnessAssessmentSummaryCards = fitnessCalculators
+    .map((tool) => {
+      const rows = ascending.filter(
+        (record) => record.calculator_type === tool.id,
+      )
+      const latest = latestRecord(rows)
+      if (!latest) return null
+
+      const unit = String(latest.result_unit || '').toLowerCase()
+      const isTime = unit === 'sec'
+      const previous =
+        rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
+      const delta =
+        previous == null ? null : Number(latest.result_value) - previous
+      const trend = getTrendDisplay(
+        delta,
+        isTime ? 'duration' : 'number',
+        isTime ? null : 'reps',
+        !isTime,
+      )
+
+      return {
+        id: tool.id,
+        title: tool.name,
+        primary: isTime
+          ? formatRecordValue(latest.result_value, 'duration', null, 'clock')
+          : formatRecordValue(latest.result_value, 'number', null),
+        secondary: `${latest.exercise_name || tool.name} · ${formatRecordDate(latest.created_at)}`,
         trend,
         tab: tool.id,
         badge: tool.badge || null,
@@ -389,6 +428,7 @@ export function buildDashboardModel(allRecords, options = {}) {
     byMetric,
     fpcScore,
     summaryCards,
+    fitnessAssessmentSummaryCards,
     assessmentSummaryCards,
     recentActivity,
     personalRecords,

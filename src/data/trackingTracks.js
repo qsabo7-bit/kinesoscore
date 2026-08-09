@@ -170,3 +170,73 @@ export const AIR_FORCE_PFRA_TRACKS = [MILITARY_OVERALL_TRACK]
 
 export const AIR_FORCE_PFA_CALCULATOR_TYPE = 'air-force-pfa'
 export const AIR_FORCE_PFA_TRACKS = [MILITARY_OVERALL_TRACK]
+
+/** Fitness Assessments — capacity tests + benchmark WODs */
+export const MAX_PUSHUPS_CALCULATOR_TYPE = 'max-pushups'
+export const MAX_PUSHUPS_TRACKS = [
+  {
+    id: 'max-pushups',
+    label: 'Max Push-ups',
+    exerciseName: 'Max Push-ups',
+    yAxisLabel: 'Reps',
+    higherIsBetter: true,
+  },
+]
+
+export const MAX_PULLUPS_CALCULATOR_TYPE = 'max-pullups'
+export const MAX_PULLUPS_TRACKS = [
+  {
+    id: 'max-pullups',
+    label: 'Max Pull-ups',
+    exerciseName: 'Max Pull-ups',
+    yAxisLabel: 'Reps',
+    higherIsBetter: true,
+  },
+]
+
+export const FRAN_CALCULATOR_TYPE = 'fran'
+export const FRAN_TRACKS = [
+  {
+    id: 'fran-rx',
+    label: 'Fran Rx',
+    exerciseName: 'Fran Rx',
+    yAxisLabel: 'Time',
+    higherIsBetter: false,
+  },
+  {
+    id: 'fran-scaled',
+    label: 'Fran Scaled',
+    exerciseName: 'Fran Scaled',
+    yAxisLabel: 'Time',
+    higherIsBetter: false,
+  },
+]
+
+export const MURPH_CALCULATOR_TYPE = 'murph'
+export const MURPH_TRACKS = [
+  {
+    id: 'murph-rx',
+    label: 'Murph Rx',
+    exerciseName: 'Murph Rx',
+    yAxisLabel: 'Time',
+    higherIsBetter: false,
+  },
+  {
+    id: 'murph-scaled',
+    label: 'Murph Scaled',
+    exerciseName: 'Murph Scaled',
+    yAxisLabel: 'Time',
+    higherIsBetter: false,
+  },
+]
+
+export const CINDY_CALCULATOR_TYPE = 'cindy'
+export const CINDY_TRACKS = [
+  {
+    id: 'cindy',
+    label: 'Cindy',
+    exerciseName: 'Cindy',
+    yAxisLabel: 'Work reps',
+    higherIsBetter: true,
+  },
+]

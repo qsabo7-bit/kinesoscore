@@ -11,6 +11,11 @@ import {
   upsertLeaderboardShare,
 } from '../lib/leaderboardShares'
 import {
+  canonicalizeLeaderboardShareValue,
+  isLargeLeaderboardShareJump,
+  resolveLeaderboardShareJumpBaseline,
+} from '../lib/leaderboardShareUnits'
+import {
   computePerformanceSummary,
   deletePerformanceRecord,
   fetchPerformanceRecords,
@@ -110,8 +115,22 @@ function CalculatorTracking({
   const [hadActiveShare, setHadActiveShare] = useState(false)
   /** Active share's source_record_id when one exists for this board. */
   const [activeShareSourceId, setActiveShareSourceId] = useState(null)
+  /** Last confirmed public share value/unit (null if none). Never set from form input. */
+  const [activeShareSnapshot, setActiveShareSnapshot] = useState(null)
+  const [pendingShareJump, setPendingShareJump] = useState(null)
+  /** @type {null | 'discard' | 'update'} */
+  const [shareJumpBusy, setShareJumpBusy] = useState(null)
   const [hasLeaderboardName, setHasLeaderboardName] = useState(true)
   const touchStartX = useRef(null)
+  /** Confirmed share baseline; only updated on fetch / successful upsert / clear. */
+  const confirmedShareBaselineRef = useRef(null)
+  const shareJumpDialogRef = useFocusTrap(Boolean(pendingShareJump), () => {
+    if (!shareJumpBusy) {
+      // Escape = keep previous share (discard this save).
+      void handleCancelShareJumpRef.current?.()
+    }
+  })
+  const handleCancelShareJumpRef = useRef(null)
 
   const displayUnit =
     valueKind === 'mass'
@@ -242,20 +261,40 @@ function CalculatorTracking({
   const shareEligible = Boolean(isAuthenticated && shareTarget)
 
   useEffect(() => {
-    if (!isAuthenticated || !user?.id || !shareTarget) return undefined
+    if (!pendingShareJump || typeof document === 'undefined') return undefined
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [pendingShareJump])
+
+  const shareBoardKey = shareTarget?.boardKey ?? null
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !shareBoardKey) return undefined
 
     let cancelled = false
-    const boardKey = shareTarget.boardKey
 
     Promise.all([
-      fetchActiveLeaderboardShare(user.id, boardKey),
+      fetchActiveLeaderboardShare(user.id, shareBoardKey),
       fetchLeaderboardName(user.id),
     ])
       .then(([share, name]) => {
         if (cancelled) return
         const active = Boolean(share)
+        const snapshot =
+          active && Number.isFinite(Number(share?.result_value))
+            ? {
+                resultValue: Number(share.result_value),
+                resultUnit: share.result_unit ?? null,
+                higherIsBetter: share.higher_is_better !== false,
+              }
+            : null
         setHadActiveShare(active)
         setActiveShareSourceId(active ? share?.source_record_id ?? null : null)
+        setActiveShareSnapshot(snapshot)
+        confirmedShareBaselineRef.current = snapshot
         setShareMode(active ? 'global' : 'private')
         setHasLeaderboardName(Boolean(name))
       })
@@ -263,6 +302,8 @@ function CalculatorTracking({
         if (cancelled) return
         setHadActiveShare(false)
         setActiveShareSourceId(null)
+        setActiveShareSnapshot(null)
+        confirmedShareBaselineRef.current = null
         setShareMode('private')
         setHasLeaderboardName(true)
       })
@@ -270,10 +311,10 @@ function CalculatorTracking({
     return () => {
       cancelled = true
     }
-  }, [isAuthenticated, user?.id, shareTarget])
+  }, [isAuthenticated, user?.id, shareBoardKey])
 
   const handleSave = async () => {
-    if (!user || !canSave) return
+    if (!user || !canSave || pendingShareJump) return
     const track = saveTrack
     if (!track || track.derived) return
 
@@ -290,6 +331,50 @@ function CalculatorTracking({
       shareEligible && shareMode === 'private' && hadActiveShare
 
     try {
+      // Refresh the public-share baseline from the DB before saving so the
+      // trust check always uses the last confirmed share — never form input
+      // and never a discarded private attempt still sitting in React state.
+      let liveHadActiveShare = hadActiveShare
+      let shareBaseline =
+        confirmedShareBaselineRef.current || activeShareSnapshot
+      if (wantsShare && shareTarget) {
+        try {
+          const liveShare = await fetchActiveLeaderboardShare(
+            user.id,
+            shareTarget.boardKey,
+          )
+          liveHadActiveShare = Boolean(liveShare)
+          if (
+            liveShare &&
+            Number.isFinite(Number(liveShare.result_value))
+          ) {
+            shareBaseline = {
+              resultValue: Number(liveShare.result_value),
+              resultUnit: liveShare.result_unit ?? null,
+              higherIsBetter: liveShare.higher_is_better !== false,
+            }
+            confirmedShareBaselineRef.current = shareBaseline
+            setHadActiveShare(true)
+            setActiveShareSourceId(liveShare.source_record_id ?? null)
+            setActiveShareSnapshot(shareBaseline)
+          } else {
+            shareBaseline = null
+            confirmedShareBaselineRef.current = null
+            setHadActiveShare(false)
+            setActiveShareSourceId(null)
+            setActiveShareSnapshot(null)
+          }
+        } catch {
+          // Fall back to the last confirmed in-memory baseline.
+        }
+      }
+
+      const prevCanonical = resolveLeaderboardShareJumpBaseline({
+        shareSnapshot: shareBaseline,
+        // History is fallback only; exclude nothing yet (pre-save).
+        trackRecords: [],
+      })
+
       const saved = await savePerformanceRecord({
         userId: user.id,
         calculatorType,
@@ -298,6 +383,7 @@ function CalculatorTracking({
         resultUnit: unitForSave,
       })
 
+      const companionRecordIds = []
       for (const companion of companionSaves) {
         if (!Number.isFinite(Number(companion.resultValue))) continue
         // Skip companions that target a derived display-only track.
@@ -309,17 +395,56 @@ function CalculatorTracking({
         ) {
           continue
         }
-        await savePerformanceRecord({
+        const companionSaved = await savePerformanceRecord({
           userId: user.id,
           calculatorType,
           exerciseName: companion.exerciseName,
           resultValue: Number(companion.resultValue),
           resultUnit: companion.resultUnit || null,
         })
+        if (companionSaved?.id) companionRecordIds.push(companionSaved.id)
+      }
+
+      setSelectedTrackId(track.id)
+
+      // Trust popup only when updating an existing public share with a large jump.
+      // First-time share and Keep Private never show it.
+      // Baseline is last confirmed shared score, not this input.
+      const nextCanonical = canonicalizeLeaderboardShareValue(
+        numericResult,
+        unitForSave,
+      )
+      const needsJumpConfirm =
+        Boolean(wantsShare) &&
+        Boolean(shareTarget) &&
+        Boolean(hasLeaderboardName) &&
+        Boolean(liveHadActiveShare) &&
+        Boolean(prevCanonical) &&
+        isLargeLeaderboardShareJump({
+          previousValue: prevCanonical.resultValue,
+          nextValue: nextCanonical.resultValue,
+          higherIsBetter: shareTarget.higherIsBetter,
+        })
+
+      if (needsJumpConfirm) {
+        setSavedMessage(false)
+        setPendingShareJump({
+          userId: user.id,
+          sourceRecordId: saved.id,
+          companionRecordIds,
+          boardKey: shareTarget.boardKey,
+          calculatorType: shareTarget.calculatorType,
+          exerciseName: shareTarget.exerciseName,
+          resultValue: numericResult,
+          resultUnit: unitForSave,
+          higherIsBetter: shareTarget.higherIsBetter,
+          track,
+        })
+        await loadHistory()
+        return
       }
 
       setSavedMessage(true)
-      setSelectedTrackId(track.id)
 
       if (wantsShare && shareTarget) {
         if (!hasLeaderboardName) {
@@ -338,13 +463,22 @@ function CalculatorTracking({
               resultUnit: unitForSave,
               higherIsBetter: shareTarget.higherIsBetter,
             })
+            const confirmed = {
+              resultValue: nextCanonical.resultValue,
+              resultUnit: nextCanonical.resultUnit,
+              higherIsBetter: shareTarget.higherIsBetter,
+            }
             setHadActiveShare(true)
             setActiveShareSourceId(saved.id)
+            setActiveShareSnapshot(confirmed)
+            confirmedShareBaselineRef.current = confirmed
             setShareMode('global')
             setShareMessage('Shared to the global leaderboard.')
           } catch (shareErr) {
             setShareMessage(friendlyLeaderboardShareError(shareErr))
-            if (/Leaderboard Name is required/i.test(String(shareErr?.message))) {
+            if (
+              /Leaderboard Name is required/i.test(String(shareErr?.message))
+            ) {
               setHasLeaderboardName(false)
             }
           }
@@ -354,6 +488,8 @@ function CalculatorTracking({
           await deactivateLeaderboardShare(user.id, shareTarget.boardKey)
           setHadActiveShare(false)
           setActiveShareSourceId(null)
+          setActiveShareSnapshot(null)
+          confirmedShareBaselineRef.current = null
           setShareMode('private')
           setShareMessage('Removed from the global leaderboard. Your private history is unchanged.')
         } catch (shareErr) {
@@ -380,6 +516,105 @@ function CalculatorTracking({
     setPendingDeleteId(recordId)
   }
 
+  const handleCancelShareJump = async () => {
+    if (shareJumpBusy || !pendingShareJump) return
+    const {
+      sourceRecordId,
+      companionRecordIds = [],
+      boardKey,
+      userId,
+    } = pendingShareJump
+    setShareJumpBusy('discard')
+    setShareMessage('')
+    setError('')
+    try {
+      // Discard the save that triggered the trust check; keep prior public share.
+      // Do not treat the discarded input as the next jump baseline.
+      for (const companionId of companionRecordIds) {
+        await deletePerformanceRecord(companionId)
+        removeRecordLocally(companionId)
+      }
+      await deletePerformanceRecord(sourceRecordId)
+      removeRecordLocally(sourceRecordId)
+      setPendingShareJump(null)
+      setSavedMessage(false)
+      setShareMessage(
+        'Kept your previous shared score. The new result was discarded.',
+      )
+      // Re-pin baseline from the still-active public share (last kept), never
+      // from the discarded form value.
+      if (userId && boardKey) {
+        try {
+          const share = await fetchActiveLeaderboardShare(userId, boardKey)
+          const snapshot =
+            share && Number.isFinite(Number(share.result_value))
+              ? {
+                  resultValue: Number(share.result_value),
+                  resultUnit: share.result_unit ?? null,
+                  higherIsBetter: share.higher_is_better !== false,
+                }
+              : confirmedShareBaselineRef.current
+          setHadActiveShare(Boolean(share))
+          setActiveShareSourceId(share?.source_record_id ?? null)
+          setActiveShareSnapshot(snapshot)
+          confirmedShareBaselineRef.current = snapshot
+        } catch {
+          // Keep the pre-discard confirmed baseline if refresh fails.
+        }
+      }
+      onDeleted?.({ recordId: sourceRecordId })
+      await loadHistory()
+    } catch (err) {
+      setError(err.message || 'Could not discard that result. Try again.')
+    } finally {
+      setShareJumpBusy(null)
+    }
+  }
+  handleCancelShareJumpRef.current = handleCancelShareJump
+
+  const handleConfirmShareJump = async () => {
+    if (shareJumpBusy || !pendingShareJump) return
+    setShareJumpBusy('update')
+    setShareMessage('')
+    try {
+      const {
+        track,
+        companionRecordIds: _companionRecordIds,
+        ...sharePayload
+      } = pendingShareJump
+      await upsertLeaderboardShare(sharePayload)
+      const nextCanonical = canonicalizeLeaderboardShareValue(
+        sharePayload.resultValue,
+        sharePayload.resultUnit,
+      )
+      const confirmed = {
+        resultValue: nextCanonical.resultValue,
+        resultUnit: nextCanonical.resultUnit,
+        higherIsBetter: sharePayload.higherIsBetter,
+      }
+      setHadActiveShare(true)
+      setActiveShareSourceId(sharePayload.sourceRecordId)
+      setActiveShareSnapshot(confirmed)
+      confirmedShareBaselineRef.current = confirmed
+      setShareMode('global')
+      setPendingShareJump(null)
+      setSavedMessage(true)
+      setShareMessage('Shared to the global leaderboard.')
+      onSaved?.({
+        track,
+        resultValue: sharePayload.resultValue,
+        recordId: sharePayload.sourceRecordId,
+      })
+    } catch (shareErr) {
+      setShareMessage(friendlyLeaderboardShareError(shareErr))
+      if (/Leaderboard Name is required/i.test(String(shareErr?.message))) {
+        setHasLeaderboardName(false)
+      }
+    } finally {
+      setShareJumpBusy(null)
+    }
+  }
+
   const removeRecordLocally = (recordId) => {
     setRecordsByTrack((prev) => {
       const next = {}
@@ -398,6 +633,7 @@ function CalculatorTracking({
   const handleConfirmDelete = async () => {
     if (!pendingDeleteId) return
     const recordId = pendingDeleteId
+    const wasSharedSource = recordId === activeShareSourceId
     const previousTracks = recordsByTrack
     setDeletingId(recordId)
     setError('')
@@ -406,9 +642,18 @@ function CalculatorTracking({
     setPendingDeleteId(null)
     try {
       await deletePerformanceRecord(recordId)
-      if (recordId === activeShareSourceId) {
+      if (wasSharedSource && shareTarget?.boardKey && user?.id) {
+        // Removing the shared source must clear the public board too, so a
+        // deleted score cannot linger as the jump benchmark.
+        try {
+          await deactivateLeaderboardShare(user.id, shareTarget.boardKey)
+        } catch {
+          // Private delete still succeeded; share cleanup is best-effort.
+        }
         setHadActiveShare(false)
         setActiveShareSourceId(null)
+        setActiveShareSnapshot(null)
+        confirmedShareBaselineRef.current = null
         setShareMode('private')
       }
       // Reconcile (derived Estimated 5K, server truth). Stale fetches are ignored.
@@ -480,7 +725,7 @@ function CalculatorTracking({
             setShareMode(next)
             setShareMessage('')
           }}
-          disabled={saving}
+          disabled={saving || Boolean(pendingShareJump)}
           hasLeaderboardName={hasLeaderboardName}
           onRequestAccount={
             onOpenTab ? () => onOpenTab('account') : undefined
@@ -489,14 +734,16 @@ function CalculatorTracking({
       ) : null}
       <SaveResultButton
         onSave={handleSave}
-        saving={saving}
+        saving={saving || Boolean(pendingShareJump)}
         savedMessage={savedMessage}
         label={saveLabel}
       />
       {shareMessage ? (
         <p
           className={`feedback${
-            /^(Shared to|Removed from)/i.test(shareMessage)
+            /^(Shared to|Removed from|Saved privately|Kept your previous)/i.test(
+              shareMessage,
+            )
               ? ' feedback-success'
               : ' feedback-error'
           }`}
@@ -653,6 +900,63 @@ function CalculatorTracking({
           </div>
         ) : null}
       </section>
+      {pendingShareJump && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              ref={shareJumpDialogRef}
+              className="confirm-modal-layer"
+            >
+              <div
+                className="confirm-modal-backdrop"
+                aria-hidden="true"
+                onClick={() => {
+                  if (!shareJumpBusy) void handleCancelShareJump()
+                }}
+              />
+              <div
+                className="confirm-modal confirm-modal-trust"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="share-jump-title"
+                aria-describedby="share-jump-copy"
+              >
+                <p className="confirm-modal-eyebrow">Trust check</p>
+                <p id="share-jump-title" className="confirm-modal-title">
+                  Large jump from last shared score
+                </p>
+                <p id="share-jump-copy">
+                  Leaderboard scores are self-reported. This result is a large
+                  improvement versus your last shared score on this board. Update
+                  the public board only if this result is accurate — or keep your
+                  previous share and discard this new save.
+                </p>
+                <div className="confirm-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={handleCancelShareJump}
+                    disabled={Boolean(shareJumpBusy)}
+                  >
+                    {shareJumpBusy === 'discard'
+                      ? 'Discarding…'
+                      : 'Keep previous share'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleConfirmShareJump}
+                    disabled={Boolean(shareJumpBusy)}
+                  >
+                    {shareJumpBusy === 'update'
+                      ? 'Updating…'
+                      : 'Update leaderboard'}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }

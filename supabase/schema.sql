@@ -256,7 +256,14 @@ as $$
         ('assessment:air-force-pfa', 'air-force-pfa', 'Overall Score', true),
         ('assessment:army-aft', 'army-aft', 'Overall Score', true),
         ('assessment:marine-pft', 'marine-pft', 'Overall Score', true),
-        ('assessment:navy-prt', 'navy-prt', 'Overall Score', true)
+        ('assessment:navy-prt', 'navy-prt', 'Overall Score', true),
+        ('fitness:max-pushups', 'max-pushups', 'Max Push-ups', true),
+        ('fitness:max-pullups', 'max-pullups', 'Max Pull-ups', true),
+        ('fitness:fran-rx', 'fran', 'Fran Rx', false),
+        ('fitness:fran-scaled', 'fran', 'Fran Scaled', false),
+        ('fitness:murph-rx', 'murph', 'Murph Rx', false),
+        ('fitness:murph-scaled', 'murph', 'Murph Scaled', false),
+        ('fitness:cindy', 'cindy', 'Cindy', true)
     ) as allowed(board_key, calculator_type, exercise_name, higher_is_better)
     where allowed.board_key = p_board_key
       and allowed.calculator_type = p_calculator_type
@@ -632,7 +639,14 @@ begin
         ('assessment:air-force-pfa'),
         ('assessment:army-aft'),
         ('assessment:marine-pft'),
-        ('assessment:navy-prt')
+        ('assessment:navy-prt'),
+        ('fitness:max-pushups'),
+        ('fitness:max-pullups'),
+        ('fitness:fran-rx'),
+        ('fitness:fran-scaled'),
+        ('fitness:murph-rx'),
+        ('fitness:murph-scaled'),
+        ('fitness:cindy')
     ) as allowed(board_key)
     where allowed.board_key = v_board
   )

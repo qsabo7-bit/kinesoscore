@@ -15,6 +15,7 @@ function LeaderboardShareControl({
       <p className="calc-hint leaderboard-share-hint">
         Private by default. Applies when you save. Sharing only publishes your
         Leaderboard Name and this result — never your email or first name.
+        Leaderboard scores are self-reported.
       </p>
       <div
         className="leaderboard-share-toggle"

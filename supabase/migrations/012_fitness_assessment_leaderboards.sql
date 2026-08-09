@@ -1,17 +1,58 @@
--- Stage 5: Public leaderboard read RPC (narrow, validated, no raw shares).
--- Idempotent — safe to re-run in Supabase Dashboard → SQL Editor.
---
--- Security model:
---   * SECURITY DEFINER with fixed search_path
---   * Validates board_key against Stage 3 allowlist keys only
---   * Validates period as all_time | this_week only
---   * No dynamic SQL
---   * Returns ONLY public fields (no user_id, email, source_record_id, etc.)
---   * Requires is_active + current leaderboard_profiles row (valid name)
---   * Does NOT grant SELECT on leaderboard_shares to anon
---
--- Account deletion: delete_own_account already removes leaderboard_shares and
--- leaderboard_profiles, so deleted users disappear from this RPC automatically.
+-- Fitness Assessments leaderboard boards (max tests + benchmark WODs).
+-- Keep aligned with src/lib/leaderboardShares.js LEADERBOARD_SHARE_TARGETS.
+
+create or replace function public.leaderboard_share_target_allowed(
+  p_board_key text,
+  p_calculator_type text,
+  p_exercise_name text,
+  p_higher_is_better boolean
+)
+returns boolean
+language sql
+immutable
+as $$
+  select exists (
+    select 1
+    from (
+      values
+        ('mykinesoscore', 'FPC Score', 'Overall FPC Score', true),
+        ('strength:Bench Press', 'strength', 'Bench Press', true),
+        ('strength:Squat', 'strength', 'Squat', true),
+        ('strength:Deadlift', 'strength', 'Deadlift', true),
+        ('strength:SBD Total', 'strength', 'SBD Total', true),
+        ('running:Mile', 'running', 'Mile', false),
+        ('running:1.5 Mile', 'running', '1.5 Mile', false),
+        ('running:2 Mile', 'running', '2 Mile', false),
+        ('running:5K', 'running', '5K', false),
+        ('running:5 Mile', 'running', '5 Mile', false),
+        ('running:10K', 'running', '10K', false),
+        ('running:10 Mile', 'running', '10 Mile', false),
+        ('running:Half Marathon', 'running', 'Half Marathon', false),
+        ('running:Marathon', 'running', 'Marathon', false),
+        ('assessment:air-force-pfra', 'air-force-pfra', 'Overall Score', true),
+        ('assessment:air-force-pfa', 'air-force-pfa', 'Overall Score', true),
+        ('assessment:army-aft', 'army-aft', 'Overall Score', true),
+        ('assessment:marine-pft', 'marine-pft', 'Overall Score', true),
+        ('assessment:navy-prt', 'navy-prt', 'Overall Score', true),
+        ('fitness:max-pushups', 'max-pushups', 'Max Push-ups', true),
+        ('fitness:max-pullups', 'max-pullups', 'Max Pull-ups', true),
+        ('fitness:fran-rx', 'fran', 'Fran Rx', false),
+        ('fitness:fran-scaled', 'fran', 'Fran Scaled', false),
+        ('fitness:murph-rx', 'murph', 'Murph Rx', false),
+        ('fitness:murph-scaled', 'murph', 'Murph Scaled', false),
+        ('fitness:cindy', 'cindy', 'Cindy', true)
+    ) as allowed(board_key, calculator_type, exercise_name, higher_is_better)
+    where allowed.board_key = p_board_key
+      and allowed.calculator_type = p_calculator_type
+      and allowed.exercise_name = p_exercise_name
+      and allowed.higher_is_better = p_higher_is_better
+  );
+$$;
+
+revoke all on function public.leaderboard_share_target_allowed(text, text, text, boolean)
+  from public;
+grant execute on function public.leaderboard_share_target_allowed(text, text, text, boolean)
+  to authenticated;
 
 create or replace function public.get_public_leaderboard(
   p_board_key text,
@@ -46,7 +87,6 @@ begin
       using errcode = '22023';
   end if;
 
-  -- Tight board-key allowlist (must stay aligned with leaderboard_share_target_allowed).
   select exists (
     select 1
     from (
@@ -141,6 +181,3 @@ $$;
 revoke all on function public.get_public_leaderboard(text, text) from public;
 grant execute on function public.get_public_leaderboard(text, text)
   to anon, authenticated;
-
-comment on function public.get_public_leaderboard(text, text) is
-  'Stage 5 public leaderboard read. Returns only rank, leaderboard_name, board_key, result_value, result_unit, higher_is_better. No user_id or source ids.';

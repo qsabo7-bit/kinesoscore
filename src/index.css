@@ -21,6 +21,8 @@
   --motion-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   /* Solid enough that content can’t bleed through sticky nav while scrolling. */
   --header-scrolled-bg: color-mix(in srgb, var(--bg) 92%, transparent);
+  /* Base sticky nav (no calculator tools strip) — home hero tucks under this. */
+  --site-header-height: 4.05rem;
   /* Shared control geometry — keep inputs, chips, toggles, and buttons aligned. */
   --control-radius: 0.35rem;
   --control-border: 1px solid var(--border);
@@ -158,6 +160,11 @@ select:focus {
   min-width: 0;
 }
 
+/* Home hero bleeds under the sticky scrim — drop the reading-column top gap. */
+.app:has(.home) {
+  padding-top: 0;
+}
+
 .app-content {
   flex: 1 0 auto;
 }
@@ -168,6 +175,13 @@ select:focus {
 
 .page-transition-enter {
   animation: page-enter var(--motion-enter) var(--motion-ease) both;
+}
+
+/* Home hero is full-bleed under the sticky header — translateY on enter
+   briefly exposes page bg as a thin top bar. Fade only on home. */
+.page-transition-enter:has(.home) {
+  will-change: opacity;
+  animation-name: page-enter-fade;
 }
 
 .page-transition-enter .page-header {
@@ -183,6 +197,15 @@ select:focus {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes page-enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -584,6 +607,7 @@ a.brand:hover:visited {
   transform: translateY(-5.5px) rotate(-45deg);
 }
 
+.site-nav-menu-layer,
 .site-nav-menu {
   display: none;
 }
@@ -753,6 +777,27 @@ a.brand:hover:visited {
   color: var(--text);
 }
 
+.fitness-rx-panel {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.fitness-rx-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.fitness-rx-list {
+  margin: 0.15rem 0 0;
+}
+
 .sub-nav-tab {
   display: inline-flex;
   align-items: center;
@@ -845,9 +890,11 @@ a.sub-nav-tab.is-active:visited {
   min-height: clamp(22rem, 78svh, 38rem);
   /* Prefer dvw so classic 100vw + scrollbar doesn’t leave a bright side strip. */
   width: 100dvw;
+  /* Pull under sticky header so media + glow read continuous (no hard seam). */
+  margin-top: calc(-1 * var(--site-header-height));
   margin-left: calc(50% - 50dvw);
   margin-right: calc(50% - 50dvw);
-  padding: clamp(3.5rem, 10vh, 5.5rem)
+  padding: calc(var(--site-header-height) + clamp(3.5rem, 10vh, 5.5rem))
     max(1.25rem, calc((100dvw - min(1080px, 100dvw - 2.5rem)) / 2))
     clamp(2.5rem, 6vh, 3.5rem);
   overflow: hidden;
@@ -860,7 +907,7 @@ a.sub-nav-tab.is-active:visited {
   pointer-events: none;
   background-color: var(--bg);
   background-image:
-    /* Keep the mint glow below the sticky nav so Dashboard doesn’t look selected. */
+    /* Mint glow sits mid-hero; header scrim keeps Dashboard from reading as selected. */
     radial-gradient(ellipse 90% 70% at 18% 42%, rgba(125, 255, 179, 0.14), transparent 55%),
     radial-gradient(ellipse 70% 55% at 88% 18%, rgba(125, 255, 179, 0.07), transparent 50%),
     radial-gradient(ellipse 80% 60% at 50% 100%, rgba(15, 20, 18, 0.2), transparent 55%),
@@ -868,6 +915,23 @@ a.sub-nav-tab.is-active:visited {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+/* Optional photo layer — toggle via HOME_HERO_PHOTO in HomePage.jsx */
+.home-hero.has-photo .home-hero-media {
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(15, 20, 18, 0.55) 0%,
+      rgba(15, 20, 18, 0.42) 38%,
+      rgba(15, 20, 18, 0.78) 72%,
+      var(--bg) 100%
+    ),
+    radial-gradient(ellipse 90% 70% at 18% 42%, rgba(125, 255, 179, 0.1), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 88% 18%, rgba(125, 255, 179, 0.05), transparent 50%),
+    var(--home-hero-photo);
+  background-size: cover, cover, cover, cover;
+  background-position: center, center, center, center 62%;
 }
 
 .home-hero-media::before {
@@ -992,11 +1056,65 @@ a.sub-nav-tab.is-active:visited {
   border-top: 1px solid var(--border);
 }
 
+.home-member-progress {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.5rem 0 0.35rem;
+  border-top: 1px solid var(--border);
+  max-width: 36rem;
+}
+
+.home-member-progress-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.home-member-progress-primary {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.85rem, 4vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+  line-height: 1.05;
+}
+
+.home-member-progress-secondary {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.home-member-progress-cta {
+  justify-self: start;
+  margin-top: 0.55rem;
+}
+
 .home-member-strip {
   display: grid;
   gap: 1.15rem;
   padding: 1.65rem 0 1.75rem;
   border-top: 1px solid var(--border);
+}
+
+.leaderboard-trust-note {
+  margin: 0.15rem 0 0.85rem;
+  max-width: 40rem;
+  color: var(--muted);
+}
+
+/* Full-width About disclosure on Leaderboard — matches board chrome, not a half-cut strip. */
+.leaderboard-page > .seo-intro {
+  max-width: none;
+}
+
+.leaderboard-page > .seo-intro .seo-intro-panel {
+  max-width: 42rem;
 }
 
 .home-member-link {
@@ -2021,6 +2139,74 @@ a:focus-visible {
 
 .confirm-box-danger {
   border-color: rgba(255, 143, 143, 0.35);
+}
+
+/* Centered trust / share confirm — portals to body so it is never buried mid-page. */
+.confirm-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+}
+
+.confirm-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 20, 18, 0.82);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.confirm-modal {
+  position: relative;
+  z-index: 1;
+  width: min(28rem, 100%);
+  max-height: min(85svh, 36rem);
+  overflow-y: auto;
+  margin: 0;
+  padding: 1.25rem 1.2rem 1.15rem;
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: var(--bg-elevated);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.45);
+  -webkit-overflow-scrolling: touch;
+}
+
+.confirm-modal-trust {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.confirm-modal-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.confirm-modal-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+  line-height: 1.15;
+}
+
+.confirm-modal p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text);
 }
 
 .confirm-actions {
@@ -3716,16 +3902,55 @@ a:focus-visible {
     display: inline-flex;
   }
 
+  /* Keep brand + Close above the dimmed overlay so the menu can be dismissed. */
+  .site-header.menu-open .site-header-inner {
+    position: relative;
+    z-index: 73;
+  }
+
+  .site-nav-menu-layer {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+  }
+
+  .site-nav-menu-backdrop {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(15, 20, 18, 0.72);
+    cursor: pointer;
+  }
+
   .site-nav-menu {
     display: block;
-    width: min(920px, 100% - 1.25rem);
-    margin: 0 auto;
-    padding: 0.35rem 0 0.75rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: min(85svh, 36rem);
+    overflow-y: auto;
+    margin: 0;
+    padding: calc(var(--site-header-height) + 0.35rem) 0.75rem 1rem;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 96%, transparent) 0%,
+        var(--bg) 28%
+      );
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   }
 
   .site-nav-menu-list {
     display: grid;
     gap: 0.25rem;
+    width: min(920px, 100%);
+    margin: 0 auto;
   }
 
   .site-nav-menu-link {
@@ -3770,8 +3995,28 @@ a:focus-visible {
 
   .home-hero {
     min-height: clamp(16rem, 52svh, 26rem);
-    padding-top: clamp(2.5rem, 7vh, 3.5rem);
+    padding-top: calc(var(--site-header-height) + clamp(2.5rem, 7vh, 3.5rem));
     padding-bottom: clamp(1.75rem, 4vh, 2.5rem);
+  }
+
+  /* Photo hero: a bit taller + stronger foot scrim so CTAs stay readable over plates. */
+  .home-hero.has-photo {
+    min-height: clamp(18rem, 58svh, 28rem);
+  }
+
+  .home-hero.has-photo .home-hero-media {
+    background-position: center, center, center, center 68%;
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(15, 20, 18, 0.62) 0%,
+        rgba(15, 20, 18, 0.4) 36%,
+        rgba(15, 20, 18, 0.82) 74%,
+        var(--bg) 100%
+      ),
+      radial-gradient(ellipse 90% 70% at 18% 42%, rgba(125, 255, 179, 0.1), transparent 55%),
+      radial-gradient(ellipse 70% 55% at 88% 18%, rgba(125, 255, 179, 0.05), transparent 50%),
+      var(--home-hero-photo);
   }
 
   .page {

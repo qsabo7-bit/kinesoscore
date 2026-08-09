@@ -30,15 +30,20 @@ function inertOutside(node) {
 
 /**
  * Trap keyboard focus inside an open dialog; Escape calls onCancel.
- * Also marks sibling branches inert while open.
+ * By default marks sibling branches inert while open.
+ *
  * @param {boolean} active
  * @param {() => void} [onCancel]
+ * @param {{ inertSiblings?: boolean }} [options]
+ *   Set `inertSiblings: false` when the open control (e.g. Menu/Close) must
+ *   stay outside the trap container but remain clickable.
  */
-export function useFocusTrap(active, onCancel) {
+export function useFocusTrap(active, onCancel, options = {}) {
   const containerRef = useRef(null)
   const previousFocusRef = useRef(null)
   const onCancelRef = useRef(onCancel)
   onCancelRef.current = onCancel
+  const inertSiblings = options.inertSiblings !== false
 
   useEffect(() => {
     if (!active) return undefined
@@ -51,7 +56,7 @@ export function useFocusTrap(active, onCancel) {
         ? document.activeElement
         : null
 
-    const inerted = inertOutside(node)
+    const inerted = inertSiblings ? inertOutside(node) : []
 
     const focusables = () =>
       [...node.querySelectorAll(FOCUSABLE)].filter(
@@ -113,7 +118,7 @@ export function useFocusTrap(active, onCancel) {
           ?.focus?.({ preventScroll: true })
       }
     }
-  }, [active])
+  }, [active, inertSiblings])
 
   return containerRef
 }

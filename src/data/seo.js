@@ -57,14 +57,14 @@ export const PAGE_SEO = {
     breadcrumb: [{ name: 'Home', path: '/' }],
   },
   /**
-   * Calculators hub — index of all performance and military tools.
+   * Calculators hub — index of performance, fitness, and military tools.
    */
   calculators: {
     tab: 'calculators',
     path: '/calculators',
-    title: 'Fitness Calculators | 1RM, Running, VO₂, Military Tests | KinesoScore',
+    title: 'Fitness Calculators | 1RM, Running, VO₂, WODs, Military Tests | KinesoScore',
     description:
-      'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, myKinesoScore™, and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
+      'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, myKinesoScore™, fitness assessments (Fran, Murph, Cindy, max push-ups/pull-ups), and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -155,6 +155,21 @@ export const PAGE_SEO = {
       { name: 'Calculators', path: '/calculators' },
       { name: 'Army AFT', path: '/army-aft' },
       { name: 'Army AFT Guide', path: '/army-aft-guide' },
+    ],
+  },
+  'vo2max-guide': {
+    tab: 'vo2max-guide',
+    path: '/vo2max-guide',
+    title: 'VO₂ Max Explained | Cooper, Rockport & Norms Guide | KinesoScore',
+    description:
+      'Learn what VO₂ max is, how Cooper and Rockport field tests estimate it, what a good VO₂ max looks like by age and sex, and how to use the free KinesoScore VO₂ calculator.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'VO₂ Max', path: '/vo2max' },
+      { name: 'VO₂ Max Guide', path: '/vo2max-guide' },
     ],
   },
   vo2max: {
@@ -281,6 +296,76 @@ export const PAGE_SEO = {
       { name: 'Home', path: '/' },
       { name: 'Calculators', path: '/calculators' },
       { name: 'Navy PRT', path: '/navy-prt' },
+    ],
+  },
+  'max-pushups': {
+    tab: 'max-pushups',
+    path: '/max-pushups',
+    title: 'Max Push-ups in 1 Minute Calculator | KinesoScore',
+    description:
+      'Track max push-ups in 60 seconds, save progress, and optionally share to the KinesoScore leaderboard. Educational capacity test — self-reported results.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Max Push-ups', path: '/max-pushups' },
+    ],
+  },
+  'max-pullups': {
+    tab: 'max-pullups',
+    path: '/max-pullups',
+    title: 'Max Pull-ups in 1 Minute Calculator | KinesoScore',
+    description:
+      'Track max pull-ups in 60 seconds with private history and optional leaderboard sharing. Educational capacity test — self-reported results.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Max Pull-ups', path: '/max-pullups' },
+    ],
+  },
+  fran: {
+    tab: 'fran',
+    path: '/fran',
+    title: 'Fran WOD Calculator | Thrusters & Pull-ups For Time | KinesoScore',
+    description:
+      'Log Fran finish times with gender-specific Rx thruster standards. Separate Rx and Scaled tracking for fair progress and leaderboard comparisons. Educational use only.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Fran', path: '/fran' },
+    ],
+  },
+  murph: {
+    tab: 'murph',
+    path: '/murph',
+    title: 'Murph WOD Calculator | Murph Finish Time Tracker | KinesoScore',
+    description:
+      'Log Murph finish times with Rx vest notes by gender. Separate Rx and Scaled boards for fair comparisons. Educational benchmark tracking — not an official event scorecard.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Murph', path: '/murph' },
+    ],
+  },
+  cindy: {
+    tab: 'cindy',
+    path: '/cindy',
+    title: 'Cindy WOD Calculator | 20-Minute AMRAP Tracker | KinesoScore',
+    description:
+      'Log Cindy AMRAP rounds and reps (5 pull-ups, 10 push-ups, 15 squats). Rank by total work reps with optional leaderboard sharing. Educational use only.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Cindy', path: '/cindy' },
     ],
   },
   about: {
@@ -499,6 +584,8 @@ export function buildWebApplicationSchema() {
       'VO₂-based fitness age calculator',
       'BMI and BMR calculators',
       'myKinesoScore™ overall fitness score calculator',
+      'Max push-ups and max pull-ups capacity tests',
+      'Fran, Murph, and Cindy benchmark WOD trackers',
       'Army AFT calculator',
       'Marine Corps PFT calculator',
       'Navy PRT calculator',

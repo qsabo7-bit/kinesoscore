@@ -260,6 +260,10 @@ function LeaderboardPage({ onOpenTab, initialCategoryId }) {
             : 'All time'}
       </p>
 
+      <p className="calc-hint leaderboard-trust-note" role="note">
+        Self-reported from opted-in athletes — not independently verified.
+      </p>
+
       {showJoinBanner ? (
         <section
           className="leaderboard-join-banner"

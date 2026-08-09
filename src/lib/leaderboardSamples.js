@@ -35,6 +35,22 @@ const ASSESSMENT_SAMPLES = [
   { rank: 5, leaderboard_name: 'BaseLine', result_display: '78 pts' },
 ]
 
+const FITNESS_TIME_SAMPLES = [
+  { rank: 1, leaderboard_name: 'BarPath', result_display: '2:48' },
+  { rank: 2, leaderboard_name: 'SteelGrove', result_display: '3:12' },
+  { rank: 3, leaderboard_name: 'KineticOak', result_display: '3:41' },
+  { rank: 4, leaderboard_name: 'PlateNorth', result_display: '4:05' },
+  { rank: 5, leaderboard_name: 'LoadLine', result_display: '4:33' },
+]
+
+const FITNESS_REPS_SAMPLES = [
+  { rank: 1, leaderboard_name: 'PullCrew', result_display: '52' },
+  { rank: 2, leaderboard_name: 'PressLine', result_display: '47' },
+  { rank: 3, leaderboard_name: 'HangTight', result_display: '41' },
+  { rank: 4, leaderboard_name: 'FloorWork', result_display: '36' },
+  { rank: 5, leaderboard_name: 'RepForge', result_display: '30' },
+]
+
 const HABIT_SAMPLES = [
   { rank: 1, leaderboard_name: 'DawnStack', result_display: '42 days' },
   { rank: 2, leaderboard_name: 'SteadyCue', result_display: '31 days' },
@@ -54,6 +70,13 @@ export function getLeaderboardSampleRows(boardKey) {
   if (key.startsWith('running:')) return RUNNING_SAMPLES
   if (key.startsWith('strength:')) return STRENGTH_SAMPLES
   if (key.startsWith('assessment:')) return ASSESSMENT_SAMPLES
+  if (
+    key.startsWith('fitness:fran') ||
+    key.startsWith('fitness:murph')
+  ) {
+    return FITNESS_TIME_SAMPLES
+  }
+  if (key.startsWith('fitness:')) return FITNESS_REPS_SAMPLES
   return SCORE_SAMPLES
 }
 

@@ -54,14 +54,10 @@ function ToolList({ tools, onOpenTab }) {
 }
 
 function CalculatorsHubPage({ onOpenTab }) {
-  const performanceTools = calculatorsByCategory('performance')
-  const militaryTools = calculatorsByCategory('military')
-  const performanceLabel =
-    CALCULATOR_CATEGORIES.find((c) => c.id === 'performance')?.label ||
-    'Fitness Performance'
-  const militaryLabel =
-    CALCULATOR_CATEGORIES.find((c) => c.id === 'military')?.label ||
-    'Military Fitness Assessments'
+  const toolGroups = CALCULATOR_CATEGORIES.map((category) => ({
+    category,
+    tools: calculatorsByCategory(category.id),
+  })).filter((group) => group.tools.length > 0)
 
   return (
     <main className="page calculators-hub-page">
@@ -70,24 +66,27 @@ function CalculatorsHubPage({ onOpenTab }) {
         <h1>Calculators</h1>
         <p className="page-lead">
           Strength, endurance,{' '}
-          <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>, and
-          military fitness assessments — with optional private progress tracking.
+          <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>, fitness
+          assessments, and military fitness tests — with optional private
+          progress tracking.
         </p>
       </header>
 
-      <section className="home-tools-group" aria-labelledby="hub-performance">
-        <h2 id="hub-performance" className="calculators-hub-group-title">
-          {performanceLabel}
-        </h2>
-        <ToolList tools={performanceTools} onOpenTab={onOpenTab} />
-      </section>
-
-      <section className="home-tools-group" aria-labelledby="hub-military">
-        <h2 id="hub-military" className="calculators-hub-group-title">
-          {militaryLabel}
-        </h2>
-        <ToolList tools={militaryTools} onOpenTab={onOpenTab} />
-      </section>
+      {toolGroups.map((group) => (
+        <section
+          key={group.category.id}
+          className="home-tools-group"
+          aria-labelledby={`hub-${group.category.id}`}
+        >
+          <h2
+            id={`hub-${group.category.id}`}
+            className="calculators-hub-group-title"
+          >
+            {group.category.label}
+          </h2>
+          <ToolList tools={group.tools} onOpenTab={onOpenTab} />
+        </section>
+      ))}
     </main>
   )
 }

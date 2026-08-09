@@ -127,6 +127,48 @@ export const LEADERBOARD_SHARE_TARGETS = [
     exerciseName: 'Overall Score',
     higherIsBetter: true,
   },
+  {
+    boardKey: 'fitness:max-pushups',
+    calculatorType: 'max-pushups',
+    exerciseName: 'Max Push-ups',
+    higherIsBetter: true,
+  },
+  {
+    boardKey: 'fitness:max-pullups',
+    calculatorType: 'max-pullups',
+    exerciseName: 'Max Pull-ups',
+    higherIsBetter: true,
+  },
+  {
+    boardKey: 'fitness:fran-rx',
+    calculatorType: 'fran',
+    exerciseName: 'Fran Rx',
+    higherIsBetter: false,
+  },
+  {
+    boardKey: 'fitness:fran-scaled',
+    calculatorType: 'fran',
+    exerciseName: 'Fran Scaled',
+    higherIsBetter: false,
+  },
+  {
+    boardKey: 'fitness:murph-rx',
+    calculatorType: 'murph',
+    exerciseName: 'Murph Rx',
+    higherIsBetter: false,
+  },
+  {
+    boardKey: 'fitness:murph-scaled',
+    calculatorType: 'murph',
+    exerciseName: 'Murph Scaled',
+    higherIsBetter: false,
+  },
+  {
+    boardKey: 'fitness:cindy',
+    calculatorType: 'cindy',
+    exerciseName: 'Cindy',
+    higherIsBetter: true,
+  },
 ]
 
 /**
@@ -216,7 +258,14 @@ export function friendlyLeaderboardShareError(
 /**
  * @param {string} userId
  * @param {string} boardKey
- * @returns {Promise<{ id: string, is_active: boolean, source_record_id: string | null } | null>}
+ * @returns {Promise<{
+ *   id: string,
+ *   is_active: boolean,
+ *   source_record_id: string | null,
+ *   result_value: number | null,
+ *   result_unit: string | null,
+ *   higher_is_better: boolean | null,
+ * } | null>}
  */
 export async function fetchActiveLeaderboardShare(userId, boardKey) {
   requireConfigured()
@@ -224,7 +273,9 @@ export async function fetchActiveLeaderboardShare(userId, boardKey) {
 
   const { data, error } = await supabase
     .from('leaderboard_shares')
-    .select('id, is_active, source_record_id')
+    .select(
+      'id, is_active, source_record_id, result_value, result_unit, higher_is_better',
+    )
     .eq('user_id', userId)
     .eq('board_key', boardKey)
     .maybeSingle()

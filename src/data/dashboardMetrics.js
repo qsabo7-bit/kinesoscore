@@ -150,4 +150,29 @@ export const ACTIVITY_META = {
     tab: 'navy-prt',
     valueKind: 'number',
   },
+  'max-pushups': {
+    title: 'Max Push-ups',
+    tab: 'max-pushups',
+    valueKind: 'number',
+  },
+  'max-pullups': {
+    title: 'Max Pull-ups',
+    tab: 'max-pullups',
+    valueKind: 'number',
+  },
+  fran: {
+    title: 'Fran',
+    tab: 'fran',
+    valueKind: 'duration',
+  },
+  murph: {
+    title: 'Murph',
+    tab: 'murph',
+    valueKind: 'duration',
+  },
+  cindy: {
+    title: 'Cindy',
+    tab: 'cindy',
+    valueKind: 'number',
+  },
 }

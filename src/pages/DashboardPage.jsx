@@ -452,13 +452,61 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         </section>
       ) : null}
 
+      {model.fitnessAssessmentSummaryCards?.length ? (
+        <section
+          className="dashboard-section"
+          aria-labelledby="dash-fitness-assessments"
+        >
+          <h2 id="dash-fitness-assessments" className="result-section-title">
+            Fitness Assessments
+          </h2>
+          <div className="dashboard-card-grid">
+            {model.fitnessAssessmentSummaryCards.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                className="dashboard-metric-card"
+                onClick={() => onOpenTab?.(card.tab)}
+              >
+                <p className="result-label">
+                  {card.title}
+                  {card.badge ? (
+                    <span
+                      className={`nav-badge nav-badge-${String(card.badge).toLowerCase()}`}
+                      style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }}
+                    >
+                      {card.badge}
+                    </span>
+                  ) : null}
+                </p>
+                <p className="dashboard-metric-value">{card.primary}</p>
+                <p className="dashboard-metric-secondary">{card.secondary}</p>
+                {card.trend ? (
+                  <p
+                    className={`dashboard-metric-trend${
+                      card.trend.tone === 'good'
+                        ? ' is-trend-good'
+                        : card.trend.tone === 'bad'
+                          ? ' is-trend-bad'
+                          : ''
+                    }`}
+                  >
+                    {card.trend.value}
+                  </p>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {model.assessmentSummaryCards.length ? (
         <section
           className="dashboard-section"
-          aria-labelledby="dash-assessments"
+          aria-labelledby="dash-military-assessments"
         >
-          <h2 id="dash-assessments" className="result-section-title">
-            Fitness assessment summary
+          <h2 id="dash-military-assessments" className="result-section-title">
+            Military fitness assessments
           </h2>
           <div className="dashboard-card-grid">
             {model.assessmentSummaryCards.map((card) => (

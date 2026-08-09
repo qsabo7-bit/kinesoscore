@@ -33,6 +33,11 @@ const AirForcePfaPage = lazy(() => import('./pages/military/AirForcePfaPage'))
 const ArmyAftPage = lazy(() => import('./pages/military/ArmyAftPage'))
 const MarinePftPage = lazy(() => import('./pages/military/MarinePftPage'))
 const NavyPrtPage = lazy(() => import('./pages/military/NavyPrtPage'))
+const MaxPushupsPage = lazy(() => import('./pages/fitness/MaxPushupsPage'))
+const MaxPullupsPage = lazy(() => import('./pages/fitness/MaxPullupsPage'))
+const FranPage = lazy(() => import('./pages/fitness/FranPage'))
+const MurphPage = lazy(() => import('./pages/fitness/MurphPage'))
+const CindyPage = lazy(() => import('./pages/fitness/CindyPage'))
 const AccountPage = lazy(() => import('./pages/AccountPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
@@ -43,6 +48,7 @@ const SourcesMethodologyPage = lazy(
 const FitnessScorePage = lazy(() => import('./pages/FitnessScorePage'))
 const OneRepMaxPage = lazy(() => import('./pages/OneRepMaxPage'))
 const ArmyAftGuidePage = lazy(() => import('./pages/ArmyAftGuidePage'))
+const Vo2MaxGuidePage = lazy(() => import('./pages/Vo2MaxGuidePage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
@@ -277,6 +283,32 @@ function App() {
     content = (
       <NavyPrtPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
     )
+  } else if (renderTab === 'max-pushups') {
+    content = (
+      <MaxPushupsPage
+        onRequestAuth={requestAuth}
+        onOpenTab={handleTabChange}
+      />
+    )
+  } else if (renderTab === 'max-pullups') {
+    content = (
+      <MaxPullupsPage
+        onRequestAuth={requestAuth}
+        onOpenTab={handleTabChange}
+      />
+    )
+  } else if (renderTab === 'fran') {
+    content = (
+      <FranPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
+    )
+  } else if (renderTab === 'murph') {
+    content = (
+      <MurphPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
+    )
+  } else if (renderTab === 'cindy') {
+    content = (
+      <CindyPage onRequestAuth={requestAuth} onOpenTab={handleTabChange} />
+    )
   } else if (renderTab === 'login') {
     content = (
       <AuthPage
@@ -335,6 +367,8 @@ function App() {
     content = <OneRepMaxPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'army-aft-guide') {
     content = <ArmyAftGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'vo2max-guide') {
+    content = <Vo2MaxGuidePage onOpenTab={handleTabChange} />
   } else if (renderTab === 'not-found') {
     content = <NotFoundPage onOpenTab={handleTabChange} />
   } else {

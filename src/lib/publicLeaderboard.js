@@ -29,8 +29,15 @@ export const LEADERBOARD_UI_CATEGORIES = [
     ).map((t) => t.boardKey),
   },
   {
+    id: 'fitness',
+    label: 'Fitness Assessments',
+    boardKeys: LEADERBOARD_SHARE_TARGETS.filter((t) =>
+      t.boardKey.startsWith('fitness:'),
+    ).map((t) => t.boardKey),
+  },
+  {
     id: 'assessments',
-    label: 'Assessments',
+    label: 'Military Assessments',
     boardKeys: LEADERBOARD_SHARE_TARGETS.filter((t) =>
       t.boardKey.startsWith('assessment:'),
     ).map((t) => t.boardKey),
@@ -63,6 +70,13 @@ const BOARD_LABELS = {
   'assessment:army-aft': 'Army AFT',
   'assessment:marine-pft': 'Marine PFT',
   'assessment:navy-prt': 'Navy PRT',
+  'fitness:max-pushups': 'Max Push-ups',
+  'fitness:max-pullups': 'Max Pull-ups',
+  'fitness:fran-rx': 'Fran Rx',
+  'fitness:fran-scaled': 'Fran Scaled',
+  'fitness:murph-rx': 'Murph Rx',
+  'fitness:murph-scaled': 'Murph Scaled',
+  'fitness:cindy': 'Cindy',
 }
 
 export function leaderboardBoardLabel(boardKey) {
@@ -70,7 +84,15 @@ export function leaderboardBoardLabel(boardKey) {
 }
 
 export function leaderboardValueKind(boardKey) {
-  if (String(boardKey).startsWith('running:')) return 'duration'
+  const key = String(boardKey)
+  if (key.startsWith('running:')) return 'duration'
+  // Timed benchmark WODs store seconds.
+  if (
+    key.startsWith('fitness:fran') ||
+    key.startsWith('fitness:murph')
+  ) {
+    return 'duration'
+  }
   return 'number'
 }
 

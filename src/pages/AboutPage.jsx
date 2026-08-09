@@ -38,7 +38,8 @@ function AboutPage({ onOpenTab }) {
         </p>
         <p>
           Supporting tools cover 1RM / SBD, race pacing, VO₂ and fitness age,
-          BMI/BMR, and military assessments (Army AFT, Marine PFT, Navy PRT, Air
+          BMI/BMR, fitness assessments (max push-ups/pull-ups, Fran, Murph,
+          Cindy), and military assessments (Army AFT, Marine PFT, Navy PRT, Air
           Force PFRA). Formulas and comparison datasets stay documented.
         </p>
         <div className="confirm-actions">
@@ -73,6 +74,14 @@ function AboutPage({ onOpenTab }) {
             onClick={(event) => handleLink(event, 'army-aft-guide')}
           >
             Army AFT explained
+          </a>
+          {' · '}
+          <a
+            className="seo-intro-link"
+            href={pathForTab('vo2max-guide')}
+            onClick={(event) => handleLink(event, 'vo2max-guide')}
+          >
+            VO₂ max explained
           </a>
         </p>
       </section>

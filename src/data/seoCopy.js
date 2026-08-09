@@ -206,10 +206,10 @@ export const VO2_SEO = {
     },
   ],
   relatedNote: {
-    before: 'Next, turn your VO₂ into a ',
-    tab: 'fitness-age',
-    label: 'Fitness Age',
-    after: ' estimate.',
+    before: 'Want the full explainer? ',
+    tab: 'vo2max-guide',
+    label: 'VO₂ max guide',
+    after: '. Or turn your estimate into a Fitness Age.',
   },
 }
 
@@ -253,9 +253,12 @@ export const FITNESS_AGE_SEO = {
     before: 'Need a VO₂ estimate? Use the ',
     tab: 'vo2max',
     label: 'VO₂ Max calculator',
-    after: ', or start from a race time.',
+    after: ', or read the VO₂ max guide.',
   },
-  links: [{ tab: 'running', label: 'Running calculator' }],
+  links: [
+    { tab: 'vo2max-guide', label: 'VO₂ max guide' },
+    { tab: 'running', label: 'Running calculator' },
+  ],
 }
 
 export const MILITARY_SEO = {
@@ -492,6 +495,138 @@ export const MILITARY_SEO = {
 export const MILITARY_SEO_DISCLAIMER =
   'Educational estimate only — not an official service scorecard or medical advice. Always confirm with current official standards and command guidance.'
 
+export const FITNESS_SEO_DISCLAIMER =
+  'Educational benchmark tracking only — not affiliated with CrossFit, Inc. or any sanctioning body. Results are self-reported and not independently verified.'
+
+/** Fitness Assessments (max tests + benchmark WODs) — distinct from military. */
+export const FITNESS_SEO = {
+  'max-pushups': {
+    title: 'About the Max Push-ups test',
+    paragraphs: [
+      'The Max Push-ups calculator records how many push-ups you complete in 60 seconds under a consistent standard (chest to deck, lockout at the top).',
+      'Use it to track upper-body pressing capacity over time. Saves stay private unless you opt in to the global leaderboard.',
+    ],
+    faqs: [
+      {
+        question: 'What counts as a valid push-up?',
+        answer:
+          'Use one consistent standard: chest clearly reaches the floor or a target, and elbows lock out at the top. Changing depth between attempts makes progress hard to compare.',
+      },
+      {
+        question: 'Can I rest during the minute?',
+        answer:
+          'Yes — the clock keeps running. Count every valid rep completed within 60 seconds.',
+      },
+    ],
+    relatedNote: KINESOSCORE_RELATED_NOTE,
+    links: [
+      { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
+      { tab: 'cindy', label: 'Cindy AMRAP calculator' },
+      { tab: 'leaderboard', label: 'Leaderboard' },
+    ],
+  },
+  'max-pullups': {
+    title: 'About the Max Pull-ups test',
+    paragraphs: [
+      'The Max Pull-ups calculator records how many pull-ups you complete in 60 seconds. Chin should clearly clear the bar on each rep.',
+      'Note whether you use strict or kipping pull-ups and keep that style consistent when tracking progress or sharing to the leaderboard.',
+    ],
+    faqs: [
+      {
+        question: 'Strict or kipping?',
+        answer:
+          'Either can be tracked, but do not mix styles on the same progress graph if you want clean comparisons. Pick one standard and stick with it.',
+      },
+      {
+        question: 'What if I use bands or assistance?',
+        answer:
+          'Treat assisted work as Scaled training notes in your own log. This board is intended for unassisted pull-ups.',
+      },
+    ],
+    relatedNote: KINESOSCORE_RELATED_NOTE,
+    links: [
+      { tab: 'max-pushups', label: 'Max Push-ups calculator' },
+      { tab: 'fran', label: 'Fran calculator' },
+      { tab: 'murph', label: 'Murph calculator' },
+    ],
+  },
+  fran: {
+    title: 'About Fran',
+    paragraphs: [
+      'Fran is a classic for-time couplet: 21-15-9 thrusters and pull-ups. KinesoScore stores finish time and keeps Rx vs Scaled on separate boards.',
+      'Gender selects which commonly published Rx thruster load to display (95 lb male / 65 lb female). This is educational tracking only — not an official competition scorecard.',
+    ],
+    faqs: [
+      {
+        question: 'What is Rx for Fran?',
+        answer:
+          'Commonly published Rx uses 95 lb thrusters for male athletes and 65 lb for female athletes, plus pull-ups. Confirm bar loading before you start.',
+      },
+      {
+        question: 'Why separate Rx and Scaled?',
+        answer:
+          'Mixing prescriptions on one leaderboard is unfair. Choose Rx or Scaled when you save so history and public ranks stay comparable.',
+      },
+    ],
+    relatedNote: KINESOSCORE_RELATED_NOTE,
+    links: [
+      { tab: 'cindy', label: 'Cindy calculator' },
+      { tab: 'murph', label: 'Murph calculator' },
+      { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
+    ],
+  },
+  murph: {
+    title: 'About Murph',
+    paragraphs: [
+      'Murph is a for-time benchmark: 1-mile run, 100 pull-ups, 200 push-ups, 300 air squats, 1-mile run. Partitioning the calisthenics is allowed.',
+      'Rx commonly includes a weighted vest (often 20 lb male / 14 lb female). Log Rx and Scaled separately for fair comparisons.',
+    ],
+    faqs: [
+      {
+        question: 'Do I have to wear a vest for Rx?',
+        answer:
+          'Commonly published Rx includes a vest. If you perform Murph without a vest or with reduced volume, save as Scaled.',
+      },
+      {
+        question: 'Can I partition the pull-ups, push-ups, and squats?',
+        answer:
+          'Yes — partitioning is part of the classic standard. Record your total finish time when the final mile is complete.',
+      },
+    ],
+    relatedNote: KINESOSCORE_RELATED_NOTE,
+    links: [
+      { tab: 'fran', label: 'Fran calculator' },
+      { tab: 'cindy', label: 'Cindy calculator' },
+      { tab: 'max-pushups', label: 'Max Push-ups calculator' },
+    ],
+  },
+  cindy: {
+    title: 'About Cindy',
+    paragraphs: [
+      'Cindy is a 20-minute AMRAP of 5 pull-ups, 10 push-ups, and 15 air squats. Enter full rounds plus leftover reps into the next round.',
+      'Leaderboard ranking uses total work reps (each round = 30 reps). That keeps “12 + 8” comparable to “13 + 0” without ambiguity.',
+    ],
+    faqs: [
+      {
+        question: 'How are leftover reps counted?',
+        answer:
+          'After finishing full rounds, count reps in order: pull-ups, then push-ups, then squats. Enter that leftover count as Extra reps (0–29).',
+      },
+      {
+        question: 'Why total work reps for ranking?',
+        answer:
+          'Encoding rounds × 30 + extras creates one higher-is-better number so leaderboard order matches completed work.',
+      },
+    ],
+    relatedNote: KINESOSCORE_RELATED_NOTE,
+    links: [
+      { tab: 'fran', label: 'Fran calculator' },
+      { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
+      { tab: 'max-pushups', label: 'Max Push-ups calculator' },
+    ],
+  },
+}
+
 export const HOME_SEO_TAGLINE =
   'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, fitness assessment standards, and an intuitive myKinesoScore™. Measure where you are — Improve where you\'re going.'
 
@@ -499,15 +634,15 @@ export const HOME_SEO_TAGLINE =
 export const LEADERBOARD_SEO = {
   title: 'About the KinesoScore leaderboard',
   paragraphs: [
-    'The KinesoScore leaderboard shows global rankings built only from results athletes choose to share. It is a community comparison surface for opted-in performances — not a feed of every calculator save.',
-    'Browse categories such as myKinesoScore™, running distances, strength lifts (bench, squat, deadlift, and SBD total), military fitness assessments, and Habit Streaks. For performance boards, switch between All Time and This Week (UTC). Habit Streaks use All Time only (current streak).',
+    'The KinesoScore leaderboard shows global rankings built only from results athletes choose to share. Rankings are self-reported community comparisons for opted-in performances — not independently verified scores, and not a feed of every calculator save.',
+    'Browse categories such as myKinesoScore™, running distances, strength lifts (bench, squat, deadlift, and SBD total), fitness assessments (max tests and benchmark WODs), military fitness assessments, and Habit Streaks. For performance boards, switch between All Time and This Week (UTC). Habit Streaks use All Time only (current streak).',
     'To appear on a board, create a Leaderboard Name in Account Settings and opt in when saving an eligible result — or share your habit streak from Habits. Private calculator history and habit check-ins stay private by default.',
   ],
   faqs: [
     {
       question: 'Who appears on the KinesoScore leaderboard?',
       answer:
-        'Only athletes who create a Leaderboard Name and choose to share an eligible result. Public rows show a Leaderboard Name and the shared performance value — not email or legal name.',
+        'Only athletes who create a Leaderboard Name and choose to share an eligible result. Public rows show a Leaderboard Name and the shared performance value — not email or legal name. Values are self-reported and not independently verified.',
     },
     {
       question: 'What is the difference between All Time and This Week?',
@@ -697,6 +832,87 @@ export const ARMY_AFT_GUIDE_SEO = {
     'Army AFT estimates on KinesoScore are educational training tools only — not official scores or medical advice.',
 }
 
+/** Educational landing page for /vo2max-guide (not the calculator). */
+export const VO2_MAX_GUIDE_SEO = {
+  eyebrow: 'Aerobic fitness',
+  heroTitle: 'What Is VO₂ Max?',
+  heroLead:
+    'VO₂ max estimates how much oxygen your body can use during hard exercise — a core marker of cardiorespiratory fitness.',
+  heroSupport:
+    'You can measure it in a lab, or estimate it from field tests such as the Cooper 12-minute run or Rockport 1-mile walk. KinesoScore uses those field tests and age–sex norms to put your number in context.',
+  ctaTab: 'vo2max',
+  ctaLabel: 'Open the VO₂ max calculator',
+  sections: [
+    {
+      id: 'what-is-vo2',
+      title: 'What VO₂ max measures',
+      paragraphs: [
+        'VO₂ max is maximal oxygen uptake — roughly how much oxygen (milliliters per kilogram of bodyweight per minute) you can use when working near your limit. Higher values usually mean a stronger aerobic engine for running, sports, and daily capacity.',
+        'It is one of the most studied fitness markers, but it is still a number in context: age, sex, training history, and how the test was done all matter when you interpret a result.',
+      ],
+    },
+    {
+      id: 'field-tests',
+      title: 'Cooper and Rockport field tests',
+      paragraphs: [
+        'Lab tests with metabolic carts are the gold standard. Field tests estimate VO₂ max from a timed effort you can do outdoors or on a track.',
+        'The Cooper 12-minute run estimates VO₂ from distance covered in 12 minutes. The Rockport 1-mile walk uses finish time, ending heart rate, age, sex, and bodyweight. KinesoScore supports both so you can pick the protocol that fits your current fitness.',
+      ],
+    },
+    {
+      id: 'good-vo2',
+      title: 'What is a “good” VO₂ max?',
+      paragraphs: [
+        'There is no single good score for everyone. Cooper Institute / ACSM-style tables compare adults by age and sex. Values near the 50th percentile are roughly average for that group; the 75th percentile and above are typically good to excellent.',
+        'Use percentiles to track your own progress over months, not to chase someone else’s number. Save estimates on KinesoScore to see whether your aerobic fitness is rising.',
+      ],
+    },
+    {
+      id: 'use-with-kinesoscore',
+      title: 'Use it on KinesoScore',
+      paragraphs: [
+        'Open the VO₂ max calculator to run Cooper or Rockport, compare with age–sex norms, and save results when signed in. Carry a VO₂ estimate into Fitness Age for a cardiorespiratory fitness-age view, or pair it with Running and myKinesoScore™ for a fuller picture.',
+      ],
+    },
+  ],
+  faqTitle: 'VO₂ max FAQs',
+  faqs: [
+    {
+      question: 'What is VO₂ max?',
+      answer:
+        'VO₂ max is maximal oxygen uptake — an estimate of how much oxygen your body can use during intense exercise. It is a common marker of cardiorespiratory fitness, usually reported in ml/kg/min.',
+    },
+    {
+      question: 'How does KinesoScore estimate VO₂ max?',
+      answer:
+        'KinesoScore estimates VO₂ max from the Cooper 12-minute run or the Rockport 1-mile walk field test, then optionally compares the result with age- and sex-based reference percentiles.',
+    },
+    {
+      question: 'What is a good VO₂ max?',
+      answer:
+        'A good VO₂ max depends on age and sex. Near the 50th percentile is roughly average for your group; the 75th percentile and above are typically considered good to excellent on Cooper Institute / ACSM-style tables.',
+    },
+    {
+      question: 'Is a field-test VO₂ the same as a lab test?',
+      answer:
+        'Field tests are practical estimates, not metabolic-cart lab measurements. They are useful for training feedback and trends, but conditions, pacing, and effort can affect accuracy.',
+    },
+  ],
+  relatedNote: {
+    before: 'Ready to estimate yours? ',
+    tab: 'vo2max',
+    label: 'Open the VO₂ max calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'fitness-age', label: 'Fitness Age calculator' },
+    { tab: 'running', label: 'Running calculator' },
+    { tab: 'sources-methodology', label: 'Sources & Methodology' },
+  ],
+  disclaimer:
+    'VO₂ max estimates are educational fitness tools, not medical advice or clinical diagnostics.',
+}
+
 /** FAQs attached to document JSON-LD by App tab / PAGE_SEO key. */
 export const PAGE_FAQS_BY_TAB = {
   home: [
@@ -732,6 +948,7 @@ export const PAGE_FAQS_BY_TAB = {
   'fitness-score': FITNESS_SCORE_SEO.faqs,
   'one-rep-max': ONE_REP_MAX_SEO.faqs,
   'army-aft-guide': ARMY_AFT_GUIDE_SEO.faqs,
+  'vo2max-guide': VO2_MAX_GUIDE_SEO.faqs,
   vo2max: VO2_SEO.faqs,
   'fitness-age': FITNESS_AGE_SEO.faqs,
   'army-aft': MILITARY_SEO['army-aft'].faqs,
@@ -739,5 +956,10 @@ export const PAGE_FAQS_BY_TAB = {
   'navy-prt': MILITARY_SEO['navy-prt'].faqs,
   'air-force-pfra': MILITARY_SEO['air-force-pfra'].faqs,
   'air-force-pfa': MILITARY_SEO['air-force-pfa'].faqs,
+  'max-pushups': FITNESS_SEO['max-pushups'].faqs,
+  'max-pullups': FITNESS_SEO['max-pullups'].faqs,
+  fran: FITNESS_SEO.fran.faqs,
+  murph: FITNESS_SEO.murph.faqs,
+  cindy: FITNESS_SEO.cindy.faqs,
   leaderboard: LEADERBOARD_SEO.faqs,
 }

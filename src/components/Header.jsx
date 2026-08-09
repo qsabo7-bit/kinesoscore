@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import {
   CALCULATOR_CATEGORIES,
+  calculatorCategoryStickyLabel,
   calculatorsByCategory,
   isCalculatorTab,
 } from '../data/calculators'
@@ -39,18 +40,16 @@ function Header({ activeTab, onTabChange }) {
 
   const calculatorGroups = CALCULATOR_CATEGORIES.map((category) => ({
     category,
-    stickyLabel:
-      category.id === 'performance'
-        ? 'Performance'
-        : category.id === 'military'
-          ? 'Military'
-          : category.label,
+    stickyLabel: calculatorCategoryStickyLabel(category),
     tools: calculatorsByCategory(category.id),
   })).filter((group) => group.tools.length > 0)
 
   const allTools = calculatorGroups.flatMap((group) => group.tools)
 
-  const menuPanelRef = useFocusTrap(menuOpen, () => setMenuOpen(false))
+  // Keep header chrome (Menu/Close) clickable — do not inert siblings.
+  const menuPanelRef = useFocusTrap(menuOpen, () => setMenuOpen(false), {
+    inertSiblings: false,
+  })
 
   useEffect(() => {
     setMenuOpen(false)
@@ -190,31 +189,39 @@ function Header({ activeTab, onTabChange }) {
       </div>
 
       {menuOpen ? (
-        <div
-          ref={menuPanelRef}
-          id="site-nav-menu"
-          className="site-nav-menu"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Site menu"
-        >
-          <nav className="site-nav-menu-list" aria-label="Main">
-            {visibleTabs.map((tab) => {
-              const isActive = isNavTabActive(tab.id, activeTab)
+        <div className="site-nav-menu-layer">
+          <button
+            type="button"
+            className="site-nav-menu-backdrop"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div
+            ref={menuPanelRef}
+            id="site-nav-menu"
+            className="site-nav-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+          >
+            <nav className="site-nav-menu-list" aria-label="Main">
+              {visibleTabs.map((tab) => {
+                const isActive = isNavTabActive(tab.id, activeTab)
 
-              return (
-                <a
-                  key={tab.id}
-                  href={pathForTab(tab.id)}
-                  className={`site-nav-menu-link${isActive ? ' is-active' : ''}`}
-                  onClick={(event) => go(event, tab.id)}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  {tab.name}
-                </a>
-              )
-            })}
-          </nav>
+                return (
+                  <a
+                    key={tab.id}
+                    href={pathForTab(tab.id)}
+                    className={`site-nav-menu-link${isActive ? ' is-active' : ''}`}
+                    onClick={(event) => go(event, tab.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {tab.name}
+                  </a>
+                )
+              })}
+            </nav>
+          </div>
         </div>
       ) : null}
 
