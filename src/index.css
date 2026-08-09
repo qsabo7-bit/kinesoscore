@@ -3643,8 +3643,17 @@ a:focus-visible {
     padding-bottom: 0.4rem;
   }
 
+  .site-header-tools-clip {
+    /* Grid items default to min-width:auto and can expand past the viewport,
+       which made the chip row grow instead of becoming a horizontal scrollport. */
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .site-header-tools-stack {
     width: min(920px, 100% - 1.25rem);
+    max-width: 100%;
+    min-width: 0;
     gap: 0;
     padding-top: 0.4rem;
     padding-bottom: 0.5rem;
@@ -3656,6 +3665,8 @@ a:focus-visible {
 
   .site-header-tools-mobile {
     display: block;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .site-header-tools-chips,
@@ -3663,10 +3674,14 @@ a:focus-visible {
     display: flex;
     flex-wrap: nowrap;
     gap: 0.35rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    touch-action: pan-x;
+    scrollbar-width: thin;
     mask-image: linear-gradient(
       90deg,
       #000 0%,
@@ -3683,8 +3698,7 @@ a:focus-visible {
 
   .site-header-tools-chips::-webkit-scrollbar,
   .site-header-tools-chips-flat::-webkit-scrollbar {
-    display: none;
-    height: 0;
+    height: 3px;
   }
 
   .site-header-top {
