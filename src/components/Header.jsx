@@ -9,6 +9,7 @@ import {
 import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
 import { handleNavLinkClick } from '../lib/navLinkClick'
+import { isNavTabActive } from '../lib/navTabActive'
 import { useWindowScrollY } from '../lib/useWindowScrollY'
 import SoftReveal from './SoftReveal'
 
@@ -94,13 +95,7 @@ function Header({ activeTab, onTabChange }) {
 
           <nav className="site-nav" aria-label="Main">
             {visibleTabs.map((tab) => {
-              const isActive =
-                tab.id === 'calculators'
-                  ? calculatorActive
-                  : tab.id === 'leaderboard'
-                    ? activeTab === 'leaderboard' ||
-                      activeTab === 'leaderboard-habits'
-                    : activeTab === tab.id
+              const isActive = isNavTabActive(tab.id, activeTab)
 
               return (
                 <a

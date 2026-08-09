@@ -19,7 +19,8 @@
   --motion-slide: 12px;
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
-  --header-scrolled-bg: color-mix(in srgb, var(--bg) 38%, transparent);
+  /* Solid enough that content can’t bleed through sticky nav while scrolling. */
+  --header-scrolled-bg: color-mix(in srgb, var(--bg) 92%, transparent);
 
   color: var(--text);
   background:
@@ -122,6 +123,11 @@ select:focus {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
+}
+
+.app-content:focus {
+  outline: none;
 }
 
 .app {
@@ -359,20 +365,29 @@ a.site-footer-link:hover {
   top: 0;
   z-index: 50;
   width: 100%;
-  background: transparent;
+  /* Soft top scrim so transparent header nav isn’t washed by the left hero glow
+     (which made the first item — Dashboard — look falsely “active”). */
+  background: linear-gradient(
+    180deg,
+    rgba(15, 20, 18, 0.78) 0%,
+    rgba(15, 20, 18, 0.42) 55%,
+    rgba(15, 20, 18, 0) 100%
+  );
   border-bottom: 1px solid transparent;
   transition:
     background-color var(--motion-base) var(--motion-ease),
+    background-image var(--motion-base) var(--motion-ease),
     border-color var(--motion-base) var(--motion-ease),
     backdrop-filter var(--motion-base) var(--motion-ease),
     -webkit-backdrop-filter var(--motion-base) var(--motion-ease);
 }
 
 .site-header.is-scrolled {
-  background: var(--header-scrolled-bg);
-  border-bottom-color: color-mix(in srgb, var(--border) 55%, transparent);
-  backdrop-filter: blur(20px) saturate(1.25);
-  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  background-color: var(--header-scrolled-bg);
+  background-image: none;
+  border-bottom-color: color-mix(in srgb, var(--border) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
 }
 
 .site-header-inner {
@@ -481,7 +496,12 @@ a.site-footer-link:hover {
   transition: color var(--motion-fast) var(--motion-ease-soft);
 }
 
-a.brand:hover {
+a.brand:visited {
+  color: var(--text-strong);
+}
+
+a.brand:hover,
+a.brand:hover:visited {
   color: var(--accent);
 }
 
@@ -519,7 +539,13 @@ a.brand:hover {
     transform var(--motion-fast) var(--motion-ease);
 }
 
-.nav-tab:hover {
+/* Visited /dashboard (etc.) must not look “selected” on Home. */
+.nav-tab:visited {
+  color: var(--text);
+}
+
+.nav-tab:hover,
+.nav-tab:hover:visited {
   color: var(--text-strong);
 }
 
@@ -527,7 +553,8 @@ a.brand:hover {
   transform: translateY(1px);
 }
 
-.nav-tab.is-active {
+.nav-tab.is-active,
+.nav-tab.is-active:visited {
   color: var(--text-strong);
   border-bottom-color: var(--accent);
 }
@@ -667,7 +694,12 @@ a.brand:hover {
     transform var(--motion-fast) var(--motion-ease);
 }
 
-.sub-nav-tab:hover:not(:disabled):not(.is-dev) {
+a.sub-nav-tab:visited {
+  color: var(--text);
+}
+
+.sub-nav-tab:hover:not(:disabled):not(.is-dev),
+a.sub-nav-tab:hover:visited:not(.is-dev) {
   color: var(--text-strong);
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
@@ -676,7 +708,8 @@ a.brand:hover {
   transform: translateY(1px);
 }
 
-.sub-nav-tab.is-active {
+.sub-nav-tab.is-active,
+a.sub-nav-tab.is-active:visited {
   color: var(--text-strong);
   border-color: var(--accent);
   background: var(--accent-muted);
@@ -730,11 +763,12 @@ a.brand:hover {
   display: grid;
   align-content: end;
   min-height: clamp(22rem, 78svh, 38rem);
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  /* Prefer dvw so classic 100vw + scrollbar doesn’t leave a bright side strip. */
+  width: 100dvw;
+  margin-left: calc(50% - 50dvw);
+  margin-right: calc(50% - 50dvw);
   padding: clamp(3.5rem, 10vh, 5.5rem)
-    max(1.25rem, calc((100vw - min(1080px, 100vw - 2.5rem)) / 2))
+    max(1.25rem, calc((100dvw - min(1080px, 100dvw - 2.5rem)) / 2))
     clamp(2.5rem, 6vh, 3.5rem);
   overflow: hidden;
 }
@@ -746,10 +780,11 @@ a.brand:hover {
   pointer-events: none;
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 90% 70% at 18% 20%, rgba(125, 255, 179, 0.16), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 88% 8%, rgba(125, 255, 179, 0.08), transparent 50%),
+    /* Keep the mint glow below the sticky nav so Dashboard doesn’t look selected. */
+    radial-gradient(ellipse 90% 70% at 18% 42%, rgba(125, 255, 179, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 88% 18%, rgba(125, 255, 179, 0.07), transparent 50%),
     radial-gradient(ellipse 80% 60% at 50% 100%, rgba(15, 20, 18, 0.2), transparent 55%),
-    linear-gradient(180deg, rgba(15, 20, 18, 0.15) 0%, rgba(15, 20, 18, 0.72) 70%, var(--bg) 100%);
+    linear-gradient(180deg, rgba(15, 20, 18, 0.28) 0%, rgba(15, 20, 18, 0.72) 70%, var(--bg) 100%);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

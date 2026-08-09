@@ -71,6 +71,7 @@ function App() {
   const openedRecovery = useRef(false)
   const handledEmailConfirm = useRef(false)
   const skipNextUrlPush = useRef(false)
+  const previousTabForFocus = useRef(null)
 
   const handleTabChange = (tab) => {
     if (tab === 'login') setAuthMode('login')
@@ -98,9 +99,14 @@ function App() {
   }, [])
 
   // Premium SPA navigation: land at top + move focus into the page shell.
+  // Only focus after a real tab change — not on first paint / Strict Mode remount
+  // (programmatic focus on load can look like a selection highlight).
   useEffect(() => {
     if (typeof window === 'undefined') return
     scrollWindowToTop()
+    const previous = previousTabForFocus.current
+    previousTabForFocus.current = activeTab
+    if (previous === null || previous === activeTab) return
     const main = document.getElementById('main-content')
     if (main && typeof main.focus === 'function') {
       main.focus({ preventScroll: true })
