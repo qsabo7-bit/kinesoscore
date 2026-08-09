@@ -323,6 +323,12 @@ export const MILITARY_SEO = {
       'Interpret results as unofficial training feedback. Use event scores to see whether upper-body work, plank capacity, or run fitness is the limiting factor before an official PFT.',
       'KinesoScore does not provide official military scoring. Official Marine Corps scores come only from authorized testing under current Marine Corps guidance.',
     ],
+    relatedNote: {
+      before: 'New to the test? ',
+      tab: 'marine-pft-guide',
+      label: 'Marine Corps PFT explained',
+      after: '.',
+    },
     faqs: [
       {
         question: 'What events are on the Marine Corps PFT?',
@@ -365,6 +371,12 @@ export const MILITARY_SEO = {
       'Use the estimate to identify whether strength-endurance, core endurance, or run fitness needs the most work. It is a prep aid, not a fitness report entry.',
       'KinesoScore does not provide official military scoring. Official Navy PRT results come only from authorized testing under current Navy physical readiness guidance.',
     ],
+    relatedNote: {
+      before: 'New to the test? ',
+      tab: 'navy-prt-guide',
+      label: 'Navy PRT explained',
+      after: '.',
+    },
     faqs: [
       {
         question: 'What does the Navy PRT include in this calculator?',
@@ -407,6 +419,12 @@ export const MILITARY_SEO = {
       'Interpret the result as an unofficial practice estimate for test preparation. Review component scores to see whether cardio, strength, core, or body-composition inputs are limiting the estimate.',
       'KinesoScore does not provide official military scoring. Official Air Force fitness results come only from authorized testing under current Air Force guidance.',
     ],
+    relatedNote: {
+      before: 'New to the assessment? ',
+      tab: 'air-force-pfra-guide',
+      label: 'Air Force PFRA explained',
+      after: '.',
+    },
     faqs: [
       {
         question: 'What does the Air Force PFRA measure?',
@@ -1054,6 +1072,186 @@ export const ARMY_AFT_GUIDE_SEO = {
     'Army AFT estimates on KinesoScore are educational training tools only — not official scores or medical advice.',
 }
 
+/** Educational landing page for /air-force-pfra-guide (not the calculator). */
+export const AIR_FORCE_PFRA_GUIDE_SEO = {
+  eyebrow: 'Military Assessments',
+  heroTitle: 'Air Force PFRA Explained',
+  heroLead:
+    'A plain-language overview of the Air Force Physical Fitness Readiness Assessment — components, scoring estimates, and how to use KinesoScore for unofficial training prep.',
+  heroSupport:
+    'This guide is educational. Official record scores come only from authorized Air Force testing under current guidance — not from any website calculator.',
+  ctaTab: 'air-force-pfra',
+  ctaLabel: 'Open the Air Force PFRA calculator',
+  sections: [
+    {
+      id: 'what-is-pfra',
+      title: 'What the Air Force PFRA is',
+      paragraphs: [
+        'The Physical Fitness Readiness Assessment (PFRA) is the Air Force’s current fitness assessment model on KinesoScore. It blends cardiorespiratory fitness, muscular strength, core endurance, and a waist-to-height body-composition component into one readiness picture.',
+        'Exact event choices and charts can change. Always confirm the latest official Air Force materials for your age group and duty requirements.',
+      ],
+    },
+    {
+      id: 'pfra-components',
+      title: 'Components covered in the KinesoScore calculator',
+      paragraphs: [
+        'The free PFRA calculator estimates common general-standard inputs: a cardio result, a strength option (such as push-ups or hand-release push-ups), a core option (such as sit-ups, reverse crunch, or forearm plank), and waist plus height for waist-to-height ratio.',
+        'You select age band and gender, enter each result, and review an unofficial component and composite estimate for training feedback.',
+      ],
+    },
+    {
+      id: 'how-scoring-works',
+      title: 'How scoring estimates work',
+      paragraphs: [
+        'Published age- and gender-normed tables map component performances to points within a composite model. KinesoScore uses those tables to return a practice estimate so you can see which components limit your total.',
+        'Use the breakdown to prioritize training — for example cardio pacing, strength-endurance volume, core capacity, or body-composition habits — then retest after a training block.',
+      ],
+    },
+    {
+      id: 'prep-tips',
+      title: 'Using the calculator for prep',
+      paragraphs: [
+        'Treat every result as training feedback, not a record score. Pair the PFRA page with the Running and VO₂ Max calculators for aerobic context, and use Strength tools when upper-body capacity is limiting.',
+        'KinesoScore is not an Air Force scorecard and not a Department of the Air Force product. Official results come only from authorized testing.',
+      ],
+    },
+  ],
+  faqTitle: 'Air Force PFRA FAQs',
+  faqs: MILITARY_SEO['air-force-pfra'].faqs,
+  relatedNote: {
+    before: 'Ready to estimate a practice score? ',
+    tab: 'air-force-pfra',
+    label: 'Open the Air Force PFRA calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'air-force-pfa', label: 'Legacy Air Force PFA calculator' },
+    { tab: 'running', label: 'Running calculator' },
+    { tab: 'sources-methodology', label: 'Sources & Methodology' },
+  ],
+  disclaimer: MILITARY_SEO_DISCLAIMER,
+}
+
+/** Educational landing page for /marine-pft-guide (not the calculator). */
+export const MARINE_PFT_GUIDE_SEO = {
+  eyebrow: 'Military Assessments',
+  heroTitle: 'Marine Corps PFT Explained',
+  heroLead:
+    'A plain-language overview of the Marine Corps Physical Fitness Test — events, scoring estimates, and how to use KinesoScore for unofficial training prep.',
+  heroSupport:
+    'This guide is educational. Official record scores come only from authorized Marine Corps testing under current guidance — not from any website calculator.',
+  ctaTab: 'marine-pft',
+  ctaLabel: 'Open the Marine Corps PFT calculator',
+  sections: [
+    {
+      id: 'what-is-pft',
+      title: 'What the Marine Corps PFT is',
+      paragraphs: [
+        'The Marine Corps Physical Fitness Test (PFT) measures upper-body strength or endurance, core endurance, and aerobic fitness across a short event set rather than a single run.',
+        'Standards and event options can change. Always confirm the latest official Marine Corps materials for your age group and testing requirements.',
+      ],
+    },
+    {
+      id: 'pft-events',
+      title: 'Events covered in the KinesoScore calculator',
+      paragraphs: [
+        'The free Marine PFT calculator estimates the common event set: pull-ups or push-ups, a forearm plank, and a 3-mile run.',
+        'You select age band and gender, choose the upper-body option you performed, enter reps and times, and review an unofficial event-by-event and total estimate.',
+      ],
+    },
+    {
+      id: 'how-scoring-works',
+      title: 'How scoring estimates work',
+      paragraphs: [
+        'Published age- and gender-normed tables map event performances to points. KinesoScore uses those tables to return a practice estimate so you can see which events limit your total.',
+        'Weak events usually matter as much as the headline score. Use the breakdown to prioritize pull-up or push-up volume, plank capacity, or 3-mile pacing.',
+      ],
+    },
+    {
+      id: 'prep-tips',
+      title: 'Using the calculator for prep',
+      paragraphs: [
+        'Treat every result as training feedback, not a record score. Pair the Marine PFT page with the Running and Strength calculators for supporting aerobic and upper-body tracking.',
+        'KinesoScore is not a USMC scorecard and not an official Marine Corps product. Official results come only from authorized testing.',
+      ],
+    },
+  ],
+  faqTitle: 'Marine Corps PFT FAQs',
+  faqs: MILITARY_SEO['marine-pft'].faqs,
+  relatedNote: {
+    before: 'Ready to estimate a practice score? ',
+    tab: 'marine-pft',
+    label: 'Open the Marine Corps PFT calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'running', label: 'Running calculator' },
+    { tab: 'army-aft-guide', label: 'Army AFT explained' },
+    { tab: 'sources-methodology', label: 'Sources & Methodology' },
+  ],
+  disclaimer: MILITARY_SEO_DISCLAIMER,
+}
+
+/** Educational landing page for /navy-prt-guide (not the calculator). */
+export const NAVY_PRT_GUIDE_SEO = {
+  eyebrow: 'Military Assessments',
+  heroTitle: 'Navy PRT Explained',
+  heroLead:
+    'A plain-language overview of the Navy Physical Readiness Test — events, scoring estimates, and how to use KinesoScore for unofficial training prep.',
+  heroSupport:
+    'This guide is educational. Official record scores come only from authorized Navy testing under current guidance — not from any website calculator.',
+  ctaTab: 'navy-prt',
+  ctaLabel: 'Open the Navy PRT calculator',
+  sections: [
+    {
+      id: 'what-is-prt',
+      title: 'What the Navy PRT is',
+      paragraphs: [
+        'The Navy Physical Readiness Test (PRT) measures muscular endurance and aerobic readiness for sailors across a short common event set.',
+        'Alternate cardio options and standards can change. Always confirm the latest official Navy physical readiness materials for your age group and testing cycle.',
+      ],
+    },
+    {
+      id: 'prt-events',
+      title: 'Events covered in the KinesoScore calculator',
+      paragraphs: [
+        'The free Navy PRT calculator estimates the common trio of push-ups, a forearm plank, and a 1.5-mile run.',
+        'You select age band and gender, enter each result, and review an unofficial event-by-event and combined estimate for readiness prep.',
+      ],
+    },
+    {
+      id: 'how-scoring-works',
+      title: 'How scoring estimates work',
+      paragraphs: [
+        'Published age- and gender-normed tables map event performances to points. KinesoScore uses those tables to return a practice estimate so you can see which events limit your total.',
+        'Use the breakdown to prioritize push-up capacity, plank holds, or 1.5-mile pacing — then retest after a training block.',
+      ],
+    },
+    {
+      id: 'prep-tips',
+      title: 'Using the calculator for prep',
+      paragraphs: [
+        'Treat every result as training feedback, not a fitness report entry. Pair the Navy PRT page with the Running calculator for aerobic progress between attempts.',
+        'KinesoScore is not a Navy Human Resources tool and not an official Department of the Navy product. Official results come only from authorized testing.',
+      ],
+    },
+  ],
+  faqTitle: 'Navy PRT FAQs',
+  faqs: MILITARY_SEO['navy-prt'].faqs,
+  relatedNote: {
+    before: 'Ready to estimate a practice score? ',
+    tab: 'navy-prt',
+    label: 'Open the Navy PRT calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'running', label: 'Running calculator' },
+    { tab: 'marine-pft-guide', label: 'Marine Corps PFT explained' },
+    { tab: 'sources-methodology', label: 'Sources & Methodology' },
+  ],
+  disclaimer: MILITARY_SEO_DISCLAIMER,
+}
+
 /** Educational landing page for /vo2max-guide (not the calculator). */
 export const VO2_MAX_GUIDE_SEO = {
   eyebrow: 'Aerobic fitness',
@@ -1170,6 +1368,11 @@ export const PAGE_FAQS_BY_TAB = {
   'fitness-score': FITNESS_SCORE_SEO.faqs,
   'one-rep-max': ONE_REP_MAX_SEO.faqs,
   'army-aft-guide': ARMY_AFT_GUIDE_SEO.faqs,
+  'air-force-pfra-guide': AIR_FORCE_PFRA_GUIDE_SEO.faqs,
+  'marine-pft-guide': MARINE_PFT_GUIDE_SEO.faqs,
+  'navy-prt-guide': NAVY_PRT_GUIDE_SEO.faqs,
+  acft: MILITARY_SEO['army-aft'].faqs,
+  '1rm': STRENGTH_SEO.faqs,
   'vo2max-guide': VO2_MAX_GUIDE_SEO.faqs,
   'fran-guide': FRAN_GUIDE_SEO.faqs,
   'murph-guide': MURPH_GUIDE_SEO.faqs,

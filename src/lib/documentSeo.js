@@ -161,5 +161,8 @@ export function applyDocumentSeo(tabOrPath) {
   setJsonLd('organization', buildOrganizationSchema())
   setJsonLd('webapplication', buildWebApplicationSchema())
   setJsonLd('breadcrumb', buildBreadcrumbSchema(page.breadcrumb))
-  setJsonLd('faq', buildFaqSchema(PAGE_FAQS_BY_TAB[page.tab]))
+  const faqs =
+    PAGE_FAQS_BY_TAB[page.tab] ||
+    (page.renderTab ? PAGE_FAQS_BY_TAB[page.renderTab] : null)
+  setJsonLd('faq', buildFaqSchema(faqs))
 }

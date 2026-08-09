@@ -157,6 +157,51 @@ export const PAGE_SEO = {
       { name: 'Army AFT Guide', path: '/army-aft-guide' },
     ],
   },
+  'air-force-pfra-guide': {
+    tab: 'air-force-pfra-guide',
+    path: '/air-force-pfra-guide',
+    title: 'Air Force PFRA Explained | Components, Scoring & Prep | KinesoScore',
+    description:
+      'Plain-language Air Force PFRA guide: cardio, strength, core, waist-to-height ratio, how scoring estimates work, and how to use the free KinesoScore PFRA calculator for unofficial training prep.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Air Force PFRA', path: '/air-force-pfra' },
+      { name: 'Air Force PFRA Guide', path: '/air-force-pfra-guide' },
+    ],
+  },
+  'marine-pft-guide': {
+    tab: 'marine-pft-guide',
+    path: '/marine-pft-guide',
+    title: 'Marine Corps PFT Explained | Events, Scoring & Prep | KinesoScore',
+    description:
+      'Plain-language Marine Corps PFT guide: pull-ups or push-ups, plank, 3-mile run, how scoring estimates work, and how to use the free KinesoScore Marine PFT calculator for unofficial training prep.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Marine Corps PFT', path: '/marine-pft' },
+      { name: 'Marine PFT Guide', path: '/marine-pft-guide' },
+    ],
+  },
+  'navy-prt-guide': {
+    tab: 'navy-prt-guide',
+    path: '/navy-prt-guide',
+    title: 'Navy PRT Explained | Events, Scoring & Prep Guide | KinesoScore',
+    description:
+      'Plain-language Navy PRT guide: push-ups, forearm plank, 1.5-mile run, how scoring estimates work, and how to use the free KinesoScore Navy PRT calculator for unofficial training prep.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Navy PRT', path: '/navy-prt' },
+      { name: 'Navy PRT Guide', path: '/navy-prt-guide' },
+    ],
+  },
   'vo2max-guide': {
     tab: 'vo2max-guide',
     path: '/vo2max-guide',
@@ -268,6 +313,52 @@ export const PAGE_SEO = {
       { name: 'Home', path: '/' },
       { name: 'Calculators', path: '/calculators' },
       { name: 'Army AFT', path: '/army-aft' },
+    ],
+  },
+  /**
+   * High-intent alias for ACFT searches → same Army AFT calculator UI.
+   * Canonical stays /army-aft to avoid duplicate ranking.
+   */
+  acft: {
+    tab: 'acft',
+    renderTab: 'army-aft',
+    path: '/acft',
+    canonicalPath: '/army-aft',
+    includeInSitemap: false,
+    heading: 'ACFT / Army AFT Calculator',
+    title: 'ACFT Calculator | Army Combat Fitness Test & AFT Estimator | KinesoScore',
+    description:
+      'Free ACFT / Army AFT calculator for unofficial deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run estimates. Educational training prep — not an official Army scorecard.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Army AFT', path: '/army-aft' },
+      { name: 'ACFT Calculator', path: '/acft' },
+    ],
+  },
+  /**
+   * High-intent alias for 1RM searches → same Strength calculator UI.
+   * Canonical stays /strength.
+   */
+  '1rm': {
+    tab: '1rm',
+    renderTab: 'strength',
+    path: '/1rm',
+    canonicalPath: '/strength',
+    includeInSitemap: false,
+    heading: '1RM Calculator',
+    title: '1RM Calculator | Bench, Squat, Deadlift One-Rep Max | KinesoScore',
+    description:
+      'Free 1RM calculator using the Epley formula for bench press, squat, and deadlift — plus SBD total tracking. Estimate one-rep max from weight and reps on KinesoScore.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Strength', path: '/strength' },
+      { name: '1RM Calculator', path: '/1rm' },
     ],
   },
   'marine-pft': {
@@ -555,9 +646,10 @@ export const NOINDEX_PATHS = Object.values(PAGE_SEO)
   .filter((page) => String(page.robots).includes('noindex'))
   .map((page) => page.path)
 
-/** Crawlable public paths for sitemap generation. */
+/** Crawlable public paths for sitemap generation (canonical URLs only). */
 export const PUBLIC_SEO_PAGES = Object.values(PAGE_SEO).filter(
-  (page) => !String(page.robots).includes('noindex'),
+  (page) =>
+    !String(page.robots).includes('noindex') && page.includeInSitemap !== false,
 )
 
 const PATH_INDEX = Object.fromEntries(

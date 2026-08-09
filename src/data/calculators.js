@@ -184,9 +184,15 @@ export const CALCULATOR_GUIDE_TABS = {
   'murph-guide': 'murph',
   'cindy-guide': 'cindy',
   'army-aft-guide': 'army-aft',
+  'air-force-pfra-guide': 'air-force-pfra',
+  'marine-pft-guide': 'marine-pft',
+  'navy-prt-guide': 'navy-prt',
   'vo2max-guide': 'vo2max',
   'one-rep-max': 'strength',
   'fitness-score': 'scoring',
+  /** High-intent URL aliases → sticky chip highlight */
+  acft: 'army-aft',
+  '1rm': 'strength',
 }
 
 export function isCalculatorTab(tabId) {

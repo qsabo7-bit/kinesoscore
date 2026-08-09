@@ -9,7 +9,7 @@ import ScrollToTopButton from './components/ScrollToTopButton'
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import NotFoundPage from './pages/NotFoundPage'
-import { pathForTab, resolveSeoRoute } from './data/seo'
+import { PAGE_SEO, pathForTab, resolveSeoRoute } from './data/seo'
 import {
   getAuthIntent,
   hasPendingAuthCallbackInUrl,
@@ -48,6 +48,9 @@ const SourcesMethodologyPage = lazy(
 const FitnessScorePage = lazy(() => import('./pages/FitnessScorePage'))
 const OneRepMaxPage = lazy(() => import('./pages/OneRepMaxPage'))
 const ArmyAftGuidePage = lazy(() => import('./pages/ArmyAftGuidePage'))
+const AirForcePfraGuidePage = lazy(() => import('./pages/AirForcePfraGuidePage'))
+const MarinePftGuidePage = lazy(() => import('./pages/MarinePftGuidePage'))
+const NavyPrtGuidePage = lazy(() => import('./pages/NavyPrtGuidePage'))
 const Vo2MaxGuidePage = lazy(() => import('./pages/Vo2MaxGuidePage'))
 const FranGuidePage = lazy(() => import('./pages/FranGuidePage'))
 const MurphGuidePage = lazy(() => import('./pages/MurphGuidePage'))
@@ -206,7 +209,9 @@ function App() {
     }
   }, [isAuthenticated, loading, activeTab, passwordRecovery])
 
-  const renderTab = activeTab
+  // Alias tabs (e.g. /acft, /1rm) keep their SEO id in the URL while rendering
+  // the primary calculator UI unchanged.
+  const renderTab = PAGE_SEO[activeTab]?.renderTab || activeTab
 
   let content
   if (passwordRecovery) {
@@ -371,6 +376,12 @@ function App() {
     content = <OneRepMaxPage onOpenTab={handleTabChange} />
   } else if (renderTab === 'army-aft-guide') {
     content = <ArmyAftGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'air-force-pfra-guide') {
+    content = <AirForcePfraGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'marine-pft-guide') {
+    content = <MarinePftGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'navy-prt-guide') {
+    content = <NavyPrtGuidePage onOpenTab={handleTabChange} />
   } else if (renderTab === 'vo2max-guide') {
     content = <Vo2MaxGuidePage onOpenTab={handleTabChange} />
   } else if (renderTab === 'fran-guide') {

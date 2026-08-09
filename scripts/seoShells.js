@@ -32,6 +32,60 @@ function escapeAttr(value) {
     .replace(/</g, '&lt;')
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/**
+ * Crawlable body HTML placed inside #root.
+ * React replaces #root on boot, so the live UI is unchanged for users.
+ */
+function buildCrawlableBody(page) {
+  const crumbs = Array.isArray(page.breadcrumb) ? page.breadcrumb : []
+  const heading =
+    page.heading ||
+    crumbs[crumbs.length - 1]?.name ||
+    page.title.split('|')[0].trim() ||
+    SITE.name
+  const faqKey = page.tab
+  const faqFallback = page.renderTab
+  const faqs =
+    PAGE_FAQS_BY_TAB[faqKey] ||
+    (faqFallback ? PAGE_FAQS_BY_TAB[faqFallback] : null) ||
+    []
+  const ctaPath = page.canonicalPath || page.path || '/'
+  const ctaHref = ctaPath.startsWith('/') ? ctaPath : `/${ctaPath}`
+
+  const faqBlock =
+    faqs.length > 0
+      ? `<section><h2>Frequently asked questions</h2><dl>${faqs
+          .map(
+            (item) =>
+              `<dt>${escapeHtml(item.question)}</dt><dd>${escapeHtml(item.answer)}</dd>`,
+          )
+          .join('')}</dl></section>`
+      : ''
+
+  return `<div data-seo-body><main><h1>${escapeHtml(heading)}</h1><p>${escapeHtml(page.description || SITE.description)}</p>${faqBlock}<p><a href="${escapeAttr(ctaHref)}">Open ${escapeHtml(heading)} on KinesoScore</a></p></main></div>`
+}
+
+function injectCrawlableBody(html, bodyHtml) {
+  if (/id="root"[^>]*>\s*<div data-seo-body/i.test(html)) {
+    return html.replace(
+      /(<div id="root"[^>]*>)[\s\S]*?(<\/div>\s*<script)/i,
+      `$1${bodyHtml}$2`,
+    )
+  }
+  return html.replace(
+    /<div id="root"><\/div>/i,
+    `<div id="root">${bodyHtml}</div>`,
+  )
+}
+
 function replaceMetaByName(html, name, content) {
   const re = new RegExp(
     `<meta\\s+name="${name}"\\s+content="[^"]*"\\s*/?>`,
@@ -127,7 +181,10 @@ function applyPageSeo(template, page) {
     )
   }
 
-  const faq = buildFaqSchema(PAGE_FAQS_BY_TAB[page.tab])
+  const faqs =
+    PAGE_FAQS_BY_TAB[page.tab] ||
+    (page.renderTab ? PAGE_FAQS_BY_TAB[page.renderTab] : null)
+  const faq = buildFaqSchema(faqs)
   if (faq) html = upsertJsonLd(html, 'faq', faq)
   else {
     html = html.replace(
@@ -136,6 +193,7 @@ function applyPageSeo(template, page) {
     )
   }
 
+  html = injectCrawlableBody(html, buildCrawlableBody(page))
   return html
 }
 
@@ -146,14 +204,19 @@ function shellOutputPath(distDir, pagePath) {
 }
 
 function buildSitemapXml(pages) {
-  const urls = pages
-    .map((page) => {
-      const loc = absoluteUrl(page.path)
-      return `  <url>\n    <loc>${loc}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${page.path === '/' ? '1.0' : '0.8'}</priority>\n  </url>`
-    })
-    .join('\n')
+  const seen = new Set()
+  const entries = []
+  for (const page of pages) {
+    const pathKey = page.canonicalPath || page.path
+    if (seen.has(pathKey)) continue
+    seen.add(pathKey)
+    const loc = absoluteUrl(pathKey)
+    entries.push(
+      `  <url>\n    <loc>${loc}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${pathKey === '/' ? '1.0' : '0.8'}</priority>\n  </url>`,
+    )
+  }
 
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join('\n')}\n</urlset>\n`
 }
 
 /**

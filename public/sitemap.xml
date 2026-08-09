@@ -41,6 +41,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kinesoscore.com/air-force-pfra-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kinesoscore.com/marine-pft-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kinesoscore.com/navy-prt-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kinesoscore.com/vo2max-guide</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

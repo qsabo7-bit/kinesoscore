@@ -58,6 +58,22 @@ body {
   min-height: 100svh;
 }
 
+/*
+ * Build-time crawlable copy lives inside #root until React mounts and replaces it.
+ * Visually hide so users never see a flash; crawlers still read the HTML source.
+ */
+#root > [data-seo-body] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 h1,
 h2,
 h3 {
