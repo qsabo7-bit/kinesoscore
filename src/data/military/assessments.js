@@ -82,7 +82,11 @@ export const MILITARY_ASSESSMENTS = {
         label: 'Core repetitions',
         kind: 'reps',
         placeholder: '45',
-        hint: 'Repetitions for sit-ups or reverse crunch (leave blank for plank)',
+        hint: 'Repetitions for sit-ups or reverse crunch',
+        showWhen: {
+          field: 'coreChoice',
+          oneOf: ['situps', 'crunch'],
+        },
       },
       {
         id: 'plank',
@@ -90,7 +94,11 @@ export const MILITARY_ASSESSMENTS = {
         kind: 'duration',
         placeholderMin: '2',
         placeholderSec: '00',
-        hint: 'Hold time when forearm plank is selected',
+        hint: 'Hold time for forearm plank',
+        showWhen: {
+          field: 'coreChoice',
+          equals: 'plank',
+        },
       },
       {
         id: 'cardioChoice',
@@ -108,14 +116,22 @@ export const MILITARY_ASSESSMENTS = {
         kind: 'duration',
         placeholderMin: '16',
         placeholderSec: '00',
-        hint: 'Finish time when 2-mile run is selected',
+        hint: 'Finish time for the 2-mile run',
+        showWhen: {
+          field: 'cardioChoice',
+          equals: 'run',
+        },
       },
       {
         id: 'hamr',
         label: 'HAMR shuttles',
         kind: 'reps',
         placeholder: '60',
-        hint: '20-meter shuttle count when HAMR is selected',
+        hint: '20-meter shuttle count for HAMR',
+        showWhen: {
+          field: 'cardioChoice',
+          equals: 'hamr',
+        },
       },
       {
         id: 'waist',

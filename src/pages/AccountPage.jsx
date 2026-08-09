@@ -171,15 +171,8 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   if (!user) {
     return (
       <main className="page account-page">
-        <header className="page-header">
-          <p className="page-eyebrow">Account</p>
-          <h1>Account Settings</h1>
-          <p className="page-lead">
-            Create an account or log in to manage your profile, Leaderboard
-            Name, and saved progress.
-          </p>
-        </header>
         <LockedAuthCard
+          eyebrow="Account"
           title={ACCOUNT_LOCKED_PREVIEW.title}
           lead={ACCOUNT_LOCKED_PREVIEW.lead}
           benefits={ACCOUNT_LOCKED_PREVIEW.benefits}

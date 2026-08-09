@@ -1,7 +1,9 @@
 /**
  * Guest lock CTA — spotlight style (one sample surface + clear auth actions).
+ * When `eyebrow` is set, renders as a full page spotlight (h1), matching Dashboard.
  */
 function LockedAuthCard({
+  eyebrow = '',
   title,
   lead,
   benefits = [],
@@ -14,15 +16,25 @@ function LockedAuthCard({
     else onOpenTab?.('login')
   }
 
+  const HeadingTag = eyebrow ? 'h1' : 'h2'
+
   return (
     <div
-      className="locked-spotlight locked-spotlight-card"
+      className={`locked-spotlight${eyebrow ? '' : ' locked-spotlight-card'}`}
       aria-label={`${title}. Sign in to continue.`}
     >
-      <div className="locked-spotlight-copy">
-        <h2 className="locked-spotlight-title">{title}</h2>
-        {lead ? <p className="locked-spotlight-lead">{lead}</p> : null}
-      </div>
+      {eyebrow ? (
+        <header className="page-header">
+          <p className="page-eyebrow">{eyebrow}</p>
+          <HeadingTag className="locked-spotlight-title">{title}</HeadingTag>
+          {lead ? <p className="page-lead">{lead}</p> : null}
+        </header>
+      ) : (
+        <div className="locked-spotlight-copy">
+          <HeadingTag className="locked-spotlight-title">{title}</HeadingTag>
+          {lead ? <p className="locked-spotlight-lead">{lead}</p> : null}
+        </div>
+      )}
 
       <div
         className={`locked-spotlight-sample is-${sampleKind}`}

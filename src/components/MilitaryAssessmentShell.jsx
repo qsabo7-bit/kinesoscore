@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
+import { BRAND } from '../data/brand'
+import { pathForTab } from '../data/seo'
 import { MILITARY_SEO, MILITARY_SEO_DISCLAIMER } from '../data/seoCopy'
 import CalculatorTracking from './CalculatorTracking'
+import ResultShareActions from './ResultShareActions'
 import SeoIntro from './SeoIntro'
 
 const MILITARY_ESTIMATE_DISCLAIMER =
@@ -48,6 +51,15 @@ function MilitaryAssessmentShell({
 
   const setField = (key, next) => {
     setValues((prev) => ({ ...prev, [key]: next }))
+  }
+
+  const isEventVisible = (event) => {
+    const rule = event.showWhen
+    if (!rule?.field) return true
+    const selected = values[rule.field]
+    if (Array.isArray(rule.oneOf)) return rule.oneOf.includes(selected)
+    if (rule.equals != null) return selected === rule.equals
+    return true
   }
 
   const source = scoringReady
@@ -116,7 +128,7 @@ function MilitaryAssessmentShell({
             they have been fully encoded for this assessment.
           </p>
 
-          {assessment.events.map((event) => {
+          {assessment.events.filter(isEventVisible).map((event) => {
             if (event.kind === 'select') {
               return (
                 <label key={event.id} className="field">
@@ -223,6 +235,20 @@ function MilitaryAssessmentShell({
           ))}
 
           {result.summary ? <p className="calc-hint">{result.summary}</p> : null}
+
+          {result.total != null ? (
+            <ResultShareActions
+              title={`${assessment.name} on ${BRAND.short}`}
+              text={`My ${assessment.name} estimate is ${result.total}${
+                result.category ? ` · ${result.category}` : ''
+              } (${result.pass ? 'Pass' : 'Fail'}). Check yours on KinesoScore.`}
+              url={
+                typeof window !== 'undefined'
+                  ? `${window.location.origin}${pathForTab(assessment.id)}`
+                  : `https://kinesoscore.com${pathForTab(assessment.id)}`
+              }
+            />
+          ) : null}
         </section>
       ) : null}
 

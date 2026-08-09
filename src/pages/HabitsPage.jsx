@@ -235,15 +235,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
   if (!isAuthenticated) {
     return (
       <main className="page habits-page">
-        <header className="page-header">
-          <p className="page-eyebrow">Routine</p>
-          <h1>Habits</h1>
-          <p className="page-lead">
-            Optional private routines for signed-in athletes. Nothing is shared
-            unless you opt in later.
-          </p>
-        </header>
         <LockedAuthCard
+          eyebrow="Routine"
           title={HABITS_LOCKED_PREVIEW.title}
           lead={HABITS_LOCKED_PREVIEW.lead}
           benefits={HABITS_LOCKED_PREVIEW.benefits}

@@ -4554,6 +4554,11 @@ a:focus-visible {
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.1;
+  text-transform: none;
+}
+
+.locked-spotlight .page-header .locked-spotlight-title {
+  margin-bottom: 0.35rem;
 }
 
 .locked-spotlight-lead {

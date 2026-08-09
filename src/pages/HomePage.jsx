@@ -38,7 +38,7 @@ function ToolList({ tools, onOpenTab }) {
               href={pathForTab(tool.id)}
               onClick={(event) => handleToolClick(event, tool.id)}
             >
-              Open calculator
+              Open {tool.name} calculator
             </a>
           ) : (
             <span className="tool-status">In development</span>

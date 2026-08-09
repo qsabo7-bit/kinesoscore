@@ -7,7 +7,9 @@ import {
 import CalculatorTracking from '../components/CalculatorTracking'
 import DemographicFields from '../components/DemographicFields'
 import PeerComparison from '../components/PeerComparison'
+import ResultShareActions from '../components/ResultShareActions'
 import SeoIntro from '../components/SeoIntro'
+import { BRAND } from '../data/brand'
 import { RUNNING_SEO } from '../data/seoCopy'
 import {
   calculatePace,
@@ -208,6 +210,16 @@ function RunningPage({ onRequestAuth, onOpenTab }) {
               className="save-result-slot save-result-slot-inline"
             />
           </div>
+
+          <ResultShareActions
+            title={`Running on ${BRAND.short}`}
+            text={`My ${result.trackLabel} is ${result.trackTimeLabel} (avg pace ${result.paceLabel}). What’s yours?`}
+            url={
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/running`
+                : 'https://kinesoscore.com/running'
+            }
+          />
 
           <div className="result-table-wrap">
             <h2 className="result-section-title">Predicted race times</h2>
