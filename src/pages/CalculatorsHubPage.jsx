@@ -67,7 +67,7 @@ function CalculatorsHubPage({ onOpenTab }) {
         <p className="page-lead">
           Strength, endurance,{' '}
           <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>, fitness
-          assessments, and military fitness tests — with optional private
+          assessments, and military assessments — with optional private
           progress tracking.
         </p>
       </header>

@@ -12,9 +12,15 @@ import homeHeroPhoto from '../assets/home-hero.png'
 /** Set to `null` to restore the CSS-only hero (no photo). */
 const HOME_HERO_PHOTO = homeHeroPhoto
 
-function ToolList({ tools, onOpenTab }) {
+function CompactToolList({ tools, onOpenTab }) {
   const handleToolClick = (event, tabId) => {
-    if (!onOpenTab || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    if (
+      !onOpenTab ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
       return
     }
     event.preventDefault()
@@ -22,31 +28,29 @@ function ToolList({ tools, onOpenTab }) {
   }
 
   return (
-    <ul className="tool-list">
+    <ul className="home-tool-chips">
       {tools.map((tool) => (
-        <li key={tool.id} className="tool-item">
-          <h3>
-            {tool.name}
-            {tool.badge ? (
-              <span
-                className={`nav-badge nav-badge-${String(tool.badge).toLowerCase()}`}
-                style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
-              >
-                {tool.badge}
-              </span>
-            ) : null}
-          </h3>
-          <p>{tool.description}</p>
+        <li key={tool.id}>
           {tool.status === 'ready' ? (
             <a
-              className="tool-link"
+              className="home-tool-chip"
               href={pathForTab(tool.id)}
               onClick={(event) => handleToolClick(event, tool.id)}
             >
-              Open {tool.name} calculator
+              {tool.shortName || tool.name}
+              {tool.badge ? (
+                <span
+                  className={`nav-badge nav-badge-${String(tool.badge).toLowerCase()}`}
+                >
+                  {tool.badge}
+                </span>
+              ) : null}
             </a>
           ) : (
-            <span className="tool-status">In development</span>
+            <span className="home-tool-chip is-dev">
+              {tool.shortName || tool.name}
+              <span className="nav-badge">Soon</span>
+            </span>
           )}
         </li>
       ))}
@@ -155,23 +159,65 @@ function HomePage({ onOpenTab, onRequestAuth }) {
           <button
             type="button"
             className="home-section-link"
-            onClick={() => onOpenTab(DEFAULT_CALCULATOR_ID)}
+            onClick={() => onOpenTab('calculators')}
           >
             Calculators
           </button>
         </h2>
         <p className="home-dashboard-summary">
           Strength, endurance, {BRAND.scoreName}, fitness assessments, and
-          military fitness tests — with optional progress tracking when you sign
+          military assessments — with optional progress tracking when you sign
           in.
         </p>
 
         {toolGroups.map((group) => (
           <div key={group.category.id} className="home-tools-group">
             <h3 className="home-tools-group-label">{group.category.label}</h3>
-            <ToolList tools={group.tools} onOpenTab={onOpenTab} />
+            <CompactToolList tools={group.tools} onOpenTab={onOpenTab} />
           </div>
         ))}
+
+        <p className="home-tools-more">
+          <a
+            className="tool-link"
+            href={pathForTab('calculators')}
+            onClick={(event) => {
+              if (
+                !onOpenTab ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              ) {
+                return
+              }
+              event.preventDefault()
+              onOpenTab('calculators')
+            }}
+          >
+            Browse all calculators with details
+          </a>
+          {' · '}
+          <a
+            className="tool-link"
+            href={pathForTab(DEFAULT_CALCULATOR_ID)}
+            onClick={(event) => {
+              if (
+                !onOpenTab ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              ) {
+                return
+              }
+              event.preventDefault()
+              onOpenTab(DEFAULT_CALCULATOR_ID)
+            }}
+          >
+            Open Strength
+          </a>
+        </p>
       </section>
     </main>
   )

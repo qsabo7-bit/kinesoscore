@@ -1,5 +1,5 @@
 import { BRAND } from '../data/brand.js'
-import { formatRecordValue } from './performanceRecords.js'
+import { formatRecordValue, isCindyResult } from './performanceRecords.js'
 import { LEADERBOARD_SHARE_TARGETS } from './leaderboardShares.js'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
 
@@ -83,6 +83,21 @@ export function leaderboardBoardLabel(boardKey) {
   return BOARD_LABELS[boardKey] || boardKey
 }
 
+/**
+ * Calculator / Habits tab to open when inviting the first real share
+ * for a given public board.
+ * @param {string} boardKey
+ * @returns {string}
+ */
+export function calculatorTabForBoardKey(boardKey) {
+  const key = String(boardKey || '')
+  if (key === 'habits:streak') return 'habits'
+  const target = LEADERBOARD_SHARE_TARGETS.find((item) => item.boardKey === key)
+  if (!target) return 'scoring'
+  if (target.calculatorType === BRAND.scoreCalculatorType) return 'scoring'
+  return target.calculatorType
+}
+
 export function leaderboardValueKind(boardKey) {
   const key = String(boardKey)
   if (key.startsWith('running:')) return 'duration'
@@ -101,6 +116,9 @@ export function leaderboardValueKind(boardKey) {
  * @param {{ result_value: number, result_unit?: string | null, board_key: string }} row
  */
 export function formatLeaderboardResult(row) {
+  if (isCindyResult(row.board_key) || isCindyResult(row)) {
+    return formatRecordValue(row.result_value, 'cindy')
+  }
   const kind = leaderboardValueKind(row.board_key)
   if (kind === 'duration') {
     return formatRecordValue(row.result_value, 'duration', null, 'clock')

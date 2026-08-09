@@ -1,21 +1,15 @@
 import {
+  parseRequiredNumber,
   pointsFromAscendingSteps,
   pointsFromDescendingTimeSteps,
+  toDurationSeconds,
+  totalFromEventPoints,
 } from './scoreEvents.js'
 import {
   AIR_FORCE_PFA_CATEGORIES,
   AIR_FORCE_PFA_CHARTS,
   AIR_FORCE_PFA_SOURCE,
 } from '../../data/military/airForcePfaCharts.js'
-
-function toSeconds(min, sec) {
-  if (min === '' || min == null) return null
-  const m = Number(min)
-  const s = sec === '' || sec == null ? 0 : Number(sec)
-  if (!Number.isFinite(m) || m < 0) return null
-  if (!Number.isFinite(s) || s < 0 || s > 59) return null
-  return m * 60 + s
-}
 
 function categoryFromTotal(total, pass) {
   if (!pass || total == null) return 'Unsatisfactory'
@@ -33,12 +27,12 @@ export function scoreAirForcePfa({ ageBand, gender, values }) {
   const chart = AIR_FORCE_PFA_CHARTS[key]
   if (!chart) return null
 
-  const pushups = Number(values.pushups)
-  const situps = Number(values.situps)
-  const runSec = toSeconds(values.runMin, values.runSec)
+  const pushups = parseRequiredNumber(values.pushups)
+  const situps = parseRequiredNumber(values.situps)
+  const runSec = toDurationSeconds(values.runMin, values.runSec)
 
-  if (!Number.isFinite(pushups) || pushups < 0) return null
-  if (!Number.isFinite(situps) || situps < 0) return null
+  if (pushups == null || pushups < 0) return null
+  if (situps == null || situps < 0) return null
   if (runSec == null) return null
 
   const runPoints = pointsFromDescendingTimeSteps(runSec, chart.run)
@@ -77,9 +71,12 @@ export function scoreAirForcePfa({ ageBand, gender, values }) {
     sitPoints != null &&
     (mins.sitMin == null || situps >= mins.sitMin)
 
+  const total =
+    Math.round(totalFromEventPoints(events) * 10) / 10
+
   if (!runOk || !pushOk || !sitOk) {
     return {
-      total: null,
+      total,
       pass: false,
       category: 'Unsatisfactory',
       events,
@@ -90,8 +87,6 @@ export function scoreAirForcePfa({ ageBand, gender, values }) {
     }
   }
 
-  const total =
-    Math.round((runPoints + pushPoints + sitPoints) * 10) / 10
   const pass = total >= AIR_FORCE_PFA_CATEGORIES.satisfactory
   const category = categoryFromTotal(total, pass)
 

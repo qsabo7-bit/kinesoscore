@@ -368,6 +368,51 @@ export const PAGE_SEO = {
       { name: 'Cindy', path: '/cindy' },
     ],
   },
+  'fran-guide': {
+    tab: 'fran-guide',
+    path: '/fran-guide',
+    title: 'What Is Fran? | Thrusters, 21-15-9 & Rx Explained | KinesoScore',
+    description:
+      'Plain-language Fran guide: 21-15-9 thrusters and pull-ups, what a thruster is, common Rx loads, and how to track finish times on KinesoScore. Educational use only.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Fran', path: '/fran' },
+      { name: 'What is Fran?', path: '/fran-guide' },
+    ],
+  },
+  'murph-guide': {
+    tab: 'murph-guide',
+    path: '/murph-guide',
+    title: 'What Is Murph? | Format, Vest & Partitioning Guide | KinesoScore',
+    description:
+      'Plain-language Murph guide: mile, pull-ups, push-ups, squats, mile — plus partitioning, Rx vest notes, and how to log finish times on KinesoScore. Educational use only.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Murph', path: '/murph' },
+      { name: 'What is Murph?', path: '/murph-guide' },
+    ],
+  },
+  'cindy-guide': {
+    tab: 'cindy-guide',
+    path: '/cindy-guide',
+    title: 'What Is Cindy? | 20-Minute AMRAP Explained | KinesoScore',
+    description:
+      'Plain-language Cindy guide: 20-minute AMRAP of pull-ups, push-ups, and air squats — how rounds and leftover reps work, and how to track scores on KinesoScore. Educational use only.',
+    robots: 'index,follow',
+    ogType: 'website',
+    breadcrumb: [
+      { name: 'Home', path: '/' },
+      { name: 'Calculators', path: '/calculators' },
+      { name: 'Cindy', path: '/cindy' },
+      { name: 'What is Cindy?', path: '/cindy-guide' },
+    ],
+  },
   about: {
     tab: 'about',
     path: '/about',

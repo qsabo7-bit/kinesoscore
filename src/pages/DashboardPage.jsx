@@ -506,7 +506,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           aria-labelledby="dash-military-assessments"
         >
           <h2 id="dash-military-assessments" className="result-section-title">
-            Military fitness assessments
+            Military Assessments
           </h2>
           <div className="dashboard-card-grid">
             {model.assessmentSummaryCards.map((card) => (

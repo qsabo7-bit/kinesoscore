@@ -1,17 +1,11 @@
 import {
+  parseRequiredNumber,
   pointsFromAscendingSteps,
   pointsFromDescendingTimeSteps,
+  toDurationSeconds,
+  totalFromEventPoints,
 } from './scoreEvents.js'
 import { ARMY_AFT_CHARTS, ARMY_AFT_SOURCE } from '../../data/military/armyAftCharts.js'
-
-function toSeconds(min, sec) {
-  if (min === '' || min == null) return null
-  const m = Number(min)
-  const s = sec === '' || sec == null ? 0 : Number(sec)
-  if (!Number.isFinite(m) || m < 0) return null
-  if (!Number.isFinite(s) || s < 0 || s > 59) return null
-  return m * 60 + s
-}
 
 function categoryFromTotal(total, pass) {
   if (!pass || total == null) return 'Failure'
@@ -29,14 +23,14 @@ export function scoreArmyAft({ ageBand, gender, values }) {
   const chart = ARMY_AFT_CHARTS[key]
   if (!chart) return null
 
-  const deadlift = Number(values.deadlift)
-  const hrPushups = Number(values.hrPushups)
-  const sdcSec = toSeconds(values.sdcMin, values.sdcSec)
-  const plankSec = toSeconds(values.plankMin, values.plankSec)
-  const runSec = toSeconds(values.runMin, values.runSec)
+  const deadlift = parseRequiredNumber(values.deadlift)
+  const hrPushups = parseRequiredNumber(values.hrPushups)
+  const sdcSec = toDurationSeconds(values.sdcMin, values.sdcSec)
+  const plankSec = toDurationSeconds(values.plankMin, values.plankSec)
+  const runSec = toDurationSeconds(values.runMin, values.runSec)
 
-  if (!Number.isFinite(deadlift) || deadlift < 0) return null
-  if (!Number.isFinite(hrPushups) || hrPushups < 0) return null
+  if (deadlift == null || deadlift < 0) return null
+  if (hrPushups == null || hrPushups < 0) return null
   if (sdcSec == null || plankSec == null || runSec == null) return null
 
   const events = [
@@ -75,10 +69,11 @@ export function scoreArmyAft({ ageBand, gender, values }) {
   const belowMinimum = events.some(
     (event) => event.points == null || event.points < 60,
   )
+  const total = totalFromEventPoints(events)
 
   if (belowMinimum) {
     return {
-      total: null,
+      total,
       pass: false,
       category: 'Failure',
       events,
@@ -89,7 +84,6 @@ export function scoreArmyAft({ ageBand, gender, values }) {
     }
   }
 
-  const total = events.reduce((sum, event) => sum + event.points, 0)
   const pass = total >= 300
   const category = categoryFromTotal(total, pass)
 

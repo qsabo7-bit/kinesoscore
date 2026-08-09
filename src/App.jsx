@@ -49,6 +49,9 @@ const FitnessScorePage = lazy(() => import('./pages/FitnessScorePage'))
 const OneRepMaxPage = lazy(() => import('./pages/OneRepMaxPage'))
 const ArmyAftGuidePage = lazy(() => import('./pages/ArmyAftGuidePage'))
 const Vo2MaxGuidePage = lazy(() => import('./pages/Vo2MaxGuidePage'))
+const FranGuidePage = lazy(() => import('./pages/FranGuidePage'))
+const MurphGuidePage = lazy(() => import('./pages/MurphGuidePage'))
+const CindyGuidePage = lazy(() => import('./pages/CindyGuidePage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
@@ -341,6 +344,7 @@ function App() {
     content = (
       <LeaderboardPage
         onOpenTab={handleTabChange}
+        onRequestAuth={requestAuth}
         initialCategoryId={
           renderTab === 'leaderboard-habits' ? 'habits' : undefined
         }
@@ -369,6 +373,12 @@ function App() {
     content = <ArmyAftGuidePage onOpenTab={handleTabChange} />
   } else if (renderTab === 'vo2max-guide') {
     content = <Vo2MaxGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'fran-guide') {
+    content = <FranGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'murph-guide') {
+    content = <MurphGuidePage onOpenTab={handleTabChange} />
+  } else if (renderTab === 'cindy-guide') {
+    content = <CindyGuidePage onOpenTab={handleTabChange} />
   } else if (renderTab === 'not-found') {
     content = <NotFoundPage onOpenTab={handleTabChange} />
   } else {

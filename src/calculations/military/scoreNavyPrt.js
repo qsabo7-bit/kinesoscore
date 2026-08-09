@@ -1,17 +1,10 @@
 import {
+  parseRequiredNumber,
   pointsFromAscendingSteps,
   pointsFromDescendingTimeSteps,
+  toDurationSeconds,
 } from './scoreEvents.js'
 import { NAVY_PRT_CHARTS, NAVY_PRT_SOURCE } from '../../data/military/navyPrtCharts.js'
-
-function toSeconds(min, sec) {
-  if (min === '' || min == null) return null
-  const m = Number(min)
-  const s = sec === '' || sec == null ? 0 : Number(sec)
-  if (!Number.isFinite(m) || m < 0) return null
-  if (!Number.isFinite(s) || s < 0 || s > 59) return null
-  return m * 60 + s
-}
 
 function categoryFromPoints(points) {
   if (points == null || !Number.isFinite(points)) return null
@@ -47,11 +40,11 @@ export function scoreNavyPrt({ ageBand, gender, values }) {
   const chart = NAVY_PRT_CHARTS[key]
   if (!chart) return null
 
-  const pushups = Number(values.pushups)
-  const plankSec = toSeconds(values.plankMin, values.plankSec)
-  const runSec = toSeconds(values.runMin, values.runSec)
+  const pushups = parseRequiredNumber(values.pushups)
+  const plankSec = toDurationSeconds(values.plankMin, values.plankSec)
+  const runSec = toDurationSeconds(values.runMin, values.runSec)
 
-  if (!Number.isFinite(pushups) || pushups < 0) return null
+  if (pushups == null || pushups < 0) return null
   if (plankSec == null || runSec == null) return null
 
   const pushPoints = pointsFromAscendingSteps(pushups, chart.pushups)
@@ -80,9 +73,13 @@ export function scoreNavyPrt({ ageBand, gender, values }) {
   ]
 
   const failedEvent = events.some((event) => event.points == null)
+  const total = Math.round(
+    ((pushPoints ?? 0) + (plankPoints ?? 0) + (runPoints ?? 0)) / 3,
+  )
+
   if (failedEvent) {
     return {
-      total: null,
+      total,
       pass: false,
       category: 'Failure',
       events,
@@ -93,9 +90,6 @@ export function scoreNavyPrt({ ageBand, gender, values }) {
     }
   }
 
-  const total = Math.round(
-    (pushPoints + plankPoints + runPoints) / 3,
-  )
   const category = categoryFromPoints(total)
   const pass = total >= 45
 

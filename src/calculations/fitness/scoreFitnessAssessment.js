@@ -1,23 +1,28 @@
+import { formatDuration } from '../running.js'
 import {
   CINDY_REPS_PER_ROUND,
+  formatCindyDisplay,
   rxNotesForWod,
 } from '../../data/fitness/wodStandards.js'
 
-function toSeconds(min, sec) {
-  if (min === '' || min == null) return null
-  const m = Number(min)
-  const s = sec === '' || sec == null ? 0 : Number(sec)
-  if (!Number.isFinite(m) || m < 0) return null
+function toSeconds(hr, min, sec) {
+  const hrEmpty = hr === '' || hr == null
+  const minEmpty = min === '' || min == null
+  const secEmpty = sec === '' || sec == null
+  if (hrEmpty && minEmpty && secEmpty) return null
+  const h = hrEmpty ? 0 : Number(hr)
+  const m = minEmpty ? 0 : Number(min)
+  const s = secEmpty ? 0 : Number(sec)
+  if (!Number.isFinite(h) || h < 0) return null
+  if (!Number.isFinite(m) || m < 0 || m > 59) return null
   if (!Number.isFinite(s) || s < 0 || s > 59) return null
-  return m * 60 + s
+  return h * 3600 + m * 60 + s
 }
 
 function formatClock(totalSec) {
   const sec = Math.round(Number(totalSec))
   if (!Number.isFinite(sec) || sec < 0) return '—'
-  const m = Math.floor(sec / 60)
-  const s = sec % 60
-  return `${m}:${String(s).padStart(2, '0')}`
+  return formatDuration(sec)
 }
 
 function prescriptionLabel(prescription) {
@@ -50,6 +55,7 @@ export function scoreFitnessAssessment(assessment, { gender, prescription, value
     : null
 
   if (assessment.resultKind === 'reps') {
+    if (values.reps === '' || values.reps == null) return null
     const reps = Number(values.reps)
     if (!Number.isFinite(reps) || reps < 0) return null
     const whole = Math.floor(reps)
@@ -68,7 +74,11 @@ export function scoreFitnessAssessment(assessment, { gender, prescription, value
   }
 
   if (assessment.resultKind === 'forTime') {
-    const finishSec = toSeconds(values.finishMin, values.finishSec)
+    const finishSec = toSeconds(
+      values.finishHr,
+      values.finishMin,
+      values.finishSec,
+    )
     if (finishSec == null || finishSec <= 0) return null
     const tag = prescriptionLabel(prescription)
     return {
@@ -86,6 +96,8 @@ export function scoreFitnessAssessment(assessment, { gender, prescription, value
   }
 
   if (assessment.resultKind === 'amrap') {
+    // Require rounds to be entered (0 is valid — e.g. partial first round).
+    if (values.rounds === '' || values.rounds == null) return null
     const rounds = Number(values.rounds)
     const extra = Number(values.extraReps === '' ? 0 : values.extraReps)
     if (!Number.isFinite(rounds) || rounds < 0) return null
@@ -99,7 +111,7 @@ export function scoreFitnessAssessment(assessment, { gender, prescription, value
     return {
       resultValue: totalReps,
       resultUnit: 'reps',
-      displayValue: `${wholeRounds} + ${wholeExtra}`,
+      displayValue: formatCindyDisplay(totalReps),
       displayLabel: assessment.heroLabel || 'Rounds + reps',
       higherIsBetter: true,
       exerciseName: exerciseNameFor(assessment, prescription),

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import {
   CALCULATOR_CATEGORIES,
   calculatorCategoryStickyLabel,
   calculatorsByCategory,
   isCalculatorTab,
+  stickyToolsHighlightTab,
 } from '../data/calculators'
 import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
@@ -18,6 +19,7 @@ import SoftReveal from './SoftReveal'
 function Header({ activeTab, onTabChange }) {
   const { isAuthenticated, firstName, loading } = useAuth()
   const calculatorActive = isCalculatorTab(activeTab)
+  const stickyHighlightTab = stickyToolsHighlightTab(activeTab)
   const brandLabel =
     activeTab === 'home' || activeTab === 'about' ? BRAND.mark : BRAND.short
   const scrollY = useWindowScrollY(activeTab)
@@ -44,8 +46,6 @@ function Header({ activeTab, onTabChange }) {
     tools: calculatorsByCategory(category.id),
   })).filter((group) => group.tools.length > 0)
 
-  const allTools = calculatorGroups.flatMap((group) => group.tools)
-
   // Keep header chrome (Menu/Close) clickable — do not inert siblings.
   const menuPanelRef = useFocusTrap(menuOpen, () => setMenuOpen(false), {
     inertSiblings: false,
@@ -59,20 +59,55 @@ function Header({ activeTab, onTabChange }) {
     if (!menuOpen || typeof document === 'undefined') return undefined
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    // Keep Menu/Close clickable (trap inertSiblings:false) but block page
+    // content behind the overlay for pointer + AT.
+    const main = document.getElementById('main-content')
+    const footer = document.querySelector('.site-footer')
+    const touched = []
+    for (const el of [main, footer]) {
+      if (el instanceof HTMLElement && !el.inert) {
+        el.inert = true
+        touched.push(el)
+      }
+    }
     return () => {
       document.body.style.overflow = previous
+      for (const el of touched) el.inert = false
     }
   }, [menuOpen])
+
+  // Keep CSS offsets (hero tuck, mobile menu) in sync with real header height
+  // when Welcome bar and/or calculator tools change the chrome.
+  useLayoutEffect(() => {
+    if (typeof document === 'undefined') return undefined
+    const header = document.querySelector('.site-header')
+    if (!(header instanceof HTMLElement)) return undefined
+
+    const syncHeight = () => {
+      const height = Math.ceil(header.getBoundingClientRect().height)
+      if (height > 0) {
+        document.documentElement.style.setProperty(
+          '--site-header-height',
+          `${height}px`,
+        )
+      }
+    }
+
+    syncHeight()
+    const observer = new ResizeObserver(syncHeight)
+    observer.observe(header)
+    return () => observer.disconnect()
+  }, [calculatorActive, showWelcome, menuOpen])
 
   // On narrow screens, keep the active chip in view within its row.
   useEffect(() => {
     if (!calculatorActive) return undefined
     const narrow =
       typeof window !== 'undefined' &&
-      window.matchMedia('(max-width: 720px)').matches
+      window.matchMedia('(max-width: 640px)').matches
     if (!narrow) return undefined
     const active = document.querySelector(
-      '.site-header-tools .sub-nav-tab.is-active',
+      '.site-header-tools-mobile .sub-nav-tab.is-active',
     )
     if (!(active instanceof HTMLElement)) return undefined
     active.scrollIntoView({
@@ -84,7 +119,7 @@ function Header({ activeTab, onTabChange }) {
   }, [activeTab, calculatorActive])
 
   const renderToolChip = (tool) => {
-    const isActive = activeTab === tool.id
+    const isActive = stickyHighlightTab === tool.id
     const isDev = tool.status === 'development'
 
     if (isDev) {
@@ -228,8 +263,8 @@ function Header({ activeTab, onTabChange }) {
       {/* Always mounted so leaving Calculators → About can animate height instead of jolting. */}
       <div
         className="site-header-tools"
-        aria-hidden={!calculatorActive}
-        inert={calculatorActive ? undefined : true}
+        aria-hidden={!calculatorActive || menuOpen}
+        inert={!calculatorActive || menuOpen ? true : undefined}
       >
         <div className="site-header-tools-clip">
           <nav className="site-header-tools-stack" aria-label="Calculators">
@@ -246,9 +281,16 @@ function Header({ activeTab, onTabChange }) {
               ))}
             </div>
             <div className="site-header-tools-mobile">
-              <div className="site-header-tools-chips site-header-tools-chips-flat">
-                {allTools.map((tool) => renderToolChip(tool))}
-              </div>
+              {calculatorGroups.map((group) => (
+                <div key={group.category.id} className="site-header-tools-row">
+                  <span className="site-header-tools-label">
+                    {group.stickyLabel}
+                  </span>
+                  <div className="site-header-tools-chips">
+                    {group.tools.map((tool) => renderToolChip(tool))}
+                  </div>
+                </div>
+              ))}
             </div>
           </nav>
         </div>

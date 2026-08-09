@@ -58,10 +58,17 @@ export function useFocusTrap(active, onCancel, options = {}) {
 
     const inerted = inertSiblings ? inertOutside(node) : []
 
+    const isVisibleFocusable = (el) => {
+      if (!(el instanceof HTMLElement)) return false
+      // offsetParent is null for position:fixed in some engines — use geometry.
+      const style = window.getComputedStyle(el)
+      if (style.visibility === 'hidden' || style.display === 'none') return false
+      const rect = el.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
+    }
+
     const focusables = () =>
-      [...node.querySelectorAll(FOCUSABLE)].filter(
-        (el) => el instanceof HTMLElement && el.offsetParent !== null,
-      )
+      [...node.querySelectorAll(FOCUSABLE)].filter(isVisibleFocusable)
 
     const first = focusables()[0]
     first?.focus()

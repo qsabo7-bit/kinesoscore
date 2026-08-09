@@ -31,6 +31,7 @@ function PerformanceSummary({
   unit,
   timeFormat = 'clock',
   variant = 'default',
+  displayKind = null,
 }) {
   if (!summary) return null
 
@@ -44,6 +45,33 @@ function PerformanceSummary({
     ) : (
       <span className={BRAND_CASING_CLASS}>{BRAND.scoreName}</span>
     )
+    // Fitness shells pass duration/cindy; military/score stay numeric.
+    const valueFormat =
+      displayKind === 'cindy'
+        ? 'cindy'
+        : isAssessment && valueKind === 'duration'
+          ? 'duration'
+          : 'number'
+    const valueUnit =
+      valueFormat === 'number' && isAssessment && unit && unit !== 'points'
+        ? unit
+        : null
+    const trendValueKind =
+      valueFormat === 'duration'
+        ? 'duration'
+        : valueFormat === 'cindy'
+          ? 'cindy'
+          : 'number'
+    const trendUnit =
+      valueFormat === 'cindy' || valueFormat === 'duration'
+        ? null
+        : isAssessment
+          ? unit === 'reps'
+            ? 'reps'
+            : null
+          : 'points'
+    const trendHigherIsBetter =
+      valueFormat === 'duration' ? false : summary.higherIsBetter !== false
     return (
       <div
         className="performance-summary performance-summary-score"
@@ -54,26 +82,41 @@ function PerformanceSummary({
         <div className="performance-stat">
           <p className={labelClass}>Current{scoreLabel}</p>
           <p className="performance-stat-value">
-            {formatRecordValue(summary.latestValue, 'number')}
+            {formatRecordValue(
+              summary.latestValue,
+              valueFormat,
+              valueUnit,
+              timeFormat,
+            )}
           </p>
         </div>
         <div className="performance-stat">
           <p className={labelClass}>Best{scoreLabel}</p>
           <p className="performance-stat-value">
-            {formatRecordValue(summary.personalRecord, 'number')}
+            {formatRecordValue(
+              summary.personalRecord,
+              valueFormat,
+              valueUnit,
+              timeFormat,
+            )}
           </p>
         </div>
         <div className="performance-stat">
           <p className={labelClass}>Average{scoreLabel}</p>
           <p className="performance-stat-value">
-            {formatRecordValue(summary.averageValue, 'number')}
+            {formatRecordValue(
+              summary.averageValue,
+              valueFormat,
+              valueUnit,
+              timeFormat,
+            )}
           </p>
         </div>
         <TrendStat
           delta={summary.improvementSinceFirst}
-          valueKind="number"
-          unit="points"
-          higherIsBetter
+          valueKind={trendValueKind}
+          unit={trendUnit}
+          higherIsBetter={trendHigherIsBetter}
           label="Change"
         />
         <div className="performance-stat">

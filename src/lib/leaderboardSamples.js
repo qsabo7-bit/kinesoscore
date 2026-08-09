@@ -27,12 +27,13 @@ const STRENGTH_SAMPLES = [
   { rank: 5, leaderboard_name: 'LoadLine', result_display: '840 lb' },
 ]
 
+// Match live formatLeaderboardResult for result_unit: 'points' (bare number).
 const ASSESSMENT_SAMPLES = [
-  { rank: 1, leaderboard_name: 'ReadyMark', result_display: '96 pts' },
-  { rank: 2, leaderboard_name: 'DrillPoint', result_display: '91 pts' },
-  { rank: 3, leaderboard_name: 'FieldEdge', result_display: '87 pts' },
-  { rank: 4, leaderboard_name: 'CadenceCo', result_display: '83 pts' },
-  { rank: 5, leaderboard_name: 'BaseLine', result_display: '78 pts' },
+  { rank: 1, leaderboard_name: 'ReadyMark', result_display: '96' },
+  { rank: 2, leaderboard_name: 'DrillPoint', result_display: '91' },
+  { rank: 3, leaderboard_name: 'FieldEdge', result_display: '87' },
+  { rank: 4, leaderboard_name: 'CadenceCo', result_display: '83' },
+  { rank: 5, leaderboard_name: 'BaseLine', result_display: '78' },
 ]
 
 const FITNESS_TIME_SAMPLES = [
@@ -43,12 +44,22 @@ const FITNESS_TIME_SAMPLES = [
   { rank: 5, leaderboard_name: 'LoadLine', result_display: '4:33' },
 ]
 
+// Match live formatLeaderboardResult for result_unit: 'reps'.
 const FITNESS_REPS_SAMPLES = [
-  { rank: 1, leaderboard_name: 'PullCrew', result_display: '52' },
-  { rank: 2, leaderboard_name: 'PressLine', result_display: '47' },
-  { rank: 3, leaderboard_name: 'HangTight', result_display: '41' },
-  { rank: 4, leaderboard_name: 'FloorWork', result_display: '36' },
-  { rank: 5, leaderboard_name: 'RepForge', result_display: '30' },
+  { rank: 1, leaderboard_name: 'PullCrew', result_display: '52 reps' },
+  { rank: 2, leaderboard_name: 'PressLine', result_display: '47 reps' },
+  { rank: 3, leaderboard_name: 'HangTight', result_display: '41 reps' },
+  { rank: 4, leaderboard_name: 'FloorWork', result_display: '36 reps' },
+  { rank: 5, leaderboard_name: 'RepForge', result_display: '30 reps' },
+]
+
+// Match live Cindy boards (rounds + leftover, not raw work reps).
+const FITNESS_CINDY_SAMPLES = [
+  { rank: 1, leaderboard_name: 'RoundCrew', result_display: '18 + 4' },
+  { rank: 2, leaderboard_name: 'AmrapBay', result_display: '16 + 12' },
+  { rank: 3, leaderboard_name: 'PullSquat', result_display: '14 + 8' },
+  { rank: 4, leaderboard_name: 'TwentyCap', result_display: '12 + 20' },
+  { rank: 5, leaderboard_name: 'ChipPace', result_display: '10 + 6' },
 ]
 
 const HABIT_SAMPLES = [
@@ -76,6 +87,7 @@ export function getLeaderboardSampleRows(boardKey) {
   ) {
     return FITNESS_TIME_SAMPLES
   }
+  if (key.startsWith('fitness:cindy')) return FITNESS_CINDY_SAMPLES
   if (key.startsWith('fitness:')) return FITNESS_REPS_SAMPLES
   return SCORE_SAMPLES
 }

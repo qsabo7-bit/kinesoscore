@@ -568,8 +568,14 @@ export const FITNESS_SEO = {
           'Mixing prescriptions on one leaderboard is unfair. Choose Rx or Scaled when you save so history and public ranks stay comparable.',
       },
     ],
-    relatedNote: KINESOSCORE_RELATED_NOTE,
+    relatedNote: {
+      before: 'New to the workout? ',
+      tab: 'fran-guide',
+      label: 'What is Fran?',
+      after: ' — including what a thruster is.',
+    },
     links: [
+      { tab: 'fran-guide', label: 'What is Fran?' },
       { tab: 'cindy', label: 'Cindy calculator' },
       { tab: 'murph', label: 'Murph calculator' },
       { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
@@ -593,8 +599,14 @@ export const FITNESS_SEO = {
           'Yes — partitioning is part of the classic standard. Record your total finish time when the final mile is complete.',
       },
     ],
-    relatedNote: KINESOSCORE_RELATED_NOTE,
+    relatedNote: {
+      before: 'New to the workout? ',
+      tab: 'murph-guide',
+      label: 'What is Murph?',
+      after: '.',
+    },
     links: [
+      { tab: 'murph-guide', label: 'What is Murph?' },
       { tab: 'fran', label: 'Fran calculator' },
       { tab: 'cindy', label: 'Cindy calculator' },
       { tab: 'max-pushups', label: 'Max Push-ups calculator' },
@@ -618,8 +630,14 @@ export const FITNESS_SEO = {
           'Encoding rounds × 30 + extras creates one higher-is-better number so leaderboard order matches completed work.',
       },
     ],
-    relatedNote: KINESOSCORE_RELATED_NOTE,
+    relatedNote: {
+      before: 'New to the workout? ',
+      tab: 'cindy-guide',
+      label: 'What is Cindy?',
+      after: '.',
+    },
     links: [
+      { tab: 'cindy-guide', label: 'What is Cindy?' },
       { tab: 'fran', label: 'Fran calculator' },
       { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
       { tab: 'max-pushups', label: 'Max Push-ups calculator' },
@@ -634,9 +652,9 @@ export const HOME_SEO_TAGLINE =
 export const LEADERBOARD_SEO = {
   title: 'About the KinesoScore leaderboard',
   paragraphs: [
-    'The KinesoScore leaderboard shows global rankings built only from results athletes choose to share. Rankings are self-reported community comparisons for opted-in performances — not independently verified scores, and not a feed of every calculator save.',
-    'Browse categories such as myKinesoScore™, running distances, strength lifts (bench, squat, deadlift, and SBD total), fitness assessments (max tests and benchmark WODs), military fitness assessments, and Habit Streaks. For performance boards, switch between All Time and This Week (UTC). Habit Streaks use All Time only (current streak).',
-    'To appear on a board, create a Leaderboard Name in Account Settings and opt in when saving an eligible result — or share your habit streak from Habits. Private calculator history and habit check-ins stay private by default.',
+    'Global rankings from results athletes choose to share — self-reported community comparisons, not independently verified scores, and not a feed of every private save.',
+    'Browse myKinesoScore™, running, strength, fitness assessments, military assessments, and Habit Streaks. Performance boards support All Time and This Week (UTC); Habit Streaks use All Time only.',
+    'Create a Leaderboard Name in Account Settings, then opt in when saving an eligible result (or share your streak from Habits). Private history stays private by default.',
   ],
   faqs: [
     {
@@ -750,9 +768,213 @@ export const ONE_REP_MAX_SEO = {
     '1RM estimates are educational training tools, not medical advice. Lift safely and stop if form breaks down.',
 }
 
+/** Educational landing page for /fran-guide (not the calculator). */
+export const FRAN_GUIDE_SEO = {
+  eyebrow: 'Fitness Assessments',
+  heroTitle: 'What Is Fran?',
+  heroLead:
+    'Fran is a classic for-time workout: 21-15-9 thrusters and pull-ups. Finish as fast as you can with solid movement standards.',
+  heroSupport:
+    'This guide explains the format, what a thruster is, and common Rx loads — then you can log your time on the Fran calculator. Educational tracking only; not affiliated with CrossFit, Inc.',
+  ctaTab: 'fran',
+  ctaLabel: 'Open the Fran calculator',
+  sections: [
+    {
+      id: 'fran-format',
+      title: 'The workout format',
+      paragraphs: [
+        'Fran is a couplet (two movements) done for time. You complete 21 thrusters and 21 pull-ups, then 15 of each, then 9 of each. The clock starts on your first rep and stops when you finish the last pull-up.',
+        'Faster finish times are better. On KinesoScore, Rx and Scaled saves go to separate history and leaderboard boards so comparisons stay fair.',
+      ],
+    },
+    {
+      id: 'what-is-thruster',
+      title: 'What is a thruster?',
+      paragraphs: [
+        'A thruster is a front squat that turns into a push press in one continuous motion. The bar starts in the front-rack (resting on your shoulders), you squat below parallel, then stand and drive the bar overhead to full lockout — no pause at the shoulders on the way up.',
+        'Think “squat + press glued together.” If you are new to the movement, practice light thrusters first so depth and overhead lockout stay consistent when you test Fran.',
+      ],
+    },
+    {
+      id: 'fran-rx',
+      title: 'Common Rx loads',
+      paragraphs: [
+        'Commonly published Rx uses a barbell thruster at 95 lb for male athletes and 65 lb for female athletes, plus pull-ups with the chin clearly over the bar.',
+        'Scaled usually means a lighter bar and/or jumping pull-ups or ring rows. Choose Rx or Scaled when you save so your progress graph and any public share match the prescription you actually did.',
+      ],
+    },
+  ],
+  faqTitle: 'Fran FAQs',
+  faqs: [
+    {
+      question: 'Do I have to alternate every rep?',
+      answer:
+        'No. Within each round (21, then 15, then 9) you complete all thrusters before all pull-ups — or break them into sets — as long as you finish the prescribed reps of both movements before moving to the next round.',
+    },
+    {
+      question: 'What is a good Fran time?',
+      answer:
+        'It depends on experience and prescription. Beginners often finish in several minutes; competitive athletes can go much faster. Use your own history on KinesoScore rather than chasing someone else’s highlight time.',
+    },
+    {
+      question: 'Is this an official CrossFit scorecard?',
+      answer:
+        'No. KinesoScore is educational benchmark tracking only and is not affiliated with CrossFit, Inc. or any sanctioning body.',
+    },
+  ],
+  relatedNote: {
+    before: 'Ready to log a finish time? ',
+    tab: 'fran',
+    label: 'Open the Fran calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'murph-guide', label: 'What is Murph?' },
+    { tab: 'cindy-guide', label: 'What is Cindy?' },
+    { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
+  ],
+  disclaimer: FITNESS_SEO_DISCLAIMER,
+}
+
+/** Educational landing page for /murph-guide (not the calculator). */
+export const MURPH_GUIDE_SEO = {
+  eyebrow: 'Fitness Assessments',
+  heroTitle: 'What Is Murph?',
+  heroLead:
+    'Murph is a long for-time benchmark: a mile run, 100 pull-ups, 200 push-ups, 300 air squats, and another mile run.',
+  heroSupport:
+    'Named in honor of Navy Lieutenant Michael P. Murphy, it is often done on Memorial Day. This guide covers the format, partitioning, and vest notes — then you can track your time on KinesoScore. Educational use only; not an official event scorecard.',
+  ctaTab: 'murph',
+  ctaLabel: 'Open the Murph calculator',
+  sections: [
+    {
+      id: 'murph-format',
+      title: 'The workout format',
+      paragraphs: [
+        'Start with a 1-mile run, then complete 100 pull-ups, 200 push-ups, and 300 air squats, then finish with another 1-mile run. The clock runs from the first step of the opening mile until you finish the closing mile.',
+        'It is a grind more than a sprint. Pace the runs and break the calisthenics into manageable sets so form does not collapse mid-workout.',
+      ],
+    },
+    {
+      id: 'murph-partition',
+      title: 'Partitioning the middle',
+      paragraphs: [
+        'You may partition the pull-ups, push-ups, and squats — for example rounds of 5 / 10 / 15, or any other split — instead of doing all 100 pull-ups unbroken before any push-ups.',
+        'Partitioning is part of the classic standard. Record your total finish time when the final mile is complete, not when the last squat finishes.',
+      ],
+    },
+    {
+      id: 'murph-rx',
+      title: 'Rx vest and Scaled',
+      paragraphs: [
+        'Commonly published Rx includes a weighted vest — often about 20 lb for male athletes and 14 lb for female athletes — worn for the whole workout.',
+        'If you go without a vest or reduce volume, save as Scaled on KinesoScore so Rx and Scaled stay on separate boards.',
+      ],
+    },
+  ],
+  faqTitle: 'Murph FAQs',
+  faqs: [
+    {
+      question: 'How long does Murph usually take?',
+      answer:
+        'Many athletes finish between roughly 40 and 90+ minutes depending on fitness, heat, vest, and partitioning. Use Hr / Min / Sec on the calculator if you go over an hour.',
+    },
+    {
+      question: 'Do pull-ups have to be strict?',
+      answer:
+        'Pick a standard you can repeat. Kipping is common in this workout; if you track progress over time, keep the same style so comparisons stay honest.',
+    },
+    {
+      question: 'Is KinesoScore an official Murph scorecard?',
+      answer:
+        'No. Results are self-reported educational tracking only and are not affiliated with CrossFit, Inc. or any sanctioning body.',
+    },
+  ],
+  relatedNote: {
+    before: 'Ready to log a finish time? ',
+    tab: 'murph',
+    label: 'Open the Murph calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'fran-guide', label: 'What is Fran?' },
+    { tab: 'cindy-guide', label: 'What is Cindy?' },
+    { tab: 'max-pushups', label: 'Max Push-ups calculator' },
+  ],
+  disclaimer: FITNESS_SEO_DISCLAIMER,
+}
+
+/** Educational landing page for /cindy-guide (not the calculator). */
+export const CINDY_GUIDE_SEO = {
+  eyebrow: 'Fitness Assessments',
+  heroTitle: 'What Is Cindy?',
+  heroLead:
+    'Cindy is a 20-minute AMRAP: as many rounds as possible of 5 pull-ups, 10 push-ups, and 15 air squats.',
+  heroSupport:
+    'AMRAP means you keep cycling the same three movements until the clock hits 20:00. This guide explains scoring and leftover reps — then you can log results on the Cindy calculator. Educational tracking only.',
+  ctaTab: 'cindy',
+  ctaLabel: 'Open the Cindy calculator',
+  sections: [
+    {
+      id: 'cindy-format',
+      title: 'The workout format',
+      paragraphs: [
+        'Set a 20-minute clock. Each round is 5 pull-ups, then 10 push-ups, then 15 air squats. When you finish a round, start the next immediately. Count full rounds completed plus any leftover reps into the next round when time expires.',
+        'Unlike Fran or Murph, Cindy is not scored by finish time — more work in 20 minutes is better.',
+      ],
+    },
+    {
+      id: 'cindy-scoring',
+      title: 'How leftover reps work',
+      paragraphs: [
+        'After your last full round, keep going in order: pull-ups, then push-ups, then squats. When the buzzer sounds, count how many reps you completed into that incomplete round (0–29).',
+        'KinesoScore ranks Cindy by total work reps: each full round counts as 30 reps (5 + 10 + 15), plus your leftover extras. That makes “12 + 8” comparable to “13 + 0” without ambiguity.',
+      ],
+    },
+    {
+      id: 'cindy-standards',
+      title: 'Movement standards',
+      paragraphs: [
+        'Pull-ups: chin clearly over the bar. Push-ups: chest to deck (or a consistent target) and lockout at the top. Air squats: hips below parallel, stand to full extension.',
+        'Keep the same standards every attempt. Scaled substitutions (for example jumping pull-ups or knee push-ups) are fine for training — note them for yourself and stay consistent when comparing sessions.',
+      ],
+    },
+  ],
+  faqTitle: 'Cindy FAQs',
+  faqs: [
+    {
+      question: 'What is a good Cindy score?',
+      answer:
+        'It varies widely with experience. Many athletes land somewhere in the teens of rounds; elite scores go higher. Track your own rounds + reps over time on KinesoScore.',
+    },
+    {
+      question: 'Can I rest during the 20 minutes?',
+      answer:
+        'Yes. The clock keeps running. Strategy is often short sets with brief rests so you keep moving for the full window.',
+    },
+    {
+      question: 'Is this an official CrossFit scorecard?',
+      answer:
+        'No. KinesoScore is educational benchmark tracking only and is not affiliated with CrossFit, Inc. or any sanctioning body.',
+    },
+  ],
+  relatedNote: {
+    before: 'Ready to log rounds and reps? ',
+    tab: 'cindy',
+    label: 'Open the Cindy calculator',
+    after: '.',
+  },
+  links: [
+    { tab: 'fran-guide', label: 'What is Fran?' },
+    { tab: 'murph-guide', label: 'What is Murph?' },
+    { tab: 'max-pullups', label: 'Max Pull-ups calculator' },
+  ],
+  disclaimer: FITNESS_SEO_DISCLAIMER,
+}
+
 /** Educational landing page for /army-aft-guide (not the calculator). */
 export const ARMY_AFT_GUIDE_SEO = {
-  eyebrow: 'Military fitness',
+  eyebrow: 'Military Assessments',
   heroTitle: 'Army AFT Explained',
   heroLead:
     'A plain-language overview of the Army Fitness Test — events, scoring estimates, and how to use KinesoScore for unofficial training prep.',
@@ -949,6 +1171,9 @@ export const PAGE_FAQS_BY_TAB = {
   'one-rep-max': ONE_REP_MAX_SEO.faqs,
   'army-aft-guide': ARMY_AFT_GUIDE_SEO.faqs,
   'vo2max-guide': VO2_MAX_GUIDE_SEO.faqs,
+  'fran-guide': FRAN_GUIDE_SEO.faqs,
+  'murph-guide': MURPH_GUIDE_SEO.faqs,
+  'cindy-guide': CINDY_GUIDE_SEO.faqs,
   vo2max: VO2_SEO.faqs,
   'fitness-age': FITNESS_AGE_SEO.faqs,
   'army-aft': MILITARY_SEO['army-aft'].faqs,

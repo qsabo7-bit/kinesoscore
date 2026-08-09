@@ -116,6 +116,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kinesoscore.com/fran-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kinesoscore.com/murph-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kinesoscore.com/cindy-guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kinesoscore.com/about</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

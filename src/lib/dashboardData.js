@@ -14,6 +14,7 @@ import {
   formatRecordDate,
   formatRecordValue,
   getTrendDisplay,
+  isCindyResult,
 } from './performanceRecords'
 import {
   excludeStoredEstimated5kRecords,
@@ -259,7 +260,8 @@ export function buildDashboardModel(allRecords, options = {}) {
       return {
         id: tool.id,
         title: tool.name,
-        primary: formatRecordValue(latest.result_value, 'number', 'pts'),
+        // Match public leaderboard formatting (bare score, no "pts").
+        primary: formatRecordValue(latest.result_value, 'number', null),
         secondary: `Last taken ${formatRecordDate(latest.created_at)}`,
         trend,
         tab: tool.id,
@@ -268,7 +270,8 @@ export function buildDashboardModel(allRecords, options = {}) {
     })
     .filter(Boolean)
 
-  // Fitness Assessments — latest save per tool (Rx/Scaled share one card)
+  // Fitness Assessments — latest save per tool (Rx/Scaled share one card;
+  // trend compares only the same exercise_name so Rx↔Scaled does not fake deltas).
   const fitnessAssessmentSummaryCards = fitnessCalculators
     .map((tool) => {
       const rows = ascending.filter(
@@ -279,8 +282,15 @@ export function buildDashboardModel(allRecords, options = {}) {
 
       const unit = String(latest.result_unit || '').toLowerCase()
       const isTime = unit === 'sec'
+      const sameExercise = rows.filter(
+        (record) =>
+          String(record.exercise_name || '') ===
+          String(latest.exercise_name || ''),
+      )
+      const previousRecord =
+        sameExercise.length > 1 ? sameExercise[sameExercise.length - 2] : null
       const previous =
-        rows.length > 1 ? Number(rows[rows.length - 2].result_value) : null
+        previousRecord == null ? null : Number(previousRecord.result_value)
       const delta =
         previous == null ? null : Number(latest.result_value) - previous
       const trend = getTrendDisplay(
@@ -290,12 +300,16 @@ export function buildDashboardModel(allRecords, options = {}) {
         !isTime,
       )
 
+      const primary = isTime
+        ? formatRecordValue(latest.result_value, 'duration', null, 'clock')
+        : isCindyResult(latest)
+          ? formatRecordValue(latest.result_value, 'cindy')
+          : formatRecordValue(latest.result_value, 'number', null)
+
       return {
         id: tool.id,
         title: tool.name,
-        primary: isTime
-          ? formatRecordValue(latest.result_value, 'duration', null, 'clock')
-          : formatRecordValue(latest.result_value, 'number', null),
+        primary,
         secondary: `${latest.exercise_name || tool.name} · ${formatRecordDate(latest.created_at)}`,
         trend,
         tab: tool.id,
@@ -326,11 +340,9 @@ export function buildDashboardModel(allRecords, options = {}) {
         id: record.id,
         dateLabel: formatRecordDate(record.created_at),
         title: useExerciseTitle ? record.exercise_name || title : title,
-        valueLabel: formatRecordValue(
-          record.result_value,
-          valueKind,
-          record.result_unit,
-        ),
+        valueLabel: isCindyResult(record)
+          ? formatRecordValue(record.result_value, 'cindy')
+          : formatRecordValue(record.result_value, valueKind, record.result_unit),
         tab: meta.tab || 'strength',
         createdAt: record.created_at,
       }

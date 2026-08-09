@@ -236,7 +236,7 @@ export const CINDY_TRACKS = [
     id: 'cindy',
     label: 'Cindy',
     exerciseName: 'Cindy',
-    yAxisLabel: 'Work reps',
+    yAxisLabel: 'Rounds + reps',
     higherIsBetter: true,
   },
 ]

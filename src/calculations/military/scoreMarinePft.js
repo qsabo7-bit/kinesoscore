@@ -1,21 +1,15 @@
 import {
+  parseRequiredNumber,
   pointsFromAscendingSteps,
   pointsFromDescendingTimeSteps,
+  toDurationSeconds,
+  totalFromEventPoints,
 } from './scoreEvents.js'
 import {
   MARINE_PFT_CHARTS,
   MARINE_PFT_CLASSIFICATION,
   MARINE_PFT_SOURCE,
 } from '../../data/military/marinePftCharts.js'
-
-function toSeconds(min, sec) {
-  if (min === '' || min == null) return null
-  const m = Number(min)
-  const s = sec === '' || sec == null ? 0 : Number(sec)
-  if (!Number.isFinite(m) || m < 0) return null
-  if (!Number.isFinite(s) || s < 0 || s > 59) return null
-  return m * 60 + s
-}
 
 function classificationFromTotal(total) {
   if (total == null || !Number.isFinite(total)) return 'Failure'
@@ -35,11 +29,11 @@ export function scoreMarinePft({ ageBand, gender, values }) {
   if (!chart) return null
 
   const upperChoice = values.upperBodyChoice === 'pushups' ? 'pushups' : 'pullups'
-  const upperReps = Number(values.upperBodyReps)
-  const plankSec = toSeconds(values.plankMin, values.plankSec)
-  const runSec = toSeconds(values.runMin, values.runSec)
+  const upperReps = parseRequiredNumber(values.upperBodyReps)
+  const plankSec = toDurationSeconds(values.plankMin, values.plankSec)
+  const runSec = toDurationSeconds(values.runMin, values.runSec)
 
-  if (!Number.isFinite(upperReps) || upperReps < 0) return null
+  if (upperReps == null || upperReps < 0) return null
   if (plankSec == null || runSec == null) return null
 
   const upperSteps = upperChoice === 'pushups' ? chart.pushups : chart.pullups
@@ -69,9 +63,11 @@ export function scoreMarinePft({ ageBand, gender, values }) {
   ]
 
   const failedEvent = events.some((event) => event.points == null)
+  const total = totalFromEventPoints(events)
+
   if (failedEvent) {
     return {
-      total: null,
+      total,
       pass: false,
       category: 'Failure',
       events,
@@ -82,7 +78,6 @@ export function scoreMarinePft({ ageBand, gender, values }) {
     }
   }
 
-  const total = upperPoints + plankPoints + runPoints
   const pass = total >= 150
   const category = pass ? classificationFromTotal(total) : 'Failure'
 

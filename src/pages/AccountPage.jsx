@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import LockedAuthCard from '../components/LockedAuthCard'
 import { ACCOUNT_LOCKED_PREVIEW } from '../components/tracking'
@@ -39,12 +39,16 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   const [lbBusy, setLbBusy] = useState(false)
   const [lbError, setLbError] = useState('')
   const [lbMessage, setLbMessage] = useState('')
-  const clearNameDialogRef = useFocusTrap(confirmClearName, () =>
-    setConfirmClearName(false),
-  )
-  const deleteDialogRef = useFocusTrap(confirmDelete, () =>
-    setConfirmDelete(false),
-  )
+  const busyRef = useRef(false)
+  const lbBusyRef = useRef(false)
+  busyRef.current = busy
+  lbBusyRef.current = lbBusy
+  const clearNameDialogRef = useFocusTrap(confirmClearName, () => {
+    if (!lbBusyRef.current) setConfirmClearName(false)
+  })
+  const deleteDialogRef = useFocusTrap(confirmDelete, () => {
+    if (!busyRef.current) setConfirmDelete(false)
+  })
 
   useEffect(() => {
     if (!user?.id) return undefined

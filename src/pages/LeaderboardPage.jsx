@@ -6,6 +6,7 @@ import { LEADERBOARD_SEO } from '../data/seoCopy'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
 import {
   LEADERBOARD_UI_CATEGORIES,
+  calculatorTabForBoardKey,
   fetchPublicLeaderboard,
   friendlyPublicLeaderboardError,
   leaderboardBoardLabel,
@@ -20,7 +21,7 @@ import { resolveLeaderboardRows } from '../lib/leaderboardSamples'
  * Stage 5 public Leaderboard page (Habits tab reuses Stage 8 public streak RPC).
  * Anyone can browse live boards. Joining/sharing still requires a Leaderboard Name.
  */
-function LeaderboardPage({ onOpenTab, initialCategoryId }) {
+function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
   const [categoryId, setCategoryId] = useState(() =>
     resolveInitialCategoryId(initialCategoryId),
@@ -337,19 +338,30 @@ function LeaderboardPage({ onOpenTab, initialCategoryId }) {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => onOpenTab?.('scoring')}
+                  onClick={() =>
+                    onOpenTab?.(calculatorTabForBoardKey(effectiveBoardKey))
+                  }
                 >
                   Be the first real entry
                 </button>
               )}
               {!isAuthenticated ? (
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => onOpenTab?.('login')}
-                >
-                  Create Account
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => onRequestAuth?.('signup')}
+                  >
+                    Create Account
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => onRequestAuth?.('login')}
+                  >
+                    Log in
+                  </button>
+                </>
               ) : hasLeaderboardName === false ? (
                 <button
                   type="button"

@@ -112,6 +112,11 @@ export const ACTIVITY_META = {
     tab: 'bmi',
     valueKind: 'number',
   },
+  bmr: {
+    title: 'BMR',
+    tab: 'bmr',
+    valueKind: 'number',
+  },
   strength: {
     tab: 'strength',
     valueKind: 'mass',

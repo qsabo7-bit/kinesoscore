@@ -26,4 +26,16 @@ describe('leaderboardSamples', () => {
     const rows = getLeaderboardSampleRows('habits:streak')
     assert.match(rows[0].result_display, /day/)
   })
+
+  it('matches live formatting for military, reps, and Cindy boards', () => {
+    assert.equal(getLeaderboardSampleRows('assessment:army-aft')[0].result_display, '96')
+    assert.match(
+      getLeaderboardSampleRows('fitness:max-pushups')[0].result_display,
+      /reps$/,
+    )
+    assert.match(
+      getLeaderboardSampleRows('fitness:cindy')[0].result_display,
+      /^\d+ \+ \d+$/,
+    )
+  })
 })

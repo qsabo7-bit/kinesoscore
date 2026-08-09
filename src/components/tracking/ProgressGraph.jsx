@@ -30,16 +30,23 @@ const TOOLTIP_LABEL_STYLE = {
  * Tooltip reads the active chart point payload.
  * LineChart only supports axis tooltips; unique xKey values keep lookup unambiguous.
  */
-function ProgressGraphTooltip({ active, payload, valueKind, timeFormat }) {
+function ProgressGraphTooltip({
+  active,
+  payload,
+  valueKind,
+  timeFormat,
+  displayKind,
+}) {
   if (!active || !payload?.length) return null
 
   const point = payload[0]?.payload
   if (!point || !Number.isFinite(Number(point.value))) return null
 
+  const kind = displayKind === 'cindy' ? 'cindy' : valueKind
   const formatted = formatRecordValue(
     point.value,
-    valueKind,
-    valueKind === 'duration' ? null : point.unit,
+    kind,
+    kind === 'duration' || kind === 'cindy' ? null : point.unit,
     timeFormat,
   )
 
@@ -62,6 +69,7 @@ function ProgressGraph({
   yAxisLabel = 'Result',
   valueKind = 'number',
   timeFormat = 'clock',
+  displayKind = null,
   emptyMessage = 'No saved results yet.\nComplete this calculator and save your first result.',
 }) {
   if (!records?.length) {
@@ -98,10 +106,13 @@ function ProgressGraph({
     chartData.map((point) => [point.xKey, point.dateLabel]),
   )
 
+  const tickKind = displayKind === 'cindy' ? 'cindy' : valueKind
   const formatTick = (value) =>
-    valueKind === 'duration'
-      ? formatRecordValue(value, 'duration', null, timeFormat)
+    tickKind === 'duration' || tickKind === 'cindy'
+      ? formatRecordValue(value, tickKind, null, timeFormat)
       : String(Math.round(Number(value) * 10) / 10)
+  const yAxisWidth =
+    tickKind === 'cindy' ? 64 : tickKind === 'duration' ? 56 : 52
 
   return (
     <div className="progress-chart-wrap">
@@ -122,7 +133,7 @@ function ProgressGraph({
             tick={{ fill: '#b8c4bc', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
-            width={valueKind === 'duration' ? 56 : 52}
+            width={yAxisWidth}
             tickFormatter={formatTick}
             label={{
               value: yAxisLabel,
@@ -138,6 +149,7 @@ function ProgressGraph({
                 {...tooltipProps}
                 valueKind={valueKind}
                 timeFormat={timeFormat}
+                displayKind={displayKind}
               />
             )}
           />

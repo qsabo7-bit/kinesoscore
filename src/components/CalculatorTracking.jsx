@@ -20,6 +20,8 @@ import {
   deletePerformanceRecord,
   fetchPerformanceRecords,
   filterRecordsByRange,
+  formatRecordDate,
+  formatRecordValue,
   recordsInMassUnit,
   savePerformanceRecord,
 } from '../lib/performanceRecords'
@@ -100,9 +102,15 @@ function CalculatorTracking({
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
-  const deleteDialogRef = useFocusTrap(Boolean(pendingDeleteId), () =>
-    setPendingDeleteId(null),
-  )
+  const [deleteError, setDeleteError] = useState('')
+  const deletingIdRef = useRef(null)
+  deletingIdRef.current = deletingId
+  const deleteDialogRef = useFocusTrap(Boolean(pendingDeleteId), () => {
+    if (!deletingIdRef.current) {
+      setDeleteError('')
+      setPendingDeleteId(null)
+    }
+  })
   const [savedMessage, setSavedMessage] = useState(false)
   const [shareMessage, setShareMessage] = useState('')
   const [error, setError] = useState('')
@@ -156,6 +164,11 @@ function CalculatorTracking({
       if (!controlledDisplayUnit) setLocalDisplayUnit(resultUnit)
     }
   }, [resultUnit, valueKind, controlledDisplayUnit])
+
+  // Drop an in-progress delete confirm if the visible history set changes.
+  useEffect(() => {
+    setPendingDeleteId(null)
+  }, [selectedTrackId, graphRange])
 
   const selectedTrack =
     tracks.find((track) => track.id === selectedTrackId) || tracks[0]
@@ -261,13 +274,18 @@ function CalculatorTracking({
   const shareEligible = Boolean(isAuthenticated && shareTarget)
 
   useEffect(() => {
-    if (!pendingShareJump || typeof document === 'undefined') return undefined
+    if (
+      (!pendingShareJump && !pendingDeleteId) ||
+      typeof document === 'undefined'
+    ) {
+      return undefined
+    }
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = previous
     }
-  }, [pendingShareJump])
+  }, [pendingShareJump, pendingDeleteId])
 
   const shareBoardKey = shareTarget?.boardKey ?? null
 
@@ -314,7 +332,7 @@ function CalculatorTracking({
   }, [isAuthenticated, user?.id, shareBoardKey])
 
   const handleSave = async () => {
-    if (!user || !canSave || pendingShareJump) return
+    if (!user || !canSave || pendingShareJump || pendingDeleteId) return
     const track = saveTrack
     if (!track || track.derived) return
 
@@ -512,7 +530,9 @@ function CalculatorTracking({
   }
 
   const requestDelete = (recordId) => {
+    if (pendingShareJump || deletingId) return
     setError('')
+    setDeleteError('')
     setPendingDeleteId(recordId)
   }
 
@@ -631,36 +651,41 @@ function CalculatorTracking({
   }
 
   const handleConfirmDelete = async () => {
-    if (!pendingDeleteId) return
+    if (!pendingDeleteId || deletingId) return
     const recordId = pendingDeleteId
     const wasSharedSource = recordId === activeShareSourceId
-    const previousTracks = recordsByTrack
     setDeletingId(recordId)
     setError('')
-    // Optimistic remove so the row leaves immediately; reload reconciles.
-    removeRecordLocally(recordId)
-    setPendingDeleteId(null)
+    setDeleteError('')
     try {
       await deletePerformanceRecord(recordId)
+      removeRecordLocally(recordId)
+      setPendingDeleteId(null)
       if (wasSharedSource && shareTarget?.boardKey && user?.id) {
-        // Removing the shared source must clear the public board too, so a
-        // deleted score cannot linger as the jump benchmark.
+        // RPC delete clears the share row; client deactivate is a second pass
+        // so a deleted score cannot linger as the jump benchmark.
+        let shareCleanupFailed = false
         try {
           await deactivateLeaderboardShare(user.id, shareTarget.boardKey)
         } catch {
-          // Private delete still succeeded; share cleanup is best-effort.
+          shareCleanupFailed = true
         }
         setHadActiveShare(false)
         setActiveShareSourceId(null)
         setActiveShareSnapshot(null)
         confirmedShareBaselineRef.current = null
         setShareMode('private')
+        if (shareCleanupFailed) {
+          setError(
+            'Result deleted privately, but the public leaderboard entry may still appear. Refresh and unshare from Account if it remains.',
+          )
+        }
       }
       // Reconcile (derived Estimated 5K, server truth). Stale fetches are ignored.
       await loadHistory()
       onDeleted?.({ recordId })
     } catch (err) {
-      setRecordsByTrack(previousTracks)
+      setDeleteError(err.message || 'Could not delete that result.')
       setError(err.message || 'Could not delete that result.')
     } finally {
       setDeletingId(null)
@@ -669,6 +694,34 @@ function CalculatorTracking({
 
   const pendingDeleteIsShared =
     Boolean(pendingDeleteId) && pendingDeleteId === activeShareSourceId
+
+  const pendingDeleteRecord = useMemo(() => {
+    if (!pendingDeleteId) return null
+    return (
+      selectedRecords.find((row) => row.id === pendingDeleteId) ||
+      unitAdjustedRecords.find((row) => row.id === pendingDeleteId) ||
+      null
+    )
+  }, [pendingDeleteId, selectedRecords, unitAdjustedRecords])
+
+  const cindyDisplay = calculatorType === 'cindy'
+
+  const pendingDeleteSummary = useMemo(() => {
+    if (!pendingDeleteRecord) return null
+    const valueLabel = cindyDisplay
+      ? formatRecordValue(pendingDeleteRecord.result_value, 'cindy')
+      : formatRecordValue(
+          pendingDeleteRecord.result_value,
+          valueKind,
+          valueKind === 'mass'
+            ? displayUnit
+            : valueKind === 'duration'
+              ? null
+              : pendingDeleteRecord.result_unit,
+        )
+    const dateLabel = formatRecordDate(pendingDeleteRecord.created_at)
+    return { valueLabel, dateLabel }
+  }, [pendingDeleteRecord, valueKind, displayUnit, cindyDisplay])
 
   const selectByOffset = (offset) => {
     if (tracks.length < 2) return
@@ -689,8 +742,10 @@ function CalculatorTracking({
     )
   }
 
-  // Guests: always show the faded sample graph + login CTA on every calculator.
+  // Guests: only show the progress preview after they have a result to save.
   if (!isAuthenticated) {
+    if (!hasResult) return null
+
     const preview = {
       title: lockedPreview?.title ?? DEFAULT_LOCKED_PREVIEW.title,
       lead: lockedPreview?.lead ?? DEFAULT_LOCKED_PREVIEW.lead,
@@ -725,7 +780,9 @@ function CalculatorTracking({
             setShareMode(next)
             setShareMessage('')
           }}
-          disabled={saving || Boolean(pendingShareJump)}
+          disabled={
+            saving || Boolean(pendingShareJump) || Boolean(pendingDeleteId)
+          }
           hasLeaderboardName={hasLeaderboardName}
           onRequestAccount={
             onOpenTab ? () => onOpenTab('account') : undefined
@@ -734,7 +791,9 @@ function CalculatorTracking({
       ) : null}
       <SaveResultButton
         onSave={handleSave}
-        saving={saving || Boolean(pendingShareJump)}
+        saving={
+          saving || Boolean(pendingShareJump) || Boolean(pendingDeleteId)
+        }
         savedMessage={savedMessage}
         label={saveLabel}
       />
@@ -828,6 +887,7 @@ function CalculatorTracking({
             <PerformanceSummary
               summary={summary}
               valueKind={valueKind}
+              displayKind={cindyDisplay ? 'cindy' : null}
               unit={
                 valueKind === 'mass'
                   ? displayUnit
@@ -845,6 +905,7 @@ function CalculatorTracking({
               records={selectedRecords}
               yAxisLabel={axisLabel}
               valueKind={valueKind}
+              displayKind={cindyDisplay ? 'cindy' : null}
               emptyMessage={
                 unitAdjustedRecords.length
                   ? 'No saved results in this time range.\nTry a wider range or save a new result.'
@@ -857,49 +918,79 @@ function CalculatorTracking({
               onDelete={selectedTrack?.derived ? undefined : requestDelete}
               deletingId={deletingId}
               valueKind={valueKind}
+              displayKind={cindyDisplay ? 'cindy' : null}
             />
           </FadeSwap>
         )}
-        {/* Outside FadeSwap so track/range swaps don’t remount the dialog. */}
-        {pendingDeleteId ? (
-          <div
-            ref={deleteDialogRef}
-            className="confirm-box confirm-box-danger"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="delete-result-title"
-          >
-            <p id="delete-result-title">
-              <strong>Delete this result?</strong>
-            </p>
-            <p>
-              {pendingDeleteIsShared
-                ? 'This will permanently remove this saved result. Because this result is shared publicly, it will also be removed from the public leaderboard.'
-                : 'This will permanently remove this saved result from your private history.'}
-            </p>
-            <div className="confirm-actions">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setPendingDeleteId(null)}
-                disabled={Boolean(deletingId)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={handleConfirmDelete}
-                disabled={Boolean(deletingId)}
-              >
-                {deletingId === pendingDeleteId
-                  ? 'Deleting…'
-                  : 'Delete Result'}
-              </button>
-            </div>
-          </div>
-        ) : null}
       </section>
+      {pendingDeleteId && typeof document !== 'undefined'
+        ? createPortal(
+            <div ref={deleteDialogRef} className="confirm-modal-layer">
+              <div
+                className="confirm-modal-backdrop"
+                aria-hidden="true"
+                onClick={() => {
+                  if (!deletingId) {
+                    setDeleteError('')
+                    setPendingDeleteId(null)
+                  }
+                }}
+              />
+              <div
+                className="confirm-modal confirm-modal-danger"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="delete-result-title"
+                aria-describedby="delete-result-copy"
+              >
+                <p className="confirm-modal-eyebrow">Delete result</p>
+                <p id="delete-result-title" className="confirm-modal-title">
+                  Delete this result?
+                </p>
+                {pendingDeleteSummary ? (
+                  <p className="confirm-modal-meta">
+                    <strong>{pendingDeleteSummary.valueLabel}</strong>
+                    <span> · {pendingDeleteSummary.dateLabel}</span>
+                  </p>
+                ) : null}
+                <p id="delete-result-copy">
+                  {pendingDeleteIsShared
+                    ? 'This will permanently remove this saved result. Because this result is shared publicly, it will also be removed from the public leaderboard.'
+                    : 'This will permanently remove this saved result from your private history.'}
+                </p>
+                {deleteError ? (
+                  <p className="feedback feedback-error" role="alert">
+                    {deleteError}
+                  </p>
+                ) : null}
+                <div className="confirm-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      setDeleteError('')
+                      setPendingDeleteId(null)
+                    }}
+                    disabled={Boolean(deletingId)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleConfirmDelete}
+                    disabled={Boolean(deletingId)}
+                  >
+                    {deletingId === pendingDeleteId
+                      ? 'Deleting…'
+                      : 'Delete Result'}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
       {pendingShareJump && typeof document !== 'undefined'
         ? createPortal(
             <div

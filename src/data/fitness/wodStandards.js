@@ -6,8 +6,31 @@
 export const FITNESS_ASSESSMENT_DISCLAIMER =
   'KinesoScore records self-reported benchmark results for training feedback. These tools are educational and not affiliated with CrossFit, Inc. or any sanctioning body.'
 
-/** Cindy round work = 5 pull-ups + 10 push-ups + 15 squats. */
+/** Cindy round work = 5 pull-ups + 10 push-ups + 15 air squats. */
 export const CINDY_REPS_PER_ROUND = 30
+
+/**
+ * Decode Cindy total work reps (rounds × 30 + extras) for display.
+ * Matches the calculator hero (“12 + 8”).
+ */
+export function formatCindyDisplay(totalWorkReps) {
+  const n = Math.floor(Number(totalWorkReps))
+  if (!Number.isFinite(n) || n < 0) return '—'
+  const rounds = Math.floor(n / CINDY_REPS_PER_ROUND)
+  const extras = n % CINDY_REPS_PER_ROUND
+  return `${rounds} + ${extras}`
+}
+
+/**
+ * Signed Cindy delta for trends (work-rep delta → rounds + leftover).
+ * Example: +30 → "+1 + 0", −4 → "−0 + 4".
+ */
+export function formatCindyDeltaDisplay(deltaWorkReps) {
+  const n = Number(deltaWorkReps)
+  if (!Number.isFinite(n) || n === 0) return '0'
+  const sign = n > 0 ? '+' : '−'
+  return `${sign}${formatCindyDisplay(Math.abs(n))}`
+}
 
 export const WOD_STANDARDS = {
   fran: {
@@ -16,12 +39,12 @@ export const WOD_STANDARDS = {
     male: {
       thrusterLb: 95,
       thrusterKg: 43,
-      pullups: 'Pull-ups (chin over bar)',
+      pullups: 'Chin over bar',
     },
     female: {
       thrusterLb: 65,
       thrusterKg: 29,
-      pullups: 'Pull-ups (chin over bar)',
+      pullups: 'Chin over bar',
     },
     scaledNote:
       'Scaled typically uses lighter thrusters and/or jumping pull-ups / ring rows. Record Scaled separately from Rx.',

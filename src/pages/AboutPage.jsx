@@ -22,8 +22,9 @@ function AboutPage({ onOpenTab }) {
         <p className="page-eyebrow">About</p>
         <h1 className="about-brand">{BRAND.full}</h1>
         <p className="page-lead">
-          {BRAND.scoreName} turns strength and running into one clear percentile
-          score — with transparent calculators around it.
+          {BRAND.scoreName} combines strength and running into one clear
+          percentile score, with transparent calculators for benchmarks, VO₂,
+          body metrics, and military assessments around it.
         </p>
       </header>
 
@@ -58,32 +59,29 @@ function AboutPage({ onOpenTab }) {
             How scoring works
           </a>
         </div>
-        <p className="calc-hint about-guides">
-          Guides:{' '}
-          <a
-            className="seo-intro-link"
-            href={pathForTab('one-rep-max')}
-            onClick={(event) => handleLink(event, 'one-rep-max')}
-          >
-            One-rep max / Epley
-          </a>
-          {' · '}
-          <a
-            className="seo-intro-link"
-            href={pathForTab('army-aft-guide')}
-            onClick={(event) => handleLink(event, 'army-aft-guide')}
-          >
-            Army AFT explained
-          </a>
-          {' · '}
-          <a
-            className="seo-intro-link"
-            href={pathForTab('vo2max-guide')}
-            onClick={(event) => handleLink(event, 'vo2max-guide')}
-          >
-            VO₂ max explained
-          </a>
-        </p>
+        <div className="about-guides">
+          <p className="calc-hint about-guides-label">Guides</p>
+          <ul className="about-guides-list">
+            {[
+              { tab: 'one-rep-max', label: 'One-rep max / Epley' },
+              { tab: 'vo2max-guide', label: 'VO₂ max explained' },
+              { tab: 'army-aft-guide', label: 'Army AFT explained' },
+              { tab: 'fran-guide', label: 'What is Fran?' },
+              { tab: 'murph-guide', label: 'What is Murph?' },
+              { tab: 'cindy-guide', label: 'What is Cindy?' },
+            ].map((guide) => (
+              <li key={guide.tab}>
+                <a
+                  className="seo-intro-link"
+                  href={pathForTab(guide.tab)}
+                  onClick={(event) => handleLink(event, guide.tab)}
+                >
+                  {guide.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className="about-section">

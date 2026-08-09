@@ -5,7 +5,7 @@
  * category:
  * - performance → Fitness Performance group
  * - fitness → Fitness Assessments group (benchmark WODs / max tests)
- * - military → Military Fitness Assessments group
+ * - military → Military Assessments group
  */
 
 export const CALCULATOR_CATEGORIES = [
@@ -17,11 +17,11 @@ export const CALCULATOR_CATEGORIES = [
   {
     id: 'fitness',
     label: 'Fitness Assessments',
-    stickyLabel: 'Fitness',
+    stickyLabel: 'Assessments',
   },
   {
     id: 'military',
-    label: 'Military Fitness Assessments',
+    label: 'Military Assessments',
     stickyLabel: 'Military',
   },
 ]
@@ -85,47 +85,47 @@ export const calculators = [
   {
     id: 'max-pushups',
     name: 'Max Push-ups',
+    shortName: 'Max Push-ups',
     description:
       'Max push-ups in one minute — track unbroken capacity and compare on the leaderboard.',
     status: 'ready',
     category: 'fitness',
-    badge: 'NEW',
   },
   {
     id: 'max-pullups',
     name: 'Max Pull-ups',
+    shortName: 'Max Pull-ups',
     description:
       'Max pull-ups in one minute — track hanging strength and pull-up capacity over time.',
     status: 'ready',
     category: 'fitness',
-    badge: 'NEW',
   },
   {
     id: 'fran',
     name: 'Fran',
+    shortName: 'Fran',
     description:
       'Fran benchmark WOD calculator — 21-15-9 thrusters and pull-ups for time with Rx standards.',
     status: 'ready',
     category: 'fitness',
-    badge: 'NEW',
   },
   {
     id: 'murph',
     name: 'Murph',
+    shortName: 'Murph',
     description:
       'Murph benchmark WOD calculator — mile, pull-ups, push-ups, squats, mile for time with Rx vest notes.',
     status: 'ready',
     category: 'fitness',
-    badge: 'NEW',
   },
   {
     id: 'cindy',
     name: 'Cindy',
+    shortName: 'Cindy',
     description:
       'Cindy AMRAP calculator — 20-minute rounds of pull-ups, push-ups, and air squats.',
     status: 'ready',
     category: 'fitness',
-    badge: 'NEW',
   },
   {
     id: 'air-force-pfra',
@@ -175,8 +175,31 @@ export const DEFAULT_CALCULATOR_ID = 'strength'
 
 export const calculatorIds = new Set(calculators.map((tool) => tool.id))
 
+/**
+ * Educational guide tabs that keep calculator sticky tools open and
+ * highlight the related calculator chip.
+ */
+export const CALCULATOR_GUIDE_TABS = {
+  'fran-guide': 'fran',
+  'murph-guide': 'murph',
+  'cindy-guide': 'cindy',
+  'army-aft-guide': 'army-aft',
+  'vo2max-guide': 'vo2max',
+  'one-rep-max': 'strength',
+  'fitness-score': 'scoring',
+}
+
 export function isCalculatorTab(tabId) {
-  return tabId === 'calculators' || calculatorIds.has(tabId)
+  return (
+    tabId === 'calculators' ||
+    calculatorIds.has(tabId) ||
+    Object.prototype.hasOwnProperty.call(CALCULATOR_GUIDE_TABS, tabId)
+  )
+}
+
+/** Chip id to highlight in sticky tools (guides map to their calculator). */
+export function stickyToolsHighlightTab(tabId) {
+  return CALCULATOR_GUIDE_TABS[tabId] || tabId
 }
 
 export function calculatorsByCategory(categoryId) {

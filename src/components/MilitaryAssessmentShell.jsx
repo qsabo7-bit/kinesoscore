@@ -24,6 +24,23 @@ function emptyEventState(events) {
   return state
 }
 
+/** Hint when Min/Sec are incomplete or out of range. */
+function durationRangeHint(event, values) {
+  if (event.kind !== 'duration') return null
+  const minRaw = values[`${event.id}Min`]
+  const secRaw = values[`${event.id}Sec`]
+  const minEmpty = minRaw === '' || minRaw == null
+  const secEmpty = secRaw === '' || secRaw == null
+  const sec = secEmpty ? null : Number(secRaw)
+  if (!minEmpty && sec != null && Number.isFinite(sec) && sec > 59) {
+    return 'Seconds must be 0–59.'
+  }
+  if (minEmpty && !secEmpty) {
+    return 'Enter minutes (use 0 if under one minute).'
+  }
+  return null
+}
+
 /**
  * Shared shell for military assessment calculators.
  * Scoring / save only run when assessment.scoringReady is true and a scoreFn is provided.
@@ -151,38 +168,57 @@ function MilitaryAssessmentShell({
             }
 
             if (event.kind === 'duration') {
+              const rangeHint = durationRangeHint(event, values)
               return (
                 <div key={event.id} className="field">
                   <span>
                     {event.label}
                     {event.unit ? ` (${event.unit})` : ''}
                   </span>
-                  <div className="field-row">
+                  <div className="field-row fitness-duration-row">
                     <label className="field field-compact">
-                      <span className="sr-only">Minutes</span>
+                      <span className="fitness-duration-label">Min</span>
                       <input
                         type="number"
+                        inputMode="numeric"
                         min="0"
                         step="1"
                         placeholder={event.placeholderMin ?? '0'}
                         value={values[`${event.id}Min`] ?? ''}
                         onChange={(e) => setField(`${event.id}Min`, e.target.value)}
+                        aria-label={`${event.label} minutes`}
+                        aria-invalid={
+                          rangeHint && /minutes/i.test(rangeHint)
+                            ? true
+                            : undefined
+                        }
                       />
                     </label>
                     <label className="field field-compact">
-                      <span className="sr-only">Seconds</span>
+                      <span className="fitness-duration-label">Sec</span>
                       <input
                         type="number"
+                        inputMode="numeric"
                         min="0"
                         max="59"
                         step="1"
                         placeholder={event.placeholderSec ?? '00'}
                         value={values[`${event.id}Sec`] ?? ''}
                         onChange={(e) => setField(`${event.id}Sec`, e.target.value)}
+                        aria-label={`${event.label} seconds`}
+                        aria-invalid={
+                          rangeHint && /[Ss]econds/.test(rangeHint)
+                            ? true
+                            : undefined
+                        }
                       />
                     </label>
                   </div>
-                  {event.hint ? (
+                  {rangeHint ? (
+                    <span className="field-hint" role="status">
+                      {rangeHint}
+                    </span>
+                  ) : event.hint ? (
                     <span className="field-hint">{event.hint}</span>
                   ) : null}
                 </div>

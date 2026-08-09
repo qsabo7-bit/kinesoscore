@@ -1,21 +1,15 @@
 import {
+  parseRequiredNumber,
   pointsFromAscendingSteps,
   pointsFromDescendingTimeSteps,
+  toDurationSeconds,
+  totalFromEventPoints,
 } from './scoreEvents.js'
 import {
   AIR_FORCE_PFRA_CHARTS,
   AIR_FORCE_PFRA_MINIMUMS,
   AIR_FORCE_PFRA_SOURCE,
 } from '../../data/military/airForcePfraCharts.js'
-
-function toSeconds(min, sec) {
-  if (min === '' || min == null) return null
-  const m = Number(min)
-  const s = sec === '' || sec == null ? 0 : Number(sec)
-  if (!Number.isFinite(m) || m < 0) return null
-  if (!Number.isFinite(s) || s < 0 || s > 59) return null
-  return m * 60 + s
-}
 
 function categoryFromTotal(total, pass) {
   if (!pass || total == null) return 'Unsatisfactory'
@@ -36,17 +30,17 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
   const coreChoice = values.coreChoice || 'situps'
   const cardioChoice = values.cardioChoice || 'run'
 
-  const strengthReps = Number(values.strengthReps)
-  const coreReps = Number(values.coreReps)
-  const plankSec = toSeconds(values.plankMin, values.plankSec)
-  const runSec = toSeconds(values.runMin, values.runSec)
-  const hamrShuttles = Number(values.hamr)
-  const waist = Number(values.waist)
-  const height = Number(values.height)
+  const strengthReps = parseRequiredNumber(values.strengthReps)
+  const coreReps = parseRequiredNumber(values.coreReps)
+  const plankSec = toDurationSeconds(values.plankMin, values.plankSec)
+  const runSec = toDurationSeconds(values.runMin, values.runSec)
+  const hamrShuttles = parseRequiredNumber(values.hamr)
+  const waist = parseRequiredNumber(values.waist)
+  const height = parseRequiredNumber(values.height)
 
-  if (!Number.isFinite(strengthReps) || strengthReps < 0) return null
-  if (!Number.isFinite(waist) || waist <= 0) return null
-  if (!Number.isFinite(height) || height <= 0) return null
+  if (strengthReps == null || strengthReps < 0) return null
+  if (waist == null || waist <= 0) return null
+  if (height == null || height <= 0) return null
 
   const strengthSteps =
     strengthChoice === 'hrPushups' ? chart.hrPushups : chart.pushups
@@ -65,12 +59,12 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
     coreLabel = 'Forearm plank'
     coreRaw = plankSec
   } else if (coreChoice === 'crunch') {
-    if (!Number.isFinite(coreReps) || coreReps < 0) return null
+    if (coreReps == null || coreReps < 0) return null
     corePoints = pointsFromAscendingSteps(coreReps, chart.crunch)
     coreLabel = 'Cross-leg reverse crunch'
     coreRaw = coreReps
   } else {
-    if (!Number.isFinite(coreReps) || coreReps < 0) return null
+    if (coreReps == null || coreReps < 0) return null
     corePoints = pointsFromAscendingSteps(coreReps, chart.situps)
     coreLabel = '1-min sit-ups'
     coreRaw = coreReps
@@ -80,7 +74,7 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
   let cardioLabel = 'Cardio'
   let cardioRaw = null
   if (cardioChoice === 'hamr') {
-    if (!Number.isFinite(hamrShuttles) || hamrShuttles < 0) return null
+    if (hamrShuttles == null || hamrShuttles < 0) return null
     cardioPoints = pointsFromAscendingSteps(hamrShuttles, chart.hamr)
     cardioLabel = '20m HAMR'
     cardioRaw = hamrShuttles
@@ -133,9 +127,12 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
     whtrPoints != null && whtrPoints >= AIR_FORCE_PFRA_MINIMUMS.whtr
 
   const componentsMet = strengthOk && coreOk && cardioOk && whtrOk
+  const total =
+    Math.round(totalFromEventPoints(events) * 10) / 10
+
   if (!componentsMet) {
     return {
-      total: null,
+      total,
       pass: false,
       category: 'Unsatisfactory',
       events,
@@ -146,10 +143,6 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
     }
   }
 
-  const total =
-    Math.round(
-      (cardioPoints + whtrPoints + strengthPoints + corePoints) * 10,
-    ) / 10
   const pass = total >= AIR_FORCE_PFRA_MINIMUMS.composite
   const category = categoryFromTotal(total, pass)
 

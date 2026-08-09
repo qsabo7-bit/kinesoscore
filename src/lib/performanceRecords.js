@@ -3,9 +3,29 @@ import {
   formatFriendlyDuration,
   formatRaceTime,
 } from '../calculations/running.js'
-import { clearCachedDashboardRecords } from './dashboardRecordsCache'
+import {
+  formatCindyDeltaDisplay,
+  formatCindyDisplay,
+} from '../data/fitness/wodStandards.js'
+import { clearCachedDashboardRecords } from './dashboardRecordsCache.js'
 import { deleteFitnessScoreSnapshotForSource } from './fitnessScoreSnapshots.js'
 import { supabase } from '../supabaseClient'
+
+export { formatCindyDisplay }
+
+/** True for Cindy calculator saves / leaderboard boards. */
+export function isCindyResult(recordOrKey) {
+  if (recordOrKey == null) return false
+  if (typeof recordOrKey === 'string') {
+    const key = recordOrKey
+    return key === 'cindy' || key.startsWith('fitness:cindy')
+  }
+  if (recordOrKey.calculator_type === 'cindy') return true
+  if (String(recordOrKey.board_key || '').startsWith('fitness:cindy')) {
+    return true
+  }
+  return String(recordOrKey.exercise_name || '') === 'Cindy'
+}
 
 /**
  * @typedef {object} PerformanceRecord
@@ -189,7 +209,7 @@ export function formatRecordDate(iso) {
 
 /**
  * @param {number} value
- * @param {'mass' | 'duration' | 'number'} valueKind
+ * @param {'mass' | 'duration' | 'number' | 'cindy'} valueKind
  * @param {string | null} [unit]
  * @param {'clock' | 'words'} [timeFormat]
  */
@@ -200,6 +220,10 @@ export function formatRecordValue(
   timeFormat = 'clock',
 ) {
   if (!Number.isFinite(Number(value))) return '—'
+
+  if (valueKind === 'cindy' || unit === 'cindy') {
+    return formatCindyDisplay(value)
+  }
 
   if (valueKind === 'duration') {
     return formatRaceTime(Number(value), timeFormat)
@@ -320,6 +344,10 @@ export function computePerformanceSummary(records, higherIsBetter = true) {
  * - higher-is-better: decreasing is bad
  * - running (lower-is-better): increasing is bad
  *
+ * @param {number | null | undefined} delta
+ * @param {'mass' | 'duration' | 'number' | 'cindy'} valueKind
+ * @param {string | null} [unit]
+ * @param {boolean} [higherIsBetter]
  * @returns {{ label: string, value: string, tone: 'neutral' | 'good' | 'bad' }}
  */
 export function getTrendDisplay(
@@ -343,6 +371,12 @@ export function getTrendDisplay(
 
   if (valueKind === 'duration') {
     const amount = formatFriendlyDuration(Math.abs(delta))
+    const arrow = increasing ? '↑' : '↓'
+    return { label, value: `${amount} ${arrow}`, tone }
+  }
+
+  if (valueKind === 'cindy') {
+    const amount = formatCindyDeltaDisplay(delta)
     const arrow = increasing ? '↑' : '↓'
     return { label, value: `${amount} ${arrow}`, tone }
   }
