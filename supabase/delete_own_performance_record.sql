@@ -85,7 +85,9 @@ begin
       new.shared_at := now();
     end if;
 
-    new.period_week := (date_trunc('week', new.shared_at at time zone 'UTC'))::date;
+    -- UTC Monday week start (kept in sync with get_public_leaderboard This Week).
+    new.period_week :=
+      (date_trunc('week', timezone('UTC', new.shared_at)))::date;
     new.updated_at := now();
 
     if tg_op = 'INSERT' and new.created_at is null then

@@ -683,7 +683,7 @@ export const LEADERBOARD_SEO = {
     {
       question: 'What is the difference between All Time and This Week?',
       answer:
-        'All Time ranks eligible active shares across history for that performance board. This Week limits performance boards to shares from the current week using a UTC Monday week start. Habit Streaks are All Time only and do not use a This Week filter.',
+        'All Time ranks eligible active shares across history for that performance board. This Week is the current UTC calendar week (Monday 00:00 UTC through the following Monday): anything shared during that window appears on both boards, then drops off This Week when the UTC week ends while All Time keeps it. Habit Streaks are All Time only.',
     },
     {
       question: 'Do private calculator saves appear on the leaderboard?',

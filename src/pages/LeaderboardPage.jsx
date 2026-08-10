@@ -235,14 +235,16 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
                 className={`leaderboard-chip${period === 'this_week' ? ' is-active' : ''}`}
                 onClick={() => setPeriod('this_week')}
                 aria-pressed={period === 'this_week'}
-                title="Week starts Monday 00:00 UTC"
+                title="UTC calendar week · Monday 00:00 UTC through Sunday"
               >
                 This Week (UTC)
               </button>
             </div>
             {period === 'this_week' ? (
               <p className="calc-hint leaderboard-period-hint">
-                Weeks run Monday–Sunday in UTC — not your local timezone.
+                UTC calendar week (Monday 00:00 UTC → next Monday). Shares posted
+                this week appear here and on All Time; when the UTC week ends they
+                leave This Week only.
               </p>
             ) : null}
           </div>

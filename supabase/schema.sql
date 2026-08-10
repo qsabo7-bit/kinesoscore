@@ -353,7 +353,9 @@ begin
       new.shared_at := now();
     end if;
 
-    new.period_week := (date_trunc('week', new.shared_at at time zone 'UTC'))::date;
+    -- UTC Monday week start (kept in sync with get_public_leaderboard This Week).
+    new.period_week :=
+      (date_trunc('week', timezone('UTC', new.shared_at)))::date;
     new.updated_at := now();
 
     if tg_op = 'INSERT' and new.created_at is null then
@@ -604,7 +606,9 @@ as $$
 declare
   v_period text := lower(btrim(coalesce(p_period, 'all_time')));
   v_board text := btrim(coalesce(p_board_key, ''));
-  v_week date := (date_trunc('week', timezone('UTC', now())))::date;
+  -- Monday 00:00:00 UTC of the current ISO week (timestamptz).
+  v_week_start timestamptz :=
+    date_trunc('week', timezone('UTC', now())) at time zone 'UTC';
   v_board_ok boolean;
 begin
   if v_period not in ('all_time', 'this_week') then
@@ -680,7 +684,8 @@ begin
       )
       and (
         v_period = 'all_time'
-        or s.period_week = v_week
+        -- Posted during the current UTC calendar week (Mon 00:00 → next Mon).
+        or s.shared_at >= v_week_start
       )
   ),
   ranked as (
@@ -712,6 +717,9 @@ $$;
 revoke all on function public.get_public_leaderboard(text, text) from public;
 grant execute on function public.get_public_leaderboard(text, text)
   to anon, authenticated;
+
+comment on function public.get_public_leaderboard(text, text) is
+  'Public leaderboard read. This Week = shared_at in current UTC Mon–Sun week; All Time = all active shares. Equal scores dense-rank tie.';
 -- ---------------------------------------------------------------------------
 -- Stage 8: Habit streak sharing
 -- ---------------------------------------------------------------------------

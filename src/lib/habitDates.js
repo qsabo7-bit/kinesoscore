@@ -8,8 +8,9 @@
  *   * Server-published streak (`compute_user_habit_streak` / share as-of):
  *     **UTC** calendar date. `set_habit_streak_share` accepts `p_as_of` only in
  *     UTC today ± 1 day so a local "today" near midnight usually still validates.
- *   * Performance "This Week" leaderboards: **UTC Monday** week start
- *     (`date_trunc('week', timezone('UTC', now()))`).
+ *   * Performance "This Week" leaderboards: **UTC calendar week**
+ *     (Monday 00:00 UTC → next Monday), filtered by `shared_at >=`
+ *     `date_trunc('week', timezone('UTC', now())) at time zone 'UTC'`.
  *
  * Near local midnight far from UTC, private streak display and the published
  * streak can briefly disagree until the next sync. That is known Stage 10
