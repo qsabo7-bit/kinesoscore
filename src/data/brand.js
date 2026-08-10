@@ -11,9 +11,9 @@ export const BRAND = {
    */
   scoreName: 'myKinesoScore™',
   tagline:
-    'A comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking.',
+    'Fitness score, strength, running, and military calculators — track performance in one place.',
   metaDescription:
-    'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking.',
+    'Free fitness score, 1RM, running, VO₂, and military calculators. Track strength and endurance in one place — start with myKinesoScore™.',
   businessEmail: 'kinesoscore@gmail.com',
   /*
    * Legacy keys stored in performance_records — do not rename.

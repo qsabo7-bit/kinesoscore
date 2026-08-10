@@ -664,7 +664,7 @@ export const FITNESS_SEO = {
 }
 
 export const HOME_SEO_TAGLINE =
-  'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, fitness assessment standards, and an intuitive myKinesoScore™. Measure where you are — Improve where you\'re going.'
+  'Free fitness score, 1RM, running, VO₂, and military calculators. Track strength and endurance in one place — start with myKinesoScore™.'
 
 /** Public Leaderboard page SEO copy (Stage 6). */
 export const LEADERBOARD_SEO = {

@@ -49,9 +49,9 @@ export const PAGE_SEO = {
   home: {
     tab: 'home',
     path: '/',
-    title: 'KinesoScore | Fitness Score, Strength, Running & Military Calculators',
+    title: 'KinesoScore | Fitness Score & Performance Calculators',
     description:
-      'KinesoScore is a comprehensive fitness performance platform combining strength, endurance, military fitness standards, and cardiovascular fitness tracking — including 1RM, VO₂ max, fitness age, Army AFT, Marine PFT, Navy PRT, and Air Force PFRA tools.',
+      'Free fitness score, 1RM, running, VO₂, and military calculators. Track strength and endurance in one place — start with myKinesoScore™.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [{ name: 'Home', path: '/' }],
@@ -62,9 +62,9 @@ export const PAGE_SEO = {
   calculators: {
     tab: 'calculators',
     path: '/calculators',
-    title: 'Fitness Calculators | 1RM, Running, VO₂, WODs, Military Tests | KinesoScore',
+    title: 'Fitness Calculators | Strength, Running & More | KinesoScore',
     description:
-      'Free fitness calculators for bench/squat/deadlift 1RM, SBD total, running performance, VO₂ max, fitness age, myKinesoScore™, fitness assessments (Fran, Murph, Cindy, max push-ups/pull-ups), and military tests including Army AFT, Marine PFT, Navy PRT, and Air Force PFRA.',
+      'Free calculators for 1RM, running, VO₂, fitness age, myKinesoScore™, WODs, and military tests. Pick a tool and start tracking.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -75,9 +75,9 @@ export const PAGE_SEO = {
   strength: {
     tab: 'strength',
     path: '/strength',
-    title: '1RM Calculator | Bench, Squat, Deadlift & SBD Total | KinesoScore',
+    title: '1RM Calculator | Bench, Squat & Deadlift | KinesoScore',
     description:
-      'Free strength and 1RM calculator using the Epley formula for bench press, squat, and deadlift. Build an SBD total and track lifting progress with KinesoScore.',
+      'Free Epley 1RM calculator for bench, squat, and deadlift. Build an SBD total and track lifting progress with KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -89,9 +89,9 @@ export const PAGE_SEO = {
   running: {
     tab: 'running',
     path: '/running',
-    title: 'Running Fitness Calculator | Race Times & Benchmarks | KinesoScore',
+    title: 'Running Calculator | Race Times & Pacing | KinesoScore',
     description:
-      'Analyze running fitness with race-time predictions, pacing context, and progression tracking. Benchmark endurance performance across common distances with KinesoScore.',
+      'Estimate race times, check pacing, and track running progress across common distances. Free running fitness calculator from KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -103,9 +103,9 @@ export const PAGE_SEO = {
   scoring: {
     tab: 'scoring',
     path: '/scoring',
-    title: 'myKinesoScore™ Calculator | Overall Fitness Score from Strength & Running',
+    title: 'myKinesoScore™ Calculator | Strength + Running Score',
     description:
-      'Calculate your myKinesoScore™ — a transparent fitness score that averages recreational strength and running percentiles so you can compare overall performance in one number.',
+      'Get your overall fitness score from strength and running percentiles. Free myKinesoScore™ calculator — transparent, comparable, and trackable.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -117,9 +117,9 @@ export const PAGE_SEO = {
   'fitness-score': {
     tab: 'fitness-score',
     path: '/fitness-score',
-    title: 'What Is myKinesoScore™? Understanding Fitness Scores',
+    title: 'What Is myKinesoScore™? | Fitness Score Guide',
     description:
-      'Learn what a fitness score is, why strength and endurance matter together, and how myKinesoScore™ measures overall fitness performance for tracking progress over time.',
+      'Learn how a fitness score combines strength and endurance. See how myKinesoScore™ measures overall performance so you can track progress over time.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -130,9 +130,9 @@ export const PAGE_SEO = {
   'one-rep-max': {
     tab: 'one-rep-max',
     path: '/one-rep-max',
-    title: 'One-Rep Max Explained | Epley 1RM Formula Guide | KinesoScore',
+    title: 'One-Rep Max Guide | Epley 1RM Explained | KinesoScore',
     description:
-      'Learn what a one-rep max (1RM) is, how the Epley formula estimates 1RM from weight and reps, and when to use estimates vs a tested max — then calculate bench, squat, deadlift, and SBD total on KinesoScore.',
+      'What a one-rep max is, how the Epley formula estimates 1RM from weight and reps, and when to use estimates vs a tested max.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -145,9 +145,9 @@ export const PAGE_SEO = {
   'army-aft-guide': {
     tab: 'army-aft-guide',
     path: '/army-aft-guide',
-    title: 'Army AFT Explained | Events, Scoring & Prep Guide | KinesoScore',
+    title: 'Army AFT Explained | Events & Prep Guide | KinesoScore',
     description:
-      'A plain-language guide to the Army Fitness Test (AFT): events, how scoring estimates work, AFT vs ACFT naming, and how to use the free KinesoScore AFT calculator for unofficial training prep.',
+      'Army Fitness Test (AFT) events, scoring estimates, AFT vs ACFT naming, and how to use the free KinesoScore AFT calculator for unofficial training prep.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -160,9 +160,9 @@ export const PAGE_SEO = {
   'air-force-pfra-guide': {
     tab: 'air-force-pfra-guide',
     path: '/air-force-pfra-guide',
-    title: 'Air Force PFRA Explained | Components, Scoring & Prep | KinesoScore',
+    title: 'Air Force PFRA Explained | Prep Guide | KinesoScore',
     description:
-      'Plain-language Air Force PFRA guide: cardio, strength, core, waist-to-height ratio, how scoring estimates work, and how to use the free KinesoScore PFRA calculator for unofficial training prep.',
+      'Air Force PFRA guide: cardio, strength, core, waist-to-height, scoring estimates, and the free KinesoScore PFRA calculator for unofficial training prep.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -175,9 +175,9 @@ export const PAGE_SEO = {
   'marine-pft-guide': {
     tab: 'marine-pft-guide',
     path: '/marine-pft-guide',
-    title: 'Marine Corps PFT Explained | Events, Scoring & Prep | KinesoScore',
+    title: 'Marine PFT Explained | Events & Prep Guide | KinesoScore',
     description:
-      'Plain-language Marine Corps PFT guide: pull-ups or push-ups, plank, 3-mile run, how scoring estimates work, and how to use the free KinesoScore Marine PFT calculator for unofficial training prep.',
+      'Marine Corps PFT guide: pull-ups or push-ups, plank, 3-mile run, scoring estimates, and the free KinesoScore calculator for unofficial training prep.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -190,9 +190,9 @@ export const PAGE_SEO = {
   'navy-prt-guide': {
     tab: 'navy-prt-guide',
     path: '/navy-prt-guide',
-    title: 'Navy PRT Explained | Events, Scoring & Prep Guide | KinesoScore',
+    title: 'Navy PRT Explained | Events & Prep Guide | KinesoScore',
     description:
-      'Plain-language Navy PRT guide: push-ups, forearm plank, 1.5-mile run, how scoring estimates work, and how to use the free KinesoScore Navy PRT calculator for unofficial training prep.',
+      'Navy PRT guide: push-ups, forearm plank, 1.5-mile run, scoring estimates, and the free KinesoScore PRT calculator for unofficial training prep.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -205,9 +205,9 @@ export const PAGE_SEO = {
   'vo2max-guide': {
     tab: 'vo2max-guide',
     path: '/vo2max-guide',
-    title: 'VO₂ Max Explained | Cooper, Rockport & Norms Guide | KinesoScore',
+    title: 'VO₂ Max Explained | Cooper & Rockport Guide | KinesoScore',
     description:
-      'Learn what VO₂ max is, how Cooper and Rockport field tests estimate it, what a good VO₂ max looks like by age and sex, and how to use the free KinesoScore VO₂ calculator.',
+      'What VO₂ max is, how Cooper and Rockport field tests estimate it, age/sex norms, and how to use the free KinesoScore VO₂ calculator.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -220,9 +220,9 @@ export const PAGE_SEO = {
   vo2max: {
     tab: 'vo2max',
     path: '/vo2max',
-    title: 'VO₂ Max Calculator | Cooper & Rockport Fitness Test | KinesoScore',
+    title: 'VO₂ Max Calculator | Cooper & Rockport | KinesoScore',
     description:
-      'Estimate VO₂ max with Cooper 12-minute run or Rockport 1-mile walk tests, compare with age- and sex-based norms, and track cardiorespiratory fitness on KinesoScore.',
+      'Estimate VO₂ max with Cooper or Rockport field tests, compare age- and sex-based norms, and track cardiorespiratory fitness on KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -248,7 +248,7 @@ export const PAGE_SEO = {
   bmi: {
     tab: 'bmi',
     path: '/bmi',
-    title: 'BMI Calculator | Body Mass Index Category Tracker | KinesoScore',
+    title: 'BMI Calculator | Body Mass Index Tracker | KinesoScore',
     description:
       'Calculate body mass index, see standard category guidance, and track BMI trends with the free KinesoScore BMI calculator.',
     robots: 'index,follow',
@@ -262,9 +262,9 @@ export const PAGE_SEO = {
   'fitness-age': {
     tab: 'fitness-age',
     path: '/fitness-age',
-    title: 'Fitness Age Calculator | VO₂ Max Age & Sex Norms | KinesoScore',
+    title: 'Fitness Age Calculator | VO₂ Max Norms | KinesoScore',
     description:
-      'Estimate fitness age from VO₂ max using age- and sex-based cardiorespiratory norms. See how aerobic fitness compares with adult reference values — educational only, not medical advice.',
+      'Estimate fitness age from VO₂ max using age- and sex-based norms. Educational tracking only — not medical advice.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -276,9 +276,9 @@ export const PAGE_SEO = {
   'air-force-pfra': {
     tab: 'air-force-pfra',
     path: '/air-force-pfra',
-    title: 'Air Force PFRA Calculator | Military Fitness Test Score | KinesoScore',
+    title: 'Air Force PFRA Calculator | Fitness Test | KinesoScore',
     description:
-      'Free Air Force PFRA calculator for unofficial cardio, strength, core, and waist-to-height score estimates. Training feedback and test prep only — not an official Air Force scorecard.',
+      'Unofficial Air Force PFRA estimates for cardio, strength, core, and waist-to-height. Training prep only — not an official Air Force scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -290,9 +290,9 @@ export const PAGE_SEO = {
   'air-force-pfa': {
     tab: 'air-force-pfa',
     path: '/air-force-pfa',
-    title: 'Air Force PFA Calculator | Legacy Fitness Assessment | KinesoScore',
+    title: 'Air Force PFA Calculator | Legacy Assessment | KinesoScore',
     description:
-      'Legacy Air Force PFA calculator for historical 1.5-mile run, push-up, and sit-up style estimates. Compare with current PFRA — educational tracking only, not official testing.',
+      'Legacy Air Force PFA estimates for 1.5-mile run, push-ups, and sit-ups. Compare with PFRA — educational only, not official testing.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -304,9 +304,9 @@ export const PAGE_SEO = {
   'army-aft': {
     tab: 'army-aft',
     path: '/army-aft',
-    title: 'Army AFT Calculator | Army Fitness Test Score Estimator | KinesoScore',
+    title: 'Army AFT Calculator | Fitness Test Estimator | KinesoScore',
     description:
-      'Free Army AFT calculator for unofficial deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run estimates. Clarifies AFT vs older ACFT search terms for training prep — not an official Army scorecard.',
+      'Unofficial Army AFT estimates for deadlift, HR push-ups, Sprint-Drag-Carry, plank, and 2-mile run. Training prep only — not an official Army scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -326,9 +326,9 @@ export const PAGE_SEO = {
     canonicalPath: '/army-aft',
     includeInSitemap: false,
     heading: 'ACFT / Army AFT Calculator',
-    title: 'ACFT Calculator | Army Combat Fitness Test & AFT Estimator | KinesoScore',
+    title: 'ACFT Calculator | Army AFT Estimator | KinesoScore',
     description:
-      'Free ACFT / Army AFT calculator for unofficial deadlift, hand-release push-ups, Sprint-Drag-Carry, plank, and 2-mile run estimates. Educational training prep — not an official Army scorecard.',
+      'Unofficial ACFT / Army AFT estimates for deadlift, HR push-ups, Sprint-Drag-Carry, plank, and 2-mile run. Training prep only — not an official Army scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -349,9 +349,9 @@ export const PAGE_SEO = {
     canonicalPath: '/strength',
     includeInSitemap: false,
     heading: '1RM Calculator',
-    title: '1RM Calculator | Bench, Squat, Deadlift One-Rep Max | KinesoScore',
+    title: '1RM Calculator | Bench, Squat & Deadlift | KinesoScore',
     description:
-      'Free 1RM calculator using the Epley formula for bench press, squat, and deadlift — plus SBD total tracking. Estimate one-rep max from weight and reps on KinesoScore.',
+      'Free Epley 1RM calculator for bench, squat, and deadlift — plus SBD total. Estimate one-rep max from weight and reps.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -364,9 +364,9 @@ export const PAGE_SEO = {
   'marine-pft': {
     tab: 'marine-pft',
     path: '/marine-pft',
-    title: 'Marine PFT Calculator | Marine Corps Fitness Test Score | KinesoScore',
+    title: 'Marine PFT Calculator | Fitness Test Score | KinesoScore',
     description:
-      'Free Marine Corps PFT calculator with unofficial pull-up or push-up, forearm plank, and 3-mile run estimates. Training feedback for Marines and candidates — not official USMC testing.',
+      'Unofficial Marine PFT estimates for pull-ups or push-ups, plank, and 3-mile run. Training prep only — not official USMC testing.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -378,9 +378,9 @@ export const PAGE_SEO = {
   'navy-prt': {
     tab: 'navy-prt',
     path: '/navy-prt',
-    title: 'Navy PRT Calculator | Physical Readiness Test Score | KinesoScore',
+    title: 'Navy PRT Calculator | Readiness Test Score | KinesoScore',
     description:
-      'Free Navy PRT calculator with unofficial push-up, forearm plank, and 1.5-mile run estimates for readiness prep and progress tracking — not an official Navy scorecard.',
+      'Unofficial Navy PRT estimates for push-ups, forearm plank, and 1.5-mile run. Training prep only — not an official Navy scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -420,9 +420,9 @@ export const PAGE_SEO = {
   fran: {
     tab: 'fran',
     path: '/fran',
-    title: 'Fran WOD Calculator | Thrusters & Pull-ups For Time | KinesoScore',
+    title: 'Fran WOD Calculator | Thrusters & Pull-ups | KinesoScore',
     description:
-      'Log Fran finish times with gender-specific Rx thruster standards. Separate Rx and Scaled tracking for fair progress and leaderboard comparisons. Educational use only.',
+      'Log Fran finish times with gender-specific Rx thruster standards. Separate Rx and Scaled tracking — educational use only.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -434,9 +434,9 @@ export const PAGE_SEO = {
   murph: {
     tab: 'murph',
     path: '/murph',
-    title: 'Murph WOD Calculator | Murph Finish Time Tracker | KinesoScore',
+    title: 'Murph WOD Calculator | Finish Time Tracker | KinesoScore',
     description:
-      'Log Murph finish times with Rx vest notes by gender. Separate Rx and Scaled boards for fair comparisons. Educational benchmark tracking — not an official event scorecard.',
+      'Log Murph finish times with Rx vest notes. Separate Rx and Scaled boards — educational benchmark tracking, not an official scorecard.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -450,7 +450,7 @@ export const PAGE_SEO = {
     path: '/cindy',
     title: 'Cindy WOD Calculator | 20-Minute AMRAP Tracker | KinesoScore',
     description:
-      'Log Cindy AMRAP rounds and reps (5 pull-ups, 10 push-ups, 15 squats). Rank by total work reps with optional leaderboard sharing. Educational use only.',
+      'Log Cindy AMRAP rounds and reps (5 pull-ups, 10 push-ups, 15 squats). Optional leaderboard sharing — educational use only.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -462,9 +462,9 @@ export const PAGE_SEO = {
   'fran-guide': {
     tab: 'fran-guide',
     path: '/fran-guide',
-    title: 'What Is Fran? | Thrusters, 21-15-9 & Rx Explained | KinesoScore',
+    title: 'What Is Fran? | 21-15-9 Thrusters Explained | KinesoScore',
     description:
-      'Plain-language Fran guide: 21-15-9 thrusters and pull-ups, what a thruster is, common Rx loads, and how to track finish times on KinesoScore. Educational use only.',
+      'Fran guide: 21-15-9 thrusters and pull-ups, common Rx loads, and how to track finish times on KinesoScore. Educational use only.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -477,9 +477,9 @@ export const PAGE_SEO = {
   'murph-guide': {
     tab: 'murph-guide',
     path: '/murph-guide',
-    title: 'What Is Murph? | Format, Vest & Partitioning Guide | KinesoScore',
+    title: 'What Is Murph? | Format, Vest & Partitioning | KinesoScore',
     description:
-      'Plain-language Murph guide: mile, pull-ups, push-ups, squats, mile — plus partitioning, Rx vest notes, and how to log finish times on KinesoScore. Educational use only.',
+      'Murph guide: mile, pull-ups, push-ups, squats, mile — plus partitioning, Rx vest notes, and logging finish times on KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -494,7 +494,7 @@ export const PAGE_SEO = {
     path: '/cindy-guide',
     title: 'What Is Cindy? | 20-Minute AMRAP Explained | KinesoScore',
     description:
-      'Plain-language Cindy guide: 20-minute AMRAP of pull-ups, push-ups, and air squats — how rounds and leftover reps work, and how to track scores on KinesoScore. Educational use only.',
+      'Cindy guide: 20-minute AMRAP of pull-ups, push-ups, and air squats — how rounds and leftover reps work, and how to track scores on KinesoScore.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -507,9 +507,9 @@ export const PAGE_SEO = {
   about: {
     tab: 'about',
     path: '/about',
-    title: 'About KinesoScore | Exercise Science–Informed Fitness Platform',
+    title: 'About KinesoScore | Science-Informed Fitness Tools',
     description:
-      'Learn how KinesoScore applies kinesiology and human performance principles to transparent strength, endurance, VO₂ fitness age, and military fitness calculators — educational tools, not medical advice.',
+      'How KinesoScore uses exercise science for transparent strength, endurance, VO₂, and military calculators — educational tools, not medical advice.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -522,7 +522,7 @@ export const PAGE_SEO = {
     path: '/sources-methodology',
     title: 'Sources & Methodology | KinesoScore',
     description:
-      'Published equations, reference norms, and peer-comparison datasets behind KinesoScore strength, running, VO₂, BMR, and overall fitness calculators.',
+      'Equations, reference norms, and peer-comparison datasets behind KinesoScore strength, running, VO₂, BMR, and fitness score tools.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -536,7 +536,7 @@ export const PAGE_SEO = {
     path: '/privacy',
     title: 'Privacy Policy | KinesoScore',
     description:
-      'KinesoScore Privacy Policy — how we handle account data, saved fitness results, and Supabase authentication for our educational fitness calculators.',
+      'How KinesoScore handles account data, saved results, and authentication for our educational fitness calculators.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -549,7 +549,7 @@ export const PAGE_SEO = {
     path: '/terms',
     title: 'Terms of Service | KinesoScore',
     description:
-      'KinesoScore Terms of Service — educational fitness calculators, account use, and important limits: estimates only, not medical advice or official military scores.',
+      'Terms for using KinesoScore calculators and accounts — estimates only, not medical advice or official military scores.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -605,9 +605,9 @@ export const PAGE_SEO = {
   leaderboard: {
     tab: 'leaderboard',
     path: '/leaderboard',
-    title: 'KinesoScore Leaderboard | Global Fitness Rankings',
+    title: 'Fitness Leaderboard | Opt-In Rankings | KinesoScore',
     description:
-      'Compare publicly shared KinesoScore, running, strength, assessment, and habit-streak results on the KinesoScore leaderboard. Rankings include only athletes who opt in with a Leaderboard Name — private saves stay private.',
+      'Compare opt-in fitness scores, strength, running, WODs, and habit streaks. Private saves stay private — share only with a Leaderboard Name.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -621,7 +621,7 @@ export const PAGE_SEO = {
     path: '/leaderboard/habits',
     title: 'Habit Streak Leaderboard | KinesoScore',
     description:
-      'See publicly shared habit streaks on the KinesoScore Leaderboard Habits tab. Opt-in athletes appear by Leaderboard Name and current streak only — never individual habits or private check-ins.',
+      'Opt-in habit streak rankings by Leaderboard Name and current streak only — never which habits you track or private check-ins.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
