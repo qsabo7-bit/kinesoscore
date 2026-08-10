@@ -1,3 +1,4 @@
+import { assignDenseRanks } from './leaderboardDenseRank.js'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
 
 /**
@@ -13,11 +14,14 @@ export async function fetchPublicHabitStreaks(period = 'all_time') {
   })
   if (error) throw error
 
-  return (data || []).map((row) => ({
+  const mapped = (data || []).map((row) => ({
     rank: Number(row.rank),
     leaderboard_name: String(row.leaderboard_name || ''),
     streak: Number(row.streak),
   }))
+
+  // Re-apply dense ranks by streak so equal values tie even before SQL migration.
+  return assignDenseRanks(mapped, (row) => row.streak)
 }
 
 export function friendlyPublicHabitStreakError(err) {

@@ -685,8 +685,9 @@ begin
   ),
   ranked as (
     select
+      -- Rank by score only so equal values tie; name is display order below.
       dense_rank() over (
-        order by e.rvalue desc, lower(e.name) asc
+        order by e.rvalue desc
       ) as rnk,
       e.name,
       e.bkey,
@@ -1086,8 +1087,9 @@ begin
   ),
   ranked as (
     select
+      -- Rank by streak only so equal streaks tie; name is display order below.
       dense_rank() over (
-        order by e.streak_value desc, lower(e.name) asc
+        order by e.streak_value desc
       ) as rnk,
       e.name,
       e.streak_value

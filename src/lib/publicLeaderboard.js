@@ -1,4 +1,5 @@
 import { BRAND } from '../data/brand.js'
+import { assignDenseRanks } from './leaderboardDenseRank.js'
 import { formatRecordValue, isCindyResult } from './performanceRecords.js'
 import { LEADERBOARD_SHARE_TARGETS } from './leaderboardShares.js'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
@@ -165,7 +166,7 @@ export async function fetchPublicLeaderboard(boardKey, period = 'all_time') {
 
   if (error) throw error
 
-  return (data || []).map((row) => ({
+  const mapped = (data || []).map((row) => ({
     rank: Number(row.rank),
     leaderboard_name: String(row.leaderboard_name || ''),
     board_key: String(row.board_key || boardKey),
@@ -178,6 +179,9 @@ export async function fetchPublicLeaderboard(boardKey, period = 'all_time') {
       board_key: row.board_key || boardKey,
     }),
   }))
+
+  // Re-apply dense ranks by score so equal values tie even before SQL migration.
+  return assignDenseRanks(mapped, (row) => row.result_value)
 }
 
 export function friendlyPublicLeaderboardError(err) {

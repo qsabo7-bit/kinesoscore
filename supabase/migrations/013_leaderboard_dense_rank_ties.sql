@@ -1,17 +1,6 @@
--- Stage 5: Public leaderboard read RPC (narrow, validated, no raw shares).
--- Idempotent — safe to re-run in Supabase Dashboard → SQL Editor.
---
--- Security model:
---   * SECURITY DEFINER with fixed search_path
---   * Validates board_key against Stage 3 allowlist keys only
---   * Validates period as all_time | this_week only
---   * No dynamic SQL
---   * Returns ONLY public fields (no user_id, email, source_record_id, etc.)
---   * Requires is_active + current leaderboard_profiles row (valid name)
---   * Does NOT grant SELECT on leaderboard_shares to anon
---
--- Account deletion: delete_own_account already removes leaderboard_shares and
--- leaderboard_profiles, so deleted users disappear from this RPC automatically.
+-- Equal leaderboard scores/streaks must share the same dense rank.
+-- Previously dense_rank() also ordered by leaderboard_name, which broke ties
+-- into consecutive ranks (latest/name order looked like a strict placement).
 
 create or replace function public.get_public_leaderboard(
   p_board_key text,
@@ -46,7 +35,6 @@ begin
       using errcode = '22023';
   end if;
 
-  -- Tight board-key allowlist (must stay aligned with leaderboard_share_target_allowed).
   select exists (
     select 1
     from (
@@ -115,7 +103,6 @@ begin
   ),
   ranked as (
     select
-      -- Rank by score only so equal values tie; name is display order below.
       dense_rank() over (
         order by e.rvalue desc
       ) as rnk,
@@ -144,4 +131,63 @@ grant execute on function public.get_public_leaderboard(text, text)
   to anon, authenticated;
 
 comment on function public.get_public_leaderboard(text, text) is
-  'Stage 5 public leaderboard read. Returns only rank, leaderboard_name, board_key, result_value, result_unit, higher_is_better. No user_id or source ids.';
+  'Public leaderboard read. Dense-ranks by score only so equal values tie; name is display order among ties.';
+
+create or replace function public.get_public_habit_streaks(
+  p_period text default 'all_time'
+)
+returns table (
+  rank bigint,
+  leaderboard_name text,
+  streak integer
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_period text := lower(btrim(coalesce(p_period, 'all_time')));
+begin
+  if v_period is distinct from 'all_time' then
+    raise exception 'Invalid habit streak period'
+      using errcode = '22023';
+  end if;
+
+  return query
+  with eligible as (
+    select
+      p.leaderboard_name as name,
+      s.streak as streak_value
+    from public.habit_streak_shares s
+    inner join public.leaderboard_profiles p
+      on p.user_id = s.user_id
+    where s.is_active = true
+      and s.streak >= 0
+      and char_length(btrim(p.leaderboard_name)) > 0
+  ),
+  ranked as (
+    select
+      dense_rank() over (
+        order by e.streak_value desc
+      ) as rnk,
+      e.name,
+      e.streak_value
+    from eligible e
+  )
+  select
+    ranked.rnk,
+    ranked.name,
+    ranked.streak_value
+  from ranked
+  order by ranked.rnk asc, lower(ranked.name) asc
+  limit 100;
+end;
+$$;
+
+revoke all on function public.get_public_habit_streaks(text) from public;
+grant execute on function public.get_public_habit_streaks(text)
+  to anon, authenticated;
+
+comment on function public.get_public_habit_streaks(text) is
+  'Public habit streak board. Dense-ranks by streak only so equal streaks tie; name is display order among ties.';

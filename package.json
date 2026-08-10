@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "test": "node --test src/lib/habitStreaks.test.js src/lib/habitStreakShares.test.js src/lib/fitnessAwards.test.js src/lib/fitnessScoreSnapshots.test.js src/lib/habitDates.test.js src/lib/stage10Hardening.test.js src/lib/performanceShareLifecycle.test.js src/lib/leaderboardShares.canonicalize.test.js src/lib/fitnessLeaderboardShare.test.js src/lib/dashboardAwardsFallback.test.js src/lib/navLinkClick.test.js src/lib/navTabActive.test.js src/lib/visibleNavTabs.test.js src/lib/leaderboardSamples.test.js src/calculations/oneRepMax.test.js src/calculations/strengthLevel.test.js src/calculations/fitness/scoreFitnessAssessment.test.js src/calculations/military/scoreMilitaryEmptyInputs.test.js",
+    "test": "node --test src/lib/habitStreaks.test.js src/lib/habitStreakShares.test.js src/lib/fitnessAwards.test.js src/lib/fitnessScoreSnapshots.test.js src/lib/habitDates.test.js src/lib/stage10Hardening.test.js src/lib/performanceShareLifecycle.test.js src/lib/leaderboardShares.canonicalize.test.js src/lib/fitnessLeaderboardShare.test.js src/lib/leaderboardDenseRank.test.js src/lib/dashboardAwardsFallback.test.js src/lib/navLinkClick.test.js src/lib/navTabActive.test.js src/lib/visibleNavTabs.test.js src/lib/leaderboardSamples.test.js src/calculations/oneRepMax.test.js src/calculations/strengthLevel.test.js src/calculations/fitness/scoreFitnessAssessment.test.js src/calculations/military/scoreMilitaryEmptyInputs.test.js",
     "test:stage8-smoke": "node --env-file=.env scripts/stage8AuthenticatedSmoke.js",
     "test:auth-smoke": "node scripts/runAuthenticatedSmoke.js",
     "test:auth-smoke:local": "node --env-file=.env scripts/runAuthenticatedSmoke.js",
