@@ -6,11 +6,9 @@ import FitnessAwardsDisplay, {
 } from '../components/FitnessAwardsDisplay'
 import FpcScoreRing from '../components/FpcScoreRing'
 import LockedDashboardPreview from '../components/LockedDashboardPreview'
-import DashboardResumeStrip from '../components/DashboardResumeStrip'
-import DashboardThisWeekStrip from '../components/DashboardThisWeekStrip'
+import DashboardJumpNav from '../components/DashboardJumpNav'
+import DashboardTodayStrip from '../components/DashboardTodayStrip'
 import OnboardingWizard from '../components/OnboardingWizard'
-import WeekRecapCard from '../components/WeekRecapCard'
-import SoftReveal from '../components/SoftReveal'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
 import { shouldShowOnboarding } from '../lib/onboarding'
 import {
@@ -37,6 +35,11 @@ import {
   fetchLatestFitnessScoreSnapshot,
   friendlyFitnessSnapshotError,
 } from '../lib/fitnessScoreSnapshots'
+import {
+  clearCachedDashboardAwards,
+  readCachedDashboardAwards,
+  writeCachedDashboardAwards,
+} from '../lib/dashboardAwardsCache'
 import {
   clearCachedDashboardRecords,
   readCachedDashboardRecords,
@@ -84,7 +87,35 @@ function formatDate(iso) {
   }
 }
 
-const RECENT_ACTIVITY_PREVIEW = 5
+const RECENT_ACTIVITY_PREVIEW = 4
+/** Enough saved results that the full three-grid layout becomes noisy. */
+const DENSE_RECORD_THRESHOLD = 4
+const HIGHLIGHT_CARD_LIMIT = 6
+
+function isFilledCard(card) {
+  return Boolean(card) && !card.isSample && !card.isPrompt
+}
+
+function pickHighlightCards(model, limit = HIGHLIGHT_CARD_LIMIT) {
+  const pools = [
+    model.summaryCards,
+    model.fitnessAssessmentSummaryCards,
+    model.assessmentSummaryCards,
+  ]
+  const out = []
+  for (const pool of pools) {
+    for (const card of pool || []) {
+      if (!isFilledCard(card)) continue
+      if (out.some((row) => row.id === card.id)) continue
+      out.push(card)
+      if (out.length >= limit) return out
+    }
+  }
+  if (out.length === 0 && model.summaryCards?.length) {
+    return model.summaryCards.slice(0, limit)
+  }
+  return out
+}
 
 function DashboardMetricCard({ card, onOpenTab }) {
   const toneClass =
@@ -148,7 +179,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   const [runningTrackTouched, setRunningTrackTouched] = useState(false)
   const [graphRange, setGraphRange] = useState('all')
   const [busy, setBusy] = useState(false)
-  const [activityExpanded, setActivityExpanded] = useState(false)
+  const [metricsPanel, setMetricsPanel] = useState('highlights')
   const [habitState, setHabitState] = useState({
     habits: [],
     checkins: [],
@@ -156,7 +187,9 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     error: '',
   })
   /** @type {[{ awards: object, runningScore: number, strengthScore: number } | null, Function]} */
-  const [awardState, setAwardState] = useState(null)
+  const [awardState, setAwardState] = useState(() =>
+    readCachedDashboardAwards(user?.id),
+  )
   const [showOnboarding, setShowOnboarding] = useState(false)
   const todayKey = localDateKey()
 
@@ -245,6 +278,12 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     } else {
       setLoadingData(true)
     }
+
+    const cachedAwards = readCachedDashboardAwards(user.id)
+    if (cachedAwards) {
+      setAwardState(cachedAwards)
+    }
+
     setError('')
 
     loadDashboardRecords(user.id)
@@ -266,23 +305,29 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
       .then((snapshot) => {
         if (cancelled) return
         if (!snapshot) {
+          writeCachedDashboardAwards(user.id, null)
           setAwardState(null)
           return
         }
         const runningScore = Number(snapshot.running_score)
         const strengthScore = Number(snapshot.strength_score)
-        setAwardState({
+        const next = {
           fitnessScore: Number(snapshot.fitness_score),
           runningScore,
           strengthScore,
           awards: deriveAwards({ runningScore, strengthScore }),
-        })
+        }
+        writeCachedDashboardAwards(user.id, next)
+        setAwardState(next)
       })
       .catch((err) => {
         if (cancelled) return
         // Awards are optional enrichment; do not block the dashboard.
         console.warn(friendlyFitnessSnapshotError(err, 'Could not load awards.'))
-        setAwardState(null)
+        // Keep any warm cache so badges don't disappear on a flaky fetch.
+        if (!readCachedDashboardAwards(user.id)) {
+          setAwardState(null)
+        }
       })
 
     return () => {
@@ -297,6 +342,19 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
       }),
     [records, defaults.age],
   )
+
+  const isDense =
+    model.hasAnyData && records.length >= DENSE_RECORD_THRESHOLD
+  const highlightCards = useMemo(
+    () => pickHighlightCards(model),
+    [model],
+  )
+
+  useEffect(() => {
+    if (!isDense && metricsPanel === 'highlights') {
+      setMetricsPanel('performance')
+    }
+  }, [isDense, metricsPanel])
 
   const resolvedAwards = useMemo(() => {
     if (!model.fpcScore) return null
@@ -406,6 +464,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     setError('')
     try {
       clearCachedDashboardRecords()
+      clearCachedDashboardAwards()
       await signOut()
       onOpenTab?.('home')
     } catch (err) {
@@ -435,8 +494,96 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     )
   }
 
+  const metricsCardsForPanel =
+    metricsPanel === 'highlights'
+      ? highlightCards
+      : metricsPanel === 'fitness'
+        ? model.fitnessAssessmentSummaryCards
+        : metricsPanel === 'military'
+          ? model.assessmentSummaryCards
+          : model.summaryCards
+
+  const progressBody = (
+    <>
+      <div className="graph-track-selector" role="tablist" aria-label="Metric">
+        {DASHBOARD_GRAPH_METRICS.map((metric) => {
+          const brandCasing =
+            metric.id === 'fpc-score' || metric.label === BRAND.scoreName
+          return (
+            <button
+              key={metric.id}
+              type="button"
+              role="tab"
+              className={`graph-track-btn${metricId === metric.id ? ' is-active' : ''}${brandCasing ? ' brand-casing' : ''}`}
+              aria-selected={metricId === metric.id}
+              onClick={() => setMetricId(metric.id)}
+            >
+              {metric.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {activeMetric.id === 'running' ? (
+        <GraphTrackSelector
+          tracks={RUNNING_GRAPH_TRACKS}
+          activeId={activeRunningTrack?.id}
+          onChange={(trackId) => {
+            setRunningTrackTouched(true)
+            setRunningTrackId(trackId)
+          }}
+        />
+      ) : null}
+
+      <ProgressGraph
+        records={graphRecords}
+        yAxisLabel={graphYAxisLabel}
+        valueKind={activeMetric.valueKind}
+        emptyMessage={graphEmptyMessage}
+      />
+      <GraphRangeToggle value={graphRange} onChange={setGraphRange} />
+
+      {model.personalRecords.strength.length ||
+      model.personalRecords.running.length ? (
+        <div className="dashboard-progress-prs">
+          <h3 className="dashboard-subtitle">Personal records</h3>
+          <div className="dashboard-pr-grid">
+            {model.personalRecords.strength.length ? (
+              <div className="account-card">
+                <h4 className="dashboard-subtitle">Strength</h4>
+                <ul className="result-table">
+                  {model.personalRecords.strength.map((item) => (
+                    <li key={item.id}>
+                      <span>{item.label}</span>
+                      <strong>{item.valueLabel}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {model.personalRecords.running.length ? (
+              <div className="account-card">
+                <h4 className="dashboard-subtitle">Running</h4>
+                <ul className="result-table">
+                  {model.personalRecords.running.map((item) => (
+                    <li key={item.id}>
+                      <span>{item.label}</span>
+                      <strong>{item.valueLabel}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </>
+  )
+
   return (
-    <main className="page dashboard-page">
+    <main
+      className={`page dashboard-page${isDense ? ' is-dense' : ' is-sparse'}`}
+    >
       <header
         className={`page-header dashboard-hero${
           model.fpcScore ? ' has-score-ring' : ''
@@ -445,7 +592,9 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         <div className="dashboard-hero-copy">
           <p className="page-eyebrow">Dashboard</p>
           <h1>Welcome, {firstName || 'Athlete'}</h1>
-          <p className="page-lead">Your Fitness Progress</p>
+          <p className="page-lead">
+            {isDense ? 'Your week at a glance' : 'Your Fitness Progress'}
+          </p>
         </div>
 
         {model.fpcScore ? (
@@ -462,7 +611,9 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
                 onClick={() => onOpenTab?.(model.fpcScore.tab)}
               />
             </FitnessAwardsDisplay>
-            <FitnessAwardsLegend awards={resolvedAwards?.awards ?? null} />
+            {!isDense ? (
+              <FitnessAwardsLegend awards={resolvedAwards?.awards ?? null} />
+            ) : null}
           </div>
         ) : null}
       </header>
@@ -477,15 +628,15 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         />
       ) : null}
 
-      {user?.id ? <WeekRecapCard userId={user.id} onOpenTab={onOpenTab} /> : null}
-
       {user?.id ? (
-        <DashboardResumeStrip userId={user.id} onOpenTab={onOpenTab} />
+        <DashboardTodayStrip
+          userId={user.id}
+          onOpenTab={onOpenTab}
+          records={records}
+        />
       ) : null}
 
-      {user?.id ? (
-        <DashboardThisWeekStrip userId={user.id} onOpenTab={onOpenTab} />
-      ) : null}
+      {isDense ? <DashboardJumpNav /> : null}
 
       {loadingData && !model.hasAnyData ? (
         <p className="calc-hint dashboard-loading-hint">
@@ -511,58 +662,99 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
       ) : null}
 
       {!loadingData || model.hasAnyData ? (
-        <>
-      <section className="dashboard-section" aria-labelledby="dash-summary">
-        <h2 id="dash-summary" className="result-section-title">
-          Performance summary
-        </h2>
-        <div className="dashboard-card-grid">
-          {model.summaryCards.map((card) => (
-            <DashboardMetricCard
-              key={card.id}
-              card={card}
-              onOpenTab={onOpenTab}
-            />
-          ))}
-        </div>
-      </section>
+        <section
+          id="dash-highlights"
+          className="dashboard-section"
+          aria-labelledby="dash-metrics-heading"
+        >
+          <h2 id="dash-metrics-heading" className="result-section-title">
+            {isDense ? 'Highlights' : 'Performance summary'}
+          </h2>
 
-      <section
-        className="dashboard-section"
-        aria-labelledby="dash-fitness-assessments"
-      >
-        <h2 id="dash-fitness-assessments" className="result-section-title">
-          Fitness Assessments
-        </h2>
-        <div className="dashboard-card-grid">
-          {model.fitnessAssessmentSummaryCards.map((card) => (
-            <DashboardMetricCard
-              key={card.id}
-              card={card}
-              onOpenTab={onOpenTab}
-            />
-          ))}
-        </div>
-      </section>
+          {isDense ? (
+            <div
+              className="dashboard-metrics-tabs"
+              role="tablist"
+              aria-label="Metric groups"
+            >
+              {[
+                { id: 'highlights', label: 'Highlights' },
+                { id: 'performance', label: 'Performance' },
+                { id: 'fitness', label: 'Fitness' },
+                { id: 'military', label: 'Military' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  className={`dashboard-metrics-tab${
+                    metricsPanel === tab.id ? ' is-active' : ''
+                  }`}
+                  aria-selected={metricsPanel === tab.id}
+                  onClick={() => setMetricsPanel(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
 
-      <section
-        className="dashboard-section"
-        aria-labelledby="dash-military-assessments"
-      >
-        <h2 id="dash-military-assessments" className="result-section-title">
-          Military Assessments
-        </h2>
-        <div className="dashboard-card-grid">
-          {model.assessmentSummaryCards.map((card) => (
-            <DashboardMetricCard
-              key={card.id}
-              card={card}
-              onOpenTab={onOpenTab}
-            />
-          ))}
-        </div>
-      </section>
-        </>
+          {isDense ? (
+            <div className="dashboard-card-grid">
+              {metricsCardsForPanel.map((card) => (
+                <DashboardMetricCard
+                  key={card.id}
+                  card={card}
+                  onOpenTab={onOpenTab}
+                />
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="dashboard-card-grid">
+                {model.summaryCards.map((card) => (
+                  <DashboardMetricCard
+                    key={card.id}
+                    card={card}
+                    onOpenTab={onOpenTab}
+                  />
+                ))}
+              </div>
+
+              <h3
+                id="dash-fitness-assessments"
+                className="dashboard-subtitle"
+              >
+                Fitness Assessments
+              </h3>
+              <div className="dashboard-card-grid">
+                {model.fitnessAssessmentSummaryCards.map((card) => (
+                  <DashboardMetricCard
+                    key={card.id}
+                    card={card}
+                    onOpenTab={onOpenTab}
+                  />
+                ))}
+              </div>
+
+              <h3
+                id="dash-military-assessments"
+                className="dashboard-subtitle"
+              >
+                Military Assessments
+              </h3>
+              <div className="dashboard-card-grid">
+                {model.assessmentSummaryCards.map((card) => (
+                  <DashboardMetricCard
+                    key={card.id}
+                    card={card}
+                    onOpenTab={onOpenTab}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
       ) : null}
 
       <DashboardHabitsSection
@@ -575,164 +767,92 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
 
       {!loadingData || model.hasAnyData ? (
         <>
-      {model.recentActivity.length ? (
-        <section className="dashboard-section" aria-labelledby="dash-activity">
-          <h2 id="dash-activity" className="result-section-title">
-            Recent activity
-          </h2>
-          <ul className="dashboard-activity-list">
-            {model.recentActivity
-              .slice(0, RECENT_ACTIVITY_PREVIEW)
-              .map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className="dashboard-activity-item"
-                    onClick={() => onOpenTab?.(item.tab)}
-                  >
-                    <span className="dashboard-activity-date">
-                      {item.dateLabel}
-                    </span>
-                    <span className="dashboard-activity-title">
-                      {item.title}
-                    </span>
-                    <strong className="dashboard-activity-value">
-                      {item.valueLabel}
-                    </strong>
-                  </button>
-                </li>
-              ))}
-          </ul>
-          {model.recentActivity.length > RECENT_ACTIVITY_PREVIEW ? (
-            <>
-              <SoftReveal open={activityExpanded}>
-                <ul className="dashboard-activity-list dashboard-activity-list-more">
-                  {model.recentActivity
-                    .slice(RECENT_ACTIVITY_PREVIEW)
-                    .map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          className="dashboard-activity-item"
-                          onClick={() => onOpenTab?.(item.tab)}
-                        >
-                          <span className="dashboard-activity-date">
-                            {item.dateLabel}
-                          </span>
-                          <span className="dashboard-activity-title">
-                            {item.title}
-                          </span>
-                          <strong className="dashboard-activity-value">
-                            {item.valueLabel}
-                          </strong>
-                        </button>
-                      </li>
-                    ))}
-                </ul>
-              </SoftReveal>
-              <button
-                type="button"
-                className="dashboard-activity-expand"
-                onClick={() => setActivityExpanded((open) => !open)}
-                aria-expanded={activityExpanded}
-              >
-                {activityExpanded
-                  ? 'Show less'
-                  : `Show more (${model.recentActivity.length - RECENT_ACTIVITY_PREVIEW} more)`}
-              </button>
-            </>
+          {model.recentActivity.length ? (
+            <section
+              id="dash-activity"
+              className="dashboard-section"
+              aria-labelledby="dash-activity-heading"
+            >
+              <h2 id="dash-activity-heading" className="result-section-title">
+                Recent activity
+              </h2>
+              <ul className="dashboard-activity-list">
+                {model.recentActivity
+                  .slice(0, RECENT_ACTIVITY_PREVIEW)
+                  .map((item) => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        className="dashboard-activity-item"
+                        onClick={() => onOpenTab?.(item.tab)}
+                      >
+                        <span className="dashboard-activity-date">
+                          {item.dateLabel}
+                        </span>
+                        <span className="dashboard-activity-title">
+                          {item.title}
+                        </span>
+                        <strong className="dashboard-activity-value">
+                          {item.valueLabel}
+                        </strong>
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+              {model.recentActivity.length > RECENT_ACTIVITY_PREVIEW ? (
+                <p className="calc-hint dashboard-activity-more-hint">
+                  Showing latest {RECENT_ACTIVITY_PREVIEW}. Open a calculator
+                  from Highlights to dig into full history.
+                </p>
+              ) : null}
+            </section>
           ) : null}
-        </section>
-      ) : null}
 
-      <section className="dashboard-section" aria-labelledby="dash-graph">
-        <h2 id="dash-graph" className="result-section-title">
-          Progress overview
-        </h2>
-
-        <div className="graph-track-selector" role="tablist" aria-label="Metric">
-          {DASHBOARD_GRAPH_METRICS.map((metric) => {
-            const brandCasing =
-              metric.id === 'fpc-score' || metric.label === BRAND.scoreName
-            return (
-              <button
-                key={metric.id}
-                type="button"
-                role="tab"
-                className={`graph-track-btn${metricId === metric.id ? ' is-active' : ''}${brandCasing ? ' brand-casing' : ''}`}
-                aria-selected={metricId === metric.id}
-                onClick={() => setMetricId(metric.id)}
-              >
-                {metric.label}
-              </button>
-            )
-          })}
-        </div>
-
-        {activeMetric.id === 'running' ? (
-          <GraphTrackSelector
-            tracks={RUNNING_GRAPH_TRACKS}
-            activeId={activeRunningTrack?.id}
-            onChange={(trackId) => {
-              setRunningTrackTouched(true)
-              setRunningTrackId(trackId)
-            }}
-          />
-        ) : null}
-
-        <ProgressGraph
-          records={graphRecords}
-          yAxisLabel={graphYAxisLabel}
-          valueKind={activeMetric.valueKind}
-          emptyMessage={graphEmptyMessage}
-        />
-        <GraphRangeToggle value={graphRange} onChange={setGraphRange} />
-      </section>
-
-      {(model.personalRecords.strength.length ||
-        model.personalRecords.running.length) && (
-        <section className="dashboard-section" aria-labelledby="dash-prs">
-          <h2 id="dash-prs" className="result-section-title">
-            Personal records
-          </h2>
-          <div className="dashboard-pr-grid">
-            {model.personalRecords.strength.length ? (
-              <div className="account-card">
-                <h3 className="dashboard-subtitle">Strength</h3>
-                <ul className="result-table">
-                  {model.personalRecords.strength.map((item) => (
-                    <li key={item.id}>
-                      <span>{item.label}</span>
-                      <strong>{item.valueLabel}</strong>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            {model.personalRecords.running.length ? (
-              <div className="account-card">
-                <h3 className="dashboard-subtitle">Running</h3>
-                <ul className="result-table">
-                  {model.personalRecords.running.map((item) => (
-                    <li key={item.id}>
-                      <span>{item.label}</span>
-                      <strong>{item.valueLabel}</strong>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      )}
+          {isDense ? (
+            <details
+              id="dash-progress"
+              className="dashboard-section dashboard-progress-details"
+            >
+              <summary className="dashboard-progress-summary">
+                <span className="dashboard-progress-summary-copy">
+                  <span className="result-section-title">
+                    Progress &amp; PRs
+                  </span>
+                  <span className="dashboard-progress-summary-hint">
+                    Charts and personal records
+                  </span>
+                </span>
+                <span className="dashboard-progress-summary-cta">
+                  <span className="dashboard-progress-summary-cta-label" />
+                  <span
+                    className="dashboard-progress-summary-chevron"
+                    aria-hidden="true"
+                  />
+                </span>
+              </summary>
+              <div className="dashboard-progress-body">{progressBody}</div>
+            </details>
+          ) : (
+            <section
+              id="dash-progress"
+              className="dashboard-section"
+              aria-labelledby="dash-graph"
+            >
+              <h2 id="dash-graph" className="result-section-title">
+                Progress overview
+              </h2>
+              {progressBody}
+            </section>
+          )}
         </>
       ) : null}
 
       <section
+        id="dash-account"
         className="dashboard-section account-card"
-        aria-labelledby="dash-account"
+        aria-labelledby="dash-account-heading"
       >
-        <h2 id="dash-account" className="result-section-title">
+        <h2 id="dash-account-heading" className="result-section-title">
           Profile settings
         </h2>
         <ul className="result-table">
@@ -829,7 +949,7 @@ function DashboardHabitsSection({
             {' · '}
             Streak {streak} day{streak === 1 ? '' : 's'}
           </p>
-          <ul className="habits-check-list habits-check-list-compact">
+          <ul className="habits-check-list habits-check-list-compact habits-check-list-dashboard">
             {habitState.habits.map((habit) => {
               const checked = habitState.checkins.some(
                 (row) =>

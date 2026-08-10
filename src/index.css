@@ -3407,6 +3407,332 @@ a:focus-visible {
   gap: 1.75rem;
 }
 
+.dashboard-page.is-dense {
+  gap: 1.35rem;
+}
+
+.dashboard-page.is-dense #dash-today,
+.dashboard-page.is-dense #dash-highlights,
+.dashboard-page.is-dense #dash-habits,
+.dashboard-page.is-dense #dash-activity,
+.dashboard-page.is-dense #dash-progress {
+  scroll-margin-top: calc(var(--site-header-height) + 3.6rem);
+}
+
+@keyframes dashboard-section-focus-pulse {
+  0% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+  35% {
+    box-shadow: inset 3px 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+}
+
+.dashboard-section-focus {
+  animation: dashboard-section-focus-pulse 0.85s var(--motion-ease) both;
+}
+
+.dashboard-jump-nav {
+  position: sticky;
+  top: var(--site-header-height);
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 0.15rem 0 0.35rem;
+  padding: 0.1rem 0 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  background: color-mix(in srgb, var(--bg-elevated) 86%, var(--bg));
+  box-shadow: 0 10px 22px -20px color-mix(in srgb, var(--text-strong) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dashboard-jump-nav-btn {
+  position: relative;
+  min-width: 0;
+  padding: 0.85rem 0.4rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: clamp(0.88rem, 2.6vw, 1rem);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-align: center;
+  color: var(--muted-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    color var(--motion-fast) var(--motion-ease-soft),
+    background var(--motion-fast) var(--motion-ease-soft);
+}
+
+.dashboard-jump-nav-btn::after {
+  content: '';
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 0;
+  height: 2px;
+  background: transparent;
+  transition: background var(--motion-fast) var(--motion-ease-soft);
+}
+
+.dashboard-jump-nav-btn:hover,
+.dashboard-jump-nav-btn:focus-visible {
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--accent-muted) 32%, transparent);
+}
+
+.dashboard-jump-nav-btn.is-active {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.dashboard-jump-nav-btn.is-active::after {
+  background: color-mix(in srgb, var(--accent) 80%, var(--text-strong));
+}
+
+.dashboard-today-strip {
+  gap: 0.7rem;
+}
+
+.dashboard-today-rank-block {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.dashboard-today-rank-block.is-pending .dashboard-your-week-skeleton {
+  opacity: 0.55;
+}
+
+.dashboard-your-week-skeleton .dashboard-your-week-number {
+  color: var(--muted);
+}
+
+.dashboard-today-rank-block .dashboard-week-countdown {
+  margin: 0;
+  max-width: 28rem;
+  padding: 0.35rem 0.55rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent-muted) 22%, transparent);
+  font-size: 0.88rem;
+}
+
+.dashboard-today-recap {
+  display: grid;
+  gap: 0.45rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-today-empty {
+  margin: 0.1rem 0;
+  font-size: 0.95rem;
+}
+
+.dashboard-today-actions {
+  margin-top: 0.15rem;
+}
+
+.dashboard-metrics-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.dashboard-metrics-tab {
+  min-width: 0;
+  padding: 0.55rem 0.4rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+  font-size: clamp(0.72rem, 2.2vw, 0.8rem);
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-soft),
+    background var(--motion-fast) var(--motion-ease-soft),
+    color var(--motion-fast) var(--motion-ease-soft);
+}
+
+.dashboard-metrics-tab.is-active {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent-muted) 55%, var(--bg-elevated));
+  color: var(--text-strong);
+}
+
+.dashboard-activity-more-hint {
+  margin: 0.15rem 0 0;
+}
+
+.dashboard-progress-details {
+  border: none;
+  padding-top: 0;
+  gap: 0;
+}
+
+.dashboard-progress-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  cursor: pointer;
+  list-style: none;
+  transition:
+    border-color var(--motion-base) var(--motion-ease),
+    background var(--motion-base) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.dashboard-progress-summary::-webkit-details-marker {
+  display: none;
+}
+
+.dashboard-progress-summary:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent-muted) 45%, var(--bg-elevated));
+  transform: translateY(-1px);
+}
+
+.dashboard-progress-summary:active {
+  transform: translateY(0);
+}
+
+.dashboard-progress-summary-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.dashboard-progress-summary .result-section-title {
+  margin: 0;
+}
+
+.dashboard-progress-summary-hint {
+  font-size: 0.85rem;
+  color: var(--muted-strong);
+}
+
+.dashboard-progress-summary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent-muted) 40%, transparent);
+  color: var(--text-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dashboard-progress-summary-cta-label::before {
+  content: 'Show';
+}
+
+.dashboard-progress-details[open] .dashboard-progress-summary-cta-label::before {
+  content: 'Hide';
+}
+
+.dashboard-progress-summary-chevron {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-0.1rem);
+  transition: transform var(--motion-base) var(--motion-ease);
+}
+
+.dashboard-progress-details[open] .dashboard-progress-summary-chevron {
+  transform: rotate(225deg) translateY(-0.05rem);
+}
+
+.dashboard-progress-details[open] .dashboard-progress-summary {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.dashboard-progress-body {
+  display: grid;
+  gap: 0.95rem;
+  margin-top: 0.85rem;
+  padding: 0.15rem 0.15rem 0.35rem;
+  animation: soft-enter var(--motion-enter) var(--motion-ease) both;
+}
+
+.dashboard-progress-prs {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 560px) {
+  .dashboard-jump-nav-btn {
+    padding: 0.78rem 0.2rem;
+    font-size: 0.86rem;
+  }
+
+  .dashboard-metrics-tabs {
+    gap: 0.3rem;
+  }
+
+  .dashboard-progress-summary {
+    align-items: flex-start;
+    padding: 0.85rem 0.9rem;
+  }
+
+  .dashboard-progress-summary-cta {
+    margin-top: 0.15rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .dashboard-jump-nav-btn {
+    padding: 0.95rem 0.5rem;
+    font-size: 1.02rem;
+  }
+
+  .dashboard-today-rank-block .dashboard-week-countdown {
+    font-size: 0.92rem;
+  }
+}
+
+/* Dashboard habits: 2 columns earlier than the Habits page (mobile-friendly). */
+.habits-check-list-dashboard {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 420px) {
+  .habits-check-list-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0.85rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .habits-check-list-dashboard:has(> :nth-child(9)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .dashboard-loading-hint {
   min-height: 10rem;
   display: grid;

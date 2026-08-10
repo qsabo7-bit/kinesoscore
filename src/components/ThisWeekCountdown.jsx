@@ -7,9 +7,9 @@ import {
 
 /**
  * Live countdown to the next UTC Monday week reset.
- * @param {{ className?: string, prefix?: string }} props
+ * @param {{ className?: string, prefix?: string, showMeta?: boolean }} props
  */
-function ThisWeekCountdown({ className = '', prefix }) {
+function ThisWeekCountdown({ className = '', prefix, showMeta = true }) {
   const [label, setLabel] = useState(() => formatUtcWeekCountdown())
   const [urgent, setUrgent] = useState(() => isUtcWeekEndingSoon())
 
@@ -42,12 +42,14 @@ function ThisWeekCountdown({ className = '', prefix }) {
       className={`this-week-countdown${urgent ? ' is-urgent' : ''}${
         className ? ` ${className}` : ''
       }`}
-      title={`UTC week ends ${endLabel}`}
+      title={`Leaderboard This Week ends ${endLabel}`}
     >
       {resolvedPrefix} <strong>{label}</strong>
-      <span className="this-week-countdown-meta">
-        {urgent ? ' · last day of the UTC week' : ' · UTC week'}
-      </span>
+      {showMeta ? (
+        <span className="this-week-countdown-meta">
+          {urgent ? ' · last day of the UTC week' : ' · UTC week'}
+        </span>
+      ) : null}
     </p>
   )
 }

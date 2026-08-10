@@ -50,6 +50,36 @@ export function rememberWeekRankSnapshot(userId, best) {
 }
 
 /**
+ * Instant Dashboard Today paint: current-week rank from the last successful fetch.
+ * @param {string} userId
+ * @returns {{ rank: number, boardKey: string, boardLabel: string } | null}
+ */
+export function readWeekRankSnapshot(userId) {
+  if (!userId) return null
+  const currentWeekStart = weekStartIso()
+  const raw = storageGet(`${SNAPSHOT_PREFIX}${userId}`)
+  let snapshot = null
+  try {
+    snapshot = raw ? JSON.parse(raw) : null
+  } catch {
+    snapshot = null
+  }
+  if (
+    !snapshot?.weekStart ||
+    snapshot.weekStart !== currentWeekStart ||
+    !(Number(snapshot.rank) > 0) ||
+    !snapshot.boardKey
+  ) {
+    return null
+  }
+  return {
+    rank: Number(snapshot.rank),
+    boardKey: String(snapshot.boardKey),
+    boardLabel: String(snapshot.boardLabel || snapshot.boardKey),
+  }
+}
+
+/**
  * If the UTC week rolled and we have a prior-week snapshot, return recap once.
  * @param {string} userId
  * @returns {{
