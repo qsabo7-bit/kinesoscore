@@ -6,7 +6,13 @@ import FitnessAwardsDisplay, {
 } from '../components/FitnessAwardsDisplay'
 import FpcScoreRing from '../components/FpcScoreRing'
 import LockedDashboardPreview from '../components/LockedDashboardPreview'
+import DashboardResumeStrip from '../components/DashboardResumeStrip'
+import DashboardThisWeekStrip from '../components/DashboardThisWeekStrip'
+import OnboardingWizard from '../components/OnboardingWizard'
+import WeekRecapCard from '../components/WeekRecapCard'
 import SoftReveal from '../components/SoftReveal'
+import { fetchLeaderboardName } from '../lib/leaderboardProfile'
+import { shouldShowOnboarding } from '../lib/onboarding'
 import {
   GraphRangeToggle,
   GraphTrackSelector,
@@ -52,6 +58,7 @@ import {
   friendlyHabitError,
   setHabitCheckin,
 } from '../lib/habits'
+import { resolveHabitStreakAtRisk } from '../lib/habitStreakAtRisk'
 import {
   computeHabitStreak,
   habitDayProgress,
@@ -150,7 +157,39 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   })
   /** @type {[{ awards: object, runningScore: number, strengthScore: number } | null, Function]} */
   const [awardState, setAwardState] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const todayKey = localDateKey()
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || loadingData) return undefined
+
+    let cancelled = false
+    const hasPerformanceData = Array.isArray(records) && records.length > 0
+
+    fetchLeaderboardName(user.id)
+      .then((name) => {
+        if (cancelled) return
+        setShowOnboarding(
+          shouldShowOnboarding(user.id, {
+            hasLeaderboardName: Boolean(name),
+            hasPerformanceData,
+          }),
+        )
+      })
+      .catch(() => {
+        if (cancelled) return
+        setShowOnboarding(
+          shouldShowOnboarding(user.id, {
+            hasLeaderboardName: false,
+            hasPerformanceData,
+          }),
+        )
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, user?.id, loadingData, records])
 
   useEffect(() => {
     setRunningTrackId(PREFERRED_RUNNING_TRACK_ID)
@@ -430,6 +469,24 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 
+      {showOnboarding && user?.id ? (
+        <OnboardingWizard
+          userId={user.id}
+          onOpenTab={onOpenTab}
+          onDismiss={() => setShowOnboarding(false)}
+        />
+      ) : null}
+
+      {user?.id ? <WeekRecapCard userId={user.id} onOpenTab={onOpenTab} /> : null}
+
+      {user?.id ? (
+        <DashboardResumeStrip userId={user.id} onOpenTab={onOpenTab} />
+      ) : null}
+
+      {user?.id ? (
+        <DashboardThisWeekStrip userId={user.id} onOpenTab={onOpenTab} />
+      ) : null}
+
       {loadingData && !model.hasAnyData ? (
         <p className="calc-hint dashboard-loading-hint">
           Loading your performance data…
@@ -505,7 +562,19 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           ))}
         </div>
       </section>
+        </>
+      ) : null}
 
+      <DashboardHabitsSection
+        habitState={habitState}
+        setHabitState={setHabitState}
+        todayKey={todayKey}
+        userId={user?.id}
+        onOpenTab={onOpenTab}
+      />
+
+      {!loadingData || model.hasAnyData ? (
+        <>
       {model.recentActivity.length ? (
         <section className="dashboard-section" aria-labelledby="dash-activity">
           <h2 id="dash-activity" className="result-section-title">
@@ -659,44 +728,6 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
         </>
       ) : null}
 
-      <DashboardHabitsSection
-        habitState={habitState}
-        setHabitState={setHabitState}
-        todayKey={todayKey}
-        userId={user?.id}
-        onOpenTab={onOpenTab}
-      />
-
-      <section
-        className="dashboard-section account-card"
-        aria-labelledby="dash-leaderboard"
-      >
-        <h2 id="dash-leaderboard" className="result-section-title">
-          Global leaderboard
-        </h2>
-        <p className="dashboard-empty-copy">
-          Compare opted-in shared results for {BRAND.scoreName}, running,
-          strength, fitness assessments, and Habit Streaks. Private saves and
-          habit check-ins stay private.
-        </p>
-        <div className="confirm-actions">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => onOpenTab?.('leaderboard')}
-          >
-            View Leaderboard
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => onOpenTab?.('leaderboard-habits')}
-          >
-            Habit Streaks
-          </button>
-        </div>
-      </section>
-
       <section
         className="dashboard-section account-card"
         aria-labelledby="dash-account"
@@ -761,6 +792,11 @@ function DashboardHabitsSection({
   const streak = computeHabitStreak(habitState.habits, habitState.checkins, {
     todayKey,
   })
+  const atRisk = resolveHabitStreakAtRisk(
+    habitState.habits,
+    habitState.checkins,
+    todayKey,
+  )
 
   return (
     <section
@@ -770,6 +806,13 @@ function DashboardHabitsSection({
       <h2 id="dash-habits" className="result-section-title">
         Habits
       </h2>
+      {atRisk ? (
+        <p className="habit-at-risk-banner" role="status">
+          🔥 Streak at risk — {atRisk.streakAtRisk} day
+          {atRisk.streakAtRisk === 1 ? '' : 's'} on the line. Today{' '}
+          {atRisk.progress.ratioLabel}.
+        </p>
+      ) : null}
       {habitState.loading ? <p className="calc-hint">Loading habits…</p> : null}
       {habitState.error ? (
         <p className="feedback feedback-error">{habitState.error}</p>

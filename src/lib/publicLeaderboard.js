@@ -1,4 +1,5 @@
 import { BRAND } from '../data/brand.js'
+import { mapPublicAwardIdentity } from './awardIdentityFormat.js'
 import { assignDenseRanks } from './leaderboardDenseRank.js'
 import { formatRecordValue, isCindyResult } from './performanceRecords.js'
 import { LEADERBOARD_SHARE_TARGETS } from './leaderboardShares.js'
@@ -99,6 +100,19 @@ export function calculatorTabForBoardKey(boardKey) {
   return target.calculatorType
 }
 
+/**
+ * Leaderboard UI category id for a board key (defaults to score).
+ * @param {string} boardKey
+ * @returns {string}
+ */
+export function categoryIdForBoardKey(boardKey) {
+  const key = String(boardKey || '')
+  const match = LEADERBOARD_UI_CATEGORIES.find((cat) =>
+    cat.boardKeys.includes(key),
+  )
+  return match?.id || LEADERBOARD_UI_CATEGORIES[0].id
+}
+
 export function leaderboardValueKind(boardKey) {
   const key = String(boardKey)
   if (key.startsWith('running:')) return 'duration'
@@ -173,6 +187,7 @@ export async function fetchPublicLeaderboard(boardKey, period = 'all_time') {
     result_value: Number(row.result_value),
     result_unit: row.result_unit ?? null,
     higher_is_better: Boolean(row.higher_is_better),
+    awards: mapPublicAwardIdentity(row),
     result_display: formatLeaderboardResult({
       result_value: row.result_value,
       result_unit: row.result_unit,

@@ -335,13 +335,18 @@ grant execute on function public.set_habit_streak_share(boolean, date)
 -- ---------------------------------------------------------------------------
 -- Public RPC — current streak board only (all_time)
 -- ---------------------------------------------------------------------------
-create or replace function public.get_public_habit_streaks(
+drop function if exists public.get_public_habit_streaks(text);
+
+create function public.get_public_habit_streaks(
   p_period text default 'all_time'
 )
 returns table (
   rank bigint,
   leaderboard_name text,
-  streak integer
+  streak integer,
+  award_running text,
+  award_strength text,
+  award_crown boolean
 )
 language plpgsql
 stable
@@ -360,7 +365,19 @@ begin
   with eligible as (
     select
       p.leaderboard_name as name,
-      s.streak as streak_value
+      s.streak as streak_value,
+      case
+        when p.show_awards_publicly then p.award_running
+        else null
+      end as arun,
+      case
+        when p.show_awards_publicly then p.award_strength
+        else null
+      end as astr,
+      case
+        when p.show_awards_publicly then coalesce(p.award_crown, false)
+        else false
+      end as acrown
     from public.habit_streak_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
@@ -375,13 +392,19 @@ begin
         order by e.streak_value desc
       ) as rnk,
       e.name,
-      e.streak_value
+      e.streak_value,
+      e.arun,
+      e.astr,
+      e.acrown
     from eligible e
   )
   select
     ranked.rnk,
     ranked.name,
-    ranked.streak_value
+    ranked.streak_value,
+    ranked.arun,
+    ranked.astr,
+    ranked.acrown
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -393,7 +416,7 @@ grant execute on function public.get_public_habit_streaks(text)
   to anon, authenticated;
 
 comment on function public.get_public_habit_streaks(text) is
-  'Stage 8 public habit streak board. Returns only rank, leaderboard_name, streak.';
+  'Stage 8 public habit streak board. Opt-in award tiers/crown only (never raw scores).';
 
 comment on table public.habit_streak_shares is
   'Stage 8 opt-in public habit streak projection. No habit/check-in details. Own-row RLS; public via RPC only.';

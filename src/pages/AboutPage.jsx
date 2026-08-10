@@ -102,8 +102,8 @@ function AboutPage({ onOpenTab }) {
           >
             leaderboard
           </a>
-          . Habits stay private unless you share a streak. Dashboard awards are
-          private progress markers, not public badges.
+          . Habits stay private unless you share a streak. Awards stay private
+          unless you opt in to show medal tiers next to your Leaderboard Name.
         </p>
       </section>
 

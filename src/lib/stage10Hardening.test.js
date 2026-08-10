@@ -132,6 +132,21 @@ describe('Stage 10 migration hardening SQL', () => {
     assert.doesNotMatch(sql, /get_public_leaderboard[\s\S]*rate limit/i)
   })
 
+  it('018 clears and award-only updates skip the name rate limit', () => {
+    const clearLimitSql = readFileSync(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        '../../supabase/migrations/018_clear_name_skips_rate_limit.sql',
+      ),
+      'utf8',
+    )
+    assert.match(clearLimitSql, /tg_op = 'DELETE'/i)
+    assert.match(
+      clearLimitSql,
+      /leaderboard_name is not distinct from old\.leaderboard_name/i,
+    )
+  })
+
   it('preserves delete_own_account snapshot-before-records order', () => {
     const snapIdx = sql.search(
       /delete from public\.fitness_score_snapshots where user_id = uid;/i,

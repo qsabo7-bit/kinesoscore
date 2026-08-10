@@ -10,6 +10,8 @@ import {
   resolveLeaderboardShareTarget,
   upsertLeaderboardShare,
 } from '../lib/leaderboardShares'
+import { consumeOnboardingShareHint } from '../lib/onboarding'
+import { resolveThisWeekShareStatus } from '../lib/thisWeekShareStatus'
 import {
   canonicalizeLeaderboardShareValue,
   isLargeLeaderboardShareJump,
@@ -42,6 +44,7 @@ import {
   PerformanceSummary,
   ProgressGraph,
   SaveResultButton,
+  ThisWeekShareStatus,
 } from './tracking'
 
 /**
@@ -66,11 +69,13 @@ import {
  * @param {'number' | 'duration' | 'score' | 'bmi' | 'fitnessAge'} [props.sampleKind]
  * @param {{ title?: string, lead?: string, benefits?: string[] }} [props.lockedPreview]
  * @param {Array<{ exerciseName: string, resultValue: number, resultUnit?: string }>} [props.companionSaves]
- * @param {(payload: { track: object, resultValue: number, recordId: string }) => void} [props.onSaved]
+ * @param {(payload: { track: object, resultValue: number, recordId: string }) => void | Promise<void>} [props.onSaved]
  * @param {(payload: { recordId: string }) => void} [props.onDeleted]
  * @param {Element | null} [props.saveHost] - Optional DOM node to portal the Save button into
  *   (e.g. above age/gender comparison on Strength / Running).
  * @param {(tabId: string) => void} [props.onOpenTab] - Account Settings navigation for Leaderboard Name
+ * @param {string} [props.saveFeedback] - Extra status line under Save (e.g. award unlock)
+ * @param {import('react').ReactNode} [props.resultShare] - Optional Share Result UI beside Global leaderboard
  */
 function CalculatorTracking({
   calculatorType,
@@ -92,6 +97,8 @@ function CalculatorTracking({
   onSaved,
   onDeleted,
   saveHost = null,
+  saveFeedback = '',
+  resultShare = null,
 }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
   const [selectedTrackId, setSelectedTrackId] = useState(
@@ -112,7 +119,11 @@ function CalculatorTracking({
     }
   })
   const [savedMessage, setSavedMessage] = useState(false)
+  const [personalBestMessage, setPersonalBestMessage] = useState('')
   const [shareMessage, setShareMessage] = useState('')
+  /** @type {[null | { boardKey: string, boardLabel: string, rank: number | null }, Function]} */
+  const [thisWeekShareStatus, setThisWeekShareStatus] = useState(null)
+  const [leaderboardName, setLeaderboardName] = useState(null)
   const [error, setError] = useState('')
   const [localDisplayUnit, setLocalDisplayUnit] = useState(
     resultUnit === 'kg' ? 'kg' : 'lb',
@@ -313,8 +324,11 @@ function CalculatorTracking({
         setActiveShareSourceId(active ? share?.source_record_id ?? null : null)
         setActiveShareSnapshot(snapshot)
         confirmedShareBaselineRef.current = snapshot
-        setShareMode(active ? 'global' : 'private')
+        const preferShare =
+          !active && Boolean(name) && consumeOnboardingShareHint()
+        setShareMode(active || preferShare ? 'global' : 'private')
         setHasLeaderboardName(Boolean(name))
+        setLeaderboardName(name || null)
       })
       .catch(() => {
         if (cancelled) return
@@ -322,14 +336,40 @@ function CalculatorTracking({
         setActiveShareSourceId(null)
         setActiveShareSnapshot(null)
         confirmedShareBaselineRef.current = null
+        // Do not consume the share hint on a failed profile fetch.
         setShareMode('private')
-        setHasLeaderboardName(true)
+        setHasLeaderboardName(false)
+        setLeaderboardName(null)
       })
 
     return () => {
       cancelled = true
     }
   }, [isAuthenticated, user?.id, shareBoardKey])
+
+  const announceThisWeekShare = async (boardKey, userId = user?.id) => {
+    if (!userId || !boardKey) {
+      setThisWeekShareStatus(null)
+      setShareMessage('Shared to the global leaderboard (This Week + All Time).')
+      return
+    }
+    try {
+      const status = await resolveThisWeekShareStatus({
+        userId,
+        boardKey,
+        leaderboardName,
+      })
+      if (status) {
+        setThisWeekShareStatus(status)
+        setShareMessage('')
+        return
+      }
+    } catch {
+      // Fall through to plain success copy.
+    }
+    setThisWeekShareStatus(null)
+    setShareMessage('Shared to the global leaderboard (This Week + All Time).')
+  }
 
   const handleSave = async () => {
     if (!user || !canSave || pendingShareJump || pendingDeleteId) return
@@ -339,7 +379,9 @@ function CalculatorTracking({
     setSaving(true)
     setError('')
     setSavedMessage(false)
+    setPersonalBestMessage('')
     setShareMessage('')
+    setThisWeekShareStatus(null)
 
     const unitForSave =
       valueKind === 'duration' ? 'sec' : resultUnit || displayUnit || null
@@ -347,6 +389,24 @@ function CalculatorTracking({
     const wantsShare = shareEligible && shareMode === 'global'
     const wantsUnshare =
       shareEligible && shareMode === 'private' && hadActiveShare
+
+    // PB check uses this save track's full history (not selected graph track / range).
+    const trackHigherIsBetter = track.higherIsBetter !== false
+    const saveTrackRowsRaw = recordsByTrack[track.id] || []
+    const saveTrackRows =
+      valueKind === 'mass'
+        ? recordsInMassUnit(saveTrackRowsRaw, displayUnit || 'lb')
+        : saveTrackRowsRaw
+    const priorSummary = computePerformanceSummary(
+      saveTrackRows,
+      trackHigherIsBetter,
+    )
+    const isPersonalBest =
+      Number.isFinite(numericResult) &&
+      (!priorSummary ||
+        (trackHigherIsBetter
+          ? numericResult > Number(priorSummary.personalRecord)
+          : numericResult < Number(priorSummary.personalRecord)))
 
     try {
       // Refresh the public-share baseline from the DB before saving so the
@@ -444,6 +504,16 @@ function CalculatorTracking({
           higherIsBetter: shareTarget.higherIsBetter,
         })
 
+      // Snapshot / award unlock should run for every private save, including
+      // when a large share-jump confirm is still pending.
+      if (onSaved) {
+        await onSaved({
+          track,
+          resultValue: numericResult,
+          recordId: saved.id,
+        })
+      }
+
       if (needsJumpConfirm) {
         setSavedMessage(false)
         setPendingShareJump({
@@ -457,9 +527,19 @@ function CalculatorTracking({
           resultUnit: unitForSave,
           higherIsBetter: shareTarget.higherIsBetter,
           track,
+          isPersonalBest,
+          isFirstPersonalBest: !priorSummary,
         })
         await loadHistory()
         return
+      }
+
+      if (isPersonalBest) {
+        setPersonalBestMessage(
+          priorSummary
+            ? 'New personal best'
+            : 'First saved result — personal best set',
+        )
       }
 
       setSavedMessage(true)
@@ -491,8 +571,9 @@ function CalculatorTracking({
             setActiveShareSnapshot(confirmed)
             confirmedShareBaselineRef.current = confirmed
             setShareMode('global')
-            setShareMessage('Shared to the global leaderboard.')
+            await announceThisWeekShare(shareTarget.boardKey)
           } catch (shareErr) {
+            setThisWeekShareStatus(null)
             setShareMessage(friendlyLeaderboardShareError(shareErr))
             if (
               /Leaderboard Name is required/i.test(String(shareErr?.message))
@@ -508,6 +589,7 @@ function CalculatorTracking({
           setActiveShareSourceId(null)
           setActiveShareSnapshot(null)
           confirmedShareBaselineRef.current = null
+          setThisWeekShareStatus(null)
           setShareMode('private')
           setShareMessage('Removed from the global leaderboard. Your private history is unchanged.')
         } catch (shareErr) {
@@ -520,7 +602,6 @@ function CalculatorTracking({
         }
       }
 
-      onSaved?.({ track, resultValue: numericResult, recordId: saved.id })
       await loadHistory()
     } catch (err) {
       setError(err.message || 'Could not save this result.')
@@ -558,6 +639,7 @@ function CalculatorTracking({
       removeRecordLocally(sourceRecordId)
       setPendingShareJump(null)
       setSavedMessage(false)
+      setPersonalBestMessage('')
       setShareMessage(
         'Kept your previous shared score. The new result was discarded.',
       )
@@ -600,6 +682,8 @@ function CalculatorTracking({
       const {
         track,
         companionRecordIds: _companionRecordIds,
+        isPersonalBest: jumpIsPersonalBest,
+        isFirstPersonalBest: jumpIsFirstPersonalBest,
         ...sharePayload
       } = pendingShareJump
       await upsertLeaderboardShare(sharePayload)
@@ -619,13 +703,20 @@ function CalculatorTracking({
       setShareMode('global')
       setPendingShareJump(null)
       setSavedMessage(true)
-      setShareMessage('Shared to the global leaderboard.')
-      onSaved?.({
-        track,
-        resultValue: sharePayload.resultValue,
-        recordId: sharePayload.sourceRecordId,
-      })
+      if (jumpIsPersonalBest) {
+        setPersonalBestMessage(
+          jumpIsFirstPersonalBest
+            ? 'First saved result — personal best set'
+            : 'New personal best',
+        )
+      }
+      await announceThisWeekShare(
+        sharePayload.boardKey,
+        sharePayload.userId || user?.id,
+      )
+      // Private save already ran onSaved (snapshot / unlocks) before the jump prompt.
     } catch (shareErr) {
+      setThisWeekShareStatus(null)
       setShareMessage(friendlyLeaderboardShareError(shareErr))
       if (/Leaderboard Name is required/i.test(String(shareErr?.message))) {
         setHasLeaderboardName(false)
@@ -654,6 +745,10 @@ function CalculatorTracking({
     if (!pendingDeleteId || deletingId) return
     const recordId = pendingDeleteId
     const wasSharedSource = recordId === activeShareSourceId
+    const scrollY =
+      typeof window !== 'undefined'
+        ? window.scrollY || window.pageYOffset || 0
+        : 0
     setDeletingId(recordId)
     setError('')
     setDeleteError('')
@@ -689,6 +784,12 @@ function CalculatorTracking({
       setError(err.message || 'Could not delete that result.')
     } finally {
       setDeletingId(null)
+      // Keep viewport put — focus restore / layout shrink was jumping to the bottom.
+      if (typeof window !== 'undefined') {
+        const restore = () => window.scrollTo(0, scrollY)
+        restore()
+        requestAnimationFrame(restore)
+      }
     }
   }
 
@@ -773,21 +874,29 @@ function CalculatorTracking({
 
   const saveBlock = canSave ? (
     <div className="save-result-block">
-      {shareEligible ? (
-        <LeaderboardShareControl
-          mode={shareMode}
-          onChange={(next) => {
-            setShareMode(next)
-            setShareMessage('')
-          }}
-          disabled={
-            saving || Boolean(pendingShareJump) || Boolean(pendingDeleteId)
-          }
-          hasLeaderboardName={hasLeaderboardName}
-          onRequestAccount={
-            onOpenTab ? () => onOpenTab('account') : undefined
-          }
-        />
+      {shareEligible || resultShare ? (
+        <div className="save-share-row">
+          {shareEligible ? (
+            <LeaderboardShareControl
+              mode={shareMode}
+              onChange={(next) => {
+                setShareMode(next)
+                setShareMessage('')
+                setThisWeekShareStatus(null)
+              }}
+              disabled={
+                saving || Boolean(pendingShareJump) || Boolean(pendingDeleteId)
+              }
+              hasLeaderboardName={hasLeaderboardName}
+              onRequestAccount={
+                onOpenTab ? () => onOpenTab('account') : undefined
+              }
+            />
+          ) : null}
+          {resultShare ? (
+            <div className="save-share-aside">{resultShare}</div>
+          ) : null}
+        </div>
       ) : null}
       <SaveResultButton
         onSave={handleSave}
@@ -795,8 +904,29 @@ function CalculatorTracking({
           saving || Boolean(pendingShareJump) || Boolean(pendingDeleteId)
         }
         savedMessage={savedMessage}
+        celebrationMessage={personalBestMessage}
         label={saveLabel}
       />
+      {saveFeedback ? (
+        <p className="feedback feedback-success award-unlock-toast" role="status">
+          {saveFeedback}
+        </p>
+      ) : null}
+      {thisWeekShareStatus ? (
+        <ThisWeekShareStatus
+          status={thisWeekShareStatus}
+          onOpenBoard={
+            onOpenTab
+              ? (boardKey) =>
+                  onOpenTab({
+                    tab: 'leaderboard',
+                    boardKey,
+                    period: 'this_week',
+                  })
+              : undefined
+          }
+        />
+      ) : null}
       {shareMessage ? (
         <p
           className={`feedback${

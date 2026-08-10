@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import PublicAwardBadges from '../components/PublicAwardBadges'
 import SeoIntro from '../components/SeoIntro'
+import ThisWeekCountdown from '../components/ThisWeekCountdown'
 import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { LEADERBOARD_SEO } from '../data/seoCopy'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
@@ -21,7 +23,13 @@ import { resolveLeaderboardRows } from '../lib/leaderboardSamples'
  * Stage 5 public Leaderboard page (Habits tab reuses Stage 8 public streak RPC).
  * Anyone can browse live boards. Joining/sharing still requires a Leaderboard Name.
  */
-function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
+function LeaderboardPage({
+  onOpenTab,
+  onRequestAuth,
+  initialCategoryId,
+  initialBoardKey,
+  initialPeriod,
+}) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
   const [categoryId, setCategoryId] = useState(() =>
     resolveInitialCategoryId(initialCategoryId),
@@ -31,11 +39,24 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
     const cat =
       LEADERBOARD_UI_CATEGORIES.find((item) => item.id === id) ||
       LEADERBOARD_UI_CATEGORIES[0]
+    if (initialBoardKey && cat.boardKeys.includes(initialBoardKey)) {
+      return initialBoardKey
+    }
     return cat.boardKeys[0]
   })
-  const [period, setPeriod] = useState('all_time')
+  // Performance boards open on This Week (UTC) — the weekly ritual window.
+  const [period, setPeriod] = useState(() => {
+    if (resolveInitialCategoryId(initialCategoryId) === 'habits') {
+      return 'all_time'
+    }
+    if (initialPeriod === 'all_time' || initialPeriod === 'this_week') {
+      return initialPeriod
+    }
+    return 'this_week'
+  })
   /** null = unknown (signed-in fetch pending); guests ignore this flag. */
   const [hasLeaderboardName, setHasLeaderboardName] = useState(null)
+  const [viewerLeaderboardName, setViewerLeaderboardName] = useState(null)
   const [live, setLive] = useState({
     key: '',
     rows: [],
@@ -60,11 +81,40 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
     : `${effectiveBoardKey}|${period}`
 
   useEffect(() => {
-    if (initialCategoryId !== 'habits') return
-    setCategoryId('habits')
-    setBoardKey('habits:streak')
-    setPeriod('all_time')
-  }, [initialCategoryId])
+    if (initialCategoryId === 'habits') {
+      setCategoryId('habits')
+      setBoardKey('habits:streak')
+      setPeriod('all_time')
+      return
+    }
+
+    if (initialCategoryId) {
+      setCategoryId(resolveInitialCategoryId(initialCategoryId))
+    }
+
+    if (initialBoardKey) {
+      const id = resolveInitialCategoryId(
+        initialCategoryId ||
+          LEADERBOARD_UI_CATEGORIES.find((c) =>
+            c.boardKeys.includes(initialBoardKey),
+          )?.id,
+      )
+      const cat =
+        LEADERBOARD_UI_CATEGORIES.find((item) => item.id === id) ||
+        LEADERBOARD_UI_CATEGORIES[0]
+      setCategoryId(cat.id)
+      if (cat.boardKeys.includes(initialBoardKey)) {
+        setBoardKey(initialBoardKey)
+      }
+    }
+
+    if (
+      initialPeriod === 'all_time' ||
+      initialPeriod === 'this_week'
+    ) {
+      setPeriod(initialPeriod)
+    }
+  }, [initialCategoryId, initialBoardKey, initialPeriod])
 
   useEffect(() => {
     if (categoryId === 'habits' && period === 'this_week') {
@@ -78,10 +128,14 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
     let cancelled = false
     fetchLeaderboardName(user.id)
       .then((name) => {
-        if (!cancelled) setHasLeaderboardName(Boolean(name))
+        if (cancelled) return
+        setHasLeaderboardName(Boolean(name))
+        setViewerLeaderboardName(name || null)
       })
       .catch(() => {
-        if (!cancelled) setHasLeaderboardName(false)
+        if (cancelled) return
+        setHasLeaderboardName(false)
+        setViewerLeaderboardName(null)
       })
 
     return () => {
@@ -105,6 +159,7 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
           data.map((row) => ({
             rank: row.rank,
             leaderboard_name: row.leaderboard_name,
+            awards: row.awards,
             result_display: `${row.streak} day${row.streak === 1 ? '' : 's'}`,
           })),
         )
@@ -241,11 +296,14 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
               </button>
             </div>
             {period === 'this_week' ? (
-              <p className="calc-hint leaderboard-period-hint">
-                UTC calendar week (Monday 00:00 UTC → next Monday). Shares posted
-                this week appear here and on All Time; when the UTC week ends they
-                leave This Week only.
-              </p>
+              <>
+                <ThisWeekCountdown className="leaderboard-week-countdown" />
+                <p className="calc-hint leaderboard-period-hint">
+                  UTC calendar week (Monday 00:00 UTC → next Monday). Shares posted
+                  this week appear here and on All Time; when the UTC week ends they
+                  leave This Week only.
+                </p>
+              </>
             ) : null}
           </div>
         ) : null}
@@ -318,6 +376,9 @@ function LeaderboardPage({ onOpenTab, onRequestAuth, initialCategoryId }) {
             <LeaderboardTable
               rows={rows}
               isSample={isSample}
+              highlightName={
+                isSample ? null : viewerLeaderboardName
+              }
               caption={
                 isHabitsCategory
                   ? 'Habit streak leaderboard'
@@ -423,7 +484,13 @@ function LeaderboardTable({
   caption,
   resultLabel = 'Result',
   isSample = false,
+  highlightName = null,
 }) {
+  const highlight =
+    highlightName && String(highlightName).trim()
+      ? String(highlightName).trim().toLowerCase()
+      : ''
+
   return (
     <div
       className={`leaderboard-table-wrap${isSample ? ' is-sample' : ''}`}
@@ -438,20 +505,38 @@ function LeaderboardTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr
-              key={`${row.rank}-${row.leaderboard_name}-${row.result_display}`}
-            >
-              <td className="leaderboard-rank">{row.rank}</td>
-              <td className="leaderboard-name">
-                {row.leaderboard_name}
-                {isSample ? (
-                  <span className="leaderboard-sample-badge">Sample</span>
-                ) : null}
-              </td>
-              <td className="leaderboard-result">{row.result_display}</td>
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const isYou =
+              Boolean(highlight) &&
+              String(row.leaderboard_name || '')
+                .trim()
+                .toLowerCase() === highlight
+            return (
+              <tr
+                key={`${row.rank}-${row.leaderboard_name}-${row.result_display}`}
+                className={isYou ? 'is-you' : undefined}
+              >
+                <td className="leaderboard-rank">{row.rank}</td>
+                <td className="leaderboard-name">
+                  <span className="leaderboard-name-row">
+                    <span className="leaderboard-name-text">
+                      {row.leaderboard_name}
+                      {isYou ? (
+                        <span className="leaderboard-you-badge">You</span>
+                      ) : null}
+                    </span>
+                    {row.awards ? (
+                      <PublicAwardBadges awards={row.awards} />
+                    ) : null}
+                    {isSample ? (
+                      <span className="leaderboard-sample-badge">Sample</span>
+                    ) : null}
+                  </span>
+                </td>
+                <td className="leaderboard-result">{row.result_display}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

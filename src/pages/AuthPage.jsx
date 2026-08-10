@@ -3,6 +3,16 @@ import { useAuth } from '../auth/AuthContext'
 import SoftReveal from '../components/SoftReveal'
 import { BRAND } from '../data/brand'
 import { friendlyAuthError } from '../lib/authErrors'
+import {
+  LEADERBOARD_NAME_MAX,
+  friendlyLeaderboardError,
+  saveLeaderboardName,
+  validateLeaderboardName,
+} from '../lib/leaderboardProfile'
+import {
+  applyPendingLeaderboardName,
+  stashPendingLeaderboardName,
+} from '../lib/pendingLeaderboardName'
 
 const RESET_SENT_MESSAGE =
   "If an account exists for this email, we've sent password reset instructions."
@@ -10,6 +20,12 @@ const RESET_SENT_MESSAGE =
 function normalizeAuthMode(mode) {
   if (mode === 'signup' || mode === 'forgot' || mode === 'login') return mode
   return 'login'
+}
+
+async function applyLeaderboardNameIfPresent(userId, rawName) {
+  const trimmed = String(rawName || '').trim()
+  if (!userId || !trimmed) return
+  await saveLeaderboardName(userId, trimmed)
 }
 
 function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
@@ -25,16 +41,19 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
   const [firstName, setFirstName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [leaderboardName, setLeaderboardName] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState(initialMessage || '')
   const [submitting, setSubmitting] = useState(false)
   const errorRef = useRef(null)
   const statusRef = useRef(null)
   const firstNameId = useId()
+  const leaderboardNameId = useId()
   const emailId = useId()
   const passwordId = useId()
   const errorId = useId()
   const messageId = useId()
+  const leaderboardHelpId = useId()
 
   const isSignup = mode === 'signup'
   const isForgot = mode === 'forgot'
@@ -74,6 +93,7 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
     setError('')
     setMessage('')
     setPassword('')
+    if (nextMode !== 'signup') setLeaderboardName('')
   }
 
   const handleSubmit = async (event) => {
@@ -97,18 +117,44 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
           throw new Error('Password must be at least 6 characters.')
         }
 
+        const lbDraft = leaderboardName.trim()
+        if (lbDraft) {
+          const checked = validateLeaderboardName(lbDraft)
+          if (!checked.ok) throw new Error(checked.error)
+        }
+
         const data = await signUp({ email, password, firstName })
-        if (data.session) {
+        const userId = data?.user?.id || data?.session?.user?.id
+
+        if (data.session && userId) {
+          if (lbDraft) {
+            try {
+              await applyLeaderboardNameIfPresent(userId, lbDraft)
+            } catch (lbErr) {
+              // Retry via App auth effect / next load.
+              stashPendingLeaderboardName(lbDraft)
+              console.warn('Leaderboard Name not saved at signup', lbErr)
+            }
+          }
           setMessage('Account created. Welcome to KinesoScore.')
           onSuccess?.('account')
         } else {
+          if (lbDraft) stashPendingLeaderboardName(lbDraft)
           setMessage(
             'Account created. Check your email to confirm, then log in.',
           )
           setMode('login')
         }
       } else {
-        await signIn({ email, password })
+        const data = await signIn({ email, password })
+        const userId = data?.user?.id || data?.session?.user?.id
+        if (userId) {
+          try {
+            await applyPendingLeaderboardName(userId, saveLeaderboardName)
+          } catch (lbErr) {
+            console.warn('Pending Leaderboard Name not saved at login', lbErr)
+          }
+        }
         setMessage('Signed in successfully.')
         onSuccess?.('account')
       }
@@ -122,6 +168,8 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
         } else {
           setMessage(RESET_SENT_MESSAGE)
         }
+      } else if (err?.code === 'VALIDATION') {
+        setError(friendlyLeaderboardError(err))
       } else {
         setError(friendlyAuthError(err, 'Authentication failed.'))
       }
@@ -177,6 +225,35 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
                 tabIndex={isSignup ? undefined : -1}
               />
             </label>
+          </SoftReveal>
+
+          <SoftReveal open={isSignup}>
+            <div className="auth-leaderboard-name-field">
+              <label className="field" htmlFor={leaderboardNameId}>
+                <span>
+                  Leaderboard Name{' '}
+                  <span className="auth-optional-tag">(optional)</span>
+                </span>
+                <input
+                  id={leaderboardNameId}
+                  type="text"
+                  name="leaderboardName"
+                  autoComplete="username"
+                  spellCheck={false}
+                  maxLength={LEADERBOARD_NAME_MAX}
+                  value={leaderboardName}
+                  onChange={(event) => setLeaderboardName(event.target.value)}
+                  placeholder="e.g. TrailRunner_7"
+                  tabIndex={isSignup ? undefined : -1}
+                  aria-describedby={leaderboardHelpId}
+                />
+              </label>
+              <p id={leaderboardHelpId} className="calc-hint auth-leaderboard-hint">
+                Optional — only for public leaderboards. Claim a name now so you
+                can share results on day one. Change or remove it anytime in
+                Account Settings.
+              </p>
+            </div>
           </SoftReveal>
 
           <label className="field" htmlFor={emailId}>

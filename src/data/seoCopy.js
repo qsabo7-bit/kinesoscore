@@ -683,7 +683,7 @@ export const LEADERBOARD_SEO = {
     {
       question: 'What is the difference between All Time and This Week?',
       answer:
-        'All Time ranks eligible active shares across history for that performance board. This Week is the current UTC calendar week (Monday 00:00 UTC through the following Monday): anything shared during that window appears on both boards, then drops off This Week when the UTC week ends while All Time keeps it. Habit Streaks are All Time only.',
+        'All Time ranks eligible active shares across history for that performance board. This Week is the current UTC calendar week (Monday 00:00 UTC through the following Monday): anything shared during that window appears on both boards, then drops off This Week when the UTC week ends while All Time keeps it. Habit Streaks are All Time only. Athletes may also opt in to show Strength/Running medal tiers (and Crown) next to their Leaderboard Name — never raw scores.',
     },
     {
       question: 'Do private calculator saves appear on the leaderboard?',

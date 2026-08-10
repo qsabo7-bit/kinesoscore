@@ -8,7 +8,7 @@ import {
   stickyToolsHighlightTab,
 } from '../data/calculators'
 import { BRAND } from '../data/brand'
-import { pathForTab } from '../data/seo'
+import { pathForTab, SITE } from '../data/seo'
 import { handleNavLinkClick } from '../lib/navLinkClick'
 import { isNavTabActive } from '../lib/navTabActive'
 import { useFocusTrap } from '../lib/useFocusTrap'
@@ -20,8 +20,11 @@ function Header({ activeTab, onTabChange }) {
   const { isAuthenticated, firstName, loading } = useAuth()
   const calculatorActive = isCalculatorTab(activeTab)
   const stickyHighlightTab = stickyToolsHighlightTab(activeTab)
-  const brandLabel =
-    activeTab === 'home' || activeTab === 'about' ? BRAND.mark : BRAND.short
+  // Compact mark on Home / About / Dashboard (signed-in Home redirects to Dashboard).
+  const useBrandMark =
+    activeTab === 'home' ||
+    activeTab === 'about' ||
+    activeTab === 'dashboard'
   const scrollY = useWindowScrollY(activeTab)
   const scrolled = scrollY > 8
   const [menuOpen, setMenuOpen] = useState(false)
@@ -177,13 +180,27 @@ function Header({ activeTab, onTabChange }) {
 
         <div className="site-header-top">
           <a
-            className="brand"
+            className={`brand${useBrandMark ? ' is-mark-icon' : ''}`}
             href={pathForTab('home')}
             onClick={(event) => go(event, 'home')}
             title={BRAND.full}
             aria-label={BRAND.full}
           >
-            {brandLabel}
+            {/* Keep mark mounted so tab switches do not re-decode the PNG. */}
+            <img
+              className="brand-mark-icon"
+              src={SITE.faviconPath}
+              alt=""
+              width={30}
+              height={30}
+              decoding="async"
+              fetchPriority="high"
+              draggable={false}
+              aria-hidden={!useBrandMark}
+            />
+            <span className="brand-wordmark" aria-hidden={useBrandMark}>
+              {BRAND.short}
+            </span>
           </a>
 
           <nav className="site-nav site-nav-desktop" aria-label="Main">

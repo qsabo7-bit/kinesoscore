@@ -133,6 +133,13 @@ begin
         using errcode = '42501';
     end if;
 
+    -- Lifecycle / unshare paths must not re-validate name, allowlist, or source
+    -- (includes clear Leaderboard Name → deactivate shares after profile delete).
+    if tg_op = 'UPDATE' and new.is_active is false then
+      new.updated_at := now();
+      return new;
+    end if;
+
     select lp.leaderboard_name
       into profile_name
     from public.leaderboard_profiles lp

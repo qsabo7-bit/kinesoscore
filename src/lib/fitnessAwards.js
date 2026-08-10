@@ -70,3 +70,36 @@ export function deriveAwards(scores = {}) {
     crown: deriveCrown(runningScore, strengthScore),
   }
 }
+
+const TIER_RANK = {
+  bronze: 1,
+  silver: 2,
+  gold: 3,
+  diamond: 4,
+}
+
+/**
+ * Messages for newly earned / upgraded awards (private unlock ceremony).
+ * @param {{ running?: string | null, strength?: string | null, crown?: boolean } | null} previous
+ * @param {{ running?: string | null, strength?: string | null, crown?: boolean } | null} next
+ * @returns {string[]}
+ */
+export function detectAwardUnlocks(previous, next) {
+  if (!next) return []
+  const messages = []
+  for (const kind of /** @type {const} */ (['strength', 'running'])) {
+    const prevTier = previous?.[kind] || null
+    const nextTier = next?.[kind] || null
+    if (
+      nextTier &&
+      (!prevTier || (TIER_RANK[nextTier] || 0) > (TIER_RANK[prevTier] || 0))
+    ) {
+      const label = kind === 'strength' ? 'Strength' : 'Running'
+      messages.push(`${AWARD_LABELS[nextTier]} ${label} unlocked`)
+    }
+  }
+  if (next.crown && !previous?.crown) {
+    messages.push('Crown unlocked')
+  }
+  return messages
+}

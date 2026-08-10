@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  detectAwardUnlocks,
   deriveAwards,
   deriveComponentAward,
   deriveCrown,
@@ -67,5 +68,39 @@ describe('deriveAwards (Stage 9.5)', () => {
       strength: 'diamond',
       crown: true,
     })
+  })
+})
+
+describe('detectAwardUnlocks', () => {
+  it('reports new tiers, upgrades, and first crown', () => {
+    assert.deepEqual(
+      detectAwardUnlocks(null, {
+        running: 'bronze',
+        strength: 'gold',
+        crown: false,
+      }),
+      ['Gold Strength unlocked', 'Bronze Running unlocked'],
+    )
+    assert.deepEqual(
+      detectAwardUnlocks(
+        { running: 'bronze', strength: 'gold', crown: false },
+        { running: 'silver', strength: 'gold', crown: false },
+      ),
+      ['Silver Running unlocked'],
+    )
+    assert.deepEqual(
+      detectAwardUnlocks(
+        { running: 'diamond', strength: 'gold', crown: false },
+        { running: 'diamond', strength: 'diamond', crown: true },
+      ),
+      ['Diamond Strength unlocked', 'Crown unlocked'],
+    )
+    assert.deepEqual(
+      detectAwardUnlocks(
+        { running: 'gold', strength: 'gold', crown: false },
+        { running: 'gold', strength: 'gold', crown: false },
+      ),
+      [],
+    )
   })
 })

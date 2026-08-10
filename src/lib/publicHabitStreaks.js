@@ -1,3 +1,4 @@
+import { mapPublicAwardIdentity } from './awardIdentityFormat.js'
 import { assignDenseRanks } from './leaderboardDenseRank.js'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
 
@@ -18,6 +19,7 @@ export async function fetchPublicHabitStreaks(period = 'all_time') {
     rank: Number(row.rank),
     leaderboard_name: String(row.leaderboard_name || ''),
     streak: Number(row.streak),
+    awards: mapPublicAwardIdentity(row),
   }))
 
   // Re-apply dense ranks by streak so equal values tie even before SQL migration.

@@ -15,6 +15,13 @@ import {
   hasPendingAuthCallbackInUrl,
 } from './lib/authCallback'
 import { applyDocumentSeo } from './lib/documentSeo'
+import { applyPendingLeaderboardName } from './lib/pendingLeaderboardName'
+import { saveLeaderboardName } from './lib/leaderboardProfile'
+import {
+  isCalculatorResumeTab,
+  rememberLastCalculatorTab,
+} from './lib/lastCalculator'
+import { categoryIdForBoardKey } from './lib/publicLeaderboard'
 import { scrollWindowToTop } from './lib/windowScroll'
 
 /** Route chunks — keep Home/Auth/404 eager for first paint + auth redirects. */
@@ -72,6 +79,7 @@ function initialTabFromLocation() {
 
 function App() {
   const {
+    user,
     isAuthenticated,
     loading,
     passwordRecovery,
@@ -82,15 +90,61 @@ function App() {
   const [activeTab, setActiveTab] = useState(initialTabFromLocation)
   const [authNotice, setAuthNotice] = useState('')
   const [authMode, setAuthMode] = useState('login')
+  /** @type {[{ boardKey?: string, period?: string, categoryId?: string } | null, Function]} */
+  const [leaderboardFocus, setLeaderboardFocus] = useState(null)
   const openedRecovery = useRef(false)
   const handledEmailConfirm = useRef(false)
+  const pendingNameAppliedFor = useRef(null)
   const skipNextUrlPush = useRef(false)
   const previousTabForFocus = useRef(null)
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tabOrOpts) => {
+    if (tabOrOpts && typeof tabOrOpts === 'object' && tabOrOpts.tab) {
+      const { tab, boardKey, period, categoryId } = tabOrOpts
+      if (tab === 'login') setAuthMode('login')
+      if (tab === 'leaderboard' || tab === 'leaderboard-habits') {
+        setLeaderboardFocus({
+          boardKey: boardKey || undefined,
+          period: period || undefined,
+          categoryId:
+            categoryId ||
+            (boardKey ? categoryIdForBoardKey(boardKey) : undefined),
+        })
+      }
+      if (user?.id && isCalculatorResumeTab(tab)) {
+        rememberLastCalculatorTab(user.id, tab)
+      }
+      setActiveTab(tab)
+      return
+    }
+
+    const tab = tabOrOpts
     if (tab === 'login') setAuthMode('login')
+    if (tab !== 'leaderboard' && tab !== 'leaderboard-habits') {
+      setLeaderboardFocus(null)
+    }
+    if (user?.id && isCalculatorResumeTab(tab)) {
+      rememberLastCalculatorTab(user.id, tab)
+    }
     setActiveTab(tab)
   }
+
+  // Apply signup Leaderboard Name after confirm/login (survives new-tab confirm).
+  useEffect(() => {
+    if (loading || !isAuthenticated || !user?.id) return undefined
+    if (pendingNameAppliedFor.current === user.id) return undefined
+    pendingNameAppliedFor.current = user.id
+    let cancelled = false
+    applyPendingLeaderboardName(user.id, saveLeaderboardName).catch((err) => {
+      if (cancelled) return
+      // Allow retry on next auth cycle if save failed.
+      pendingNameAppliedFor.current = null
+      console.warn('Pending Leaderboard Name not applied', err)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [loading, isAuthenticated, user?.id])
 
   /** Guest CTAs: default to signup; pass 'login' for returning users. */
   const requestAuth = (mode = 'signup') => {
@@ -196,6 +250,13 @@ function App() {
     if (loading || passwordRecovery) return
 
     if (isAuthenticated && activeTab === 'login') {
+      setActiveTab('dashboard')
+      return
+    }
+
+    // Signed-in ritual: Home lands on Dashboard (brand mark / marketing Home
+    // still available to guests; About stays open for members).
+    if (isAuthenticated && activeTab === 'home') {
       setActiveTab('dashboard')
       return
     }
@@ -351,7 +412,15 @@ function App() {
         onOpenTab={handleTabChange}
         onRequestAuth={requestAuth}
         initialCategoryId={
-          renderTab === 'leaderboard-habits' ? 'habits' : undefined
+          renderTab === 'leaderboard-habits'
+            ? 'habits'
+            : leaderboardFocus?.categoryId
+        }
+        initialBoardKey={leaderboardFocus?.boardKey}
+        initialPeriod={
+          renderTab === 'leaderboard-habits'
+            ? 'all_time'
+            : leaderboardFocus?.period
         }
       />
     )

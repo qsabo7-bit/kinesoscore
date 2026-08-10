@@ -95,6 +95,10 @@ export function friendlyLeaderboardNameError(
     return 'Too many Leaderboard Name changes. Try again in a little while.'
   }
 
+  if (/A Leaderboard Name is required before sharing/i.test(text)) {
+    return 'Could not clear Leaderboard Name while public shares were still linked. Refresh and try again, or run the latest database update.'
+  }
+
   if (
     code === 'PGRST205' ||
     /Could not find the table .*leaderboard_profiles/i.test(text)

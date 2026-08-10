@@ -34,14 +34,19 @@ import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { SCORING_SEO } from '../data/seoCopy'
 import { FPC_SCORE_LOCKED_PREVIEW } from '../components/tracking'
 import {
-  friendlyFitnessSnapshotError,
-  saveFitnessScoreSnapshot,
-} from '../lib/fitnessScoreSnapshots'
-import {
   FPC_SCORE_CALCULATOR_TYPE,
   SCORING_TRACKS,
 } from '../data/trackingTracks'
-import { deriveAwards } from '../lib/fitnessAwards'
+import {
+  formatPublicAwardCaption,
+  syncPublicAwardIdentityFromScores,
+} from '../lib/awardIdentity'
+import { detectAwardUnlocks, deriveAwards } from '../lib/fitnessAwards'
+import {
+  fetchLatestFitnessScoreSnapshot,
+  friendlyFitnessSnapshotError,
+  saveFitnessScoreSnapshot,
+} from '../lib/fitnessScoreSnapshots'
 import { fetchPerformanceRecords } from '../lib/performanceRecords'
 import { estimated5kAutofillPatch } from '../lib/runningTracking'
 
@@ -128,6 +133,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
   const [age, setAge, ageShared] = useSyncedDefault('age', '')
   const [gender, setGender, genderShared] = useSyncedDefault('gender', '')
   const [snapshotWarning, setSnapshotWarning] = useState('')
+  const [awardUnlockMessage, setAwardUnlockMessage] = useState('')
 
   // Seed Estimated 5K from latest saved run (or clear). Skip if user is mid-edit.
   useEffect(() => {
@@ -748,15 +754,6 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
             </FitnessAwardsDisplay>
             <FitnessAwardsLegend awards={liveAwards} />
           </div>
-          <ResultShareActions
-            title={BRAND.scoreName}
-            text={`Just scored ${result.score.FPCScore} on ${BRAND.scoreName} — ${result.score.band}. What’s yours?`}
-            url={
-              typeof window !== 'undefined'
-                ? `${window.location.origin}/scoring`
-                : 'https://kinesoscore.com/scoring'
-            }
-          />
         </section>
       ) : (
         <p className="calc-hint">{hint}</p>
@@ -781,10 +778,42 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         lockedPreview={FPC_SCORE_LOCKED_PREVIEW}
         onRequestAuth={onRequestAuth}
         onOpenTab={onOpenTab}
+        saveFeedback={awardUnlockMessage}
+        resultShare={
+          result.score ? (
+            <ResultShareActions
+              title={BRAND.scoreName}
+              text={(() => {
+                const awardLine = formatPublicAwardCaption(liveAwards)
+                const base = `Just scored ${result.score.FPCScore} on ${BRAND.scoreName} — ${result.score.band}. What’s yours?`
+                return awardLine ? `${base} ${awardLine}.` : base
+              })()}
+              url={
+                typeof window !== 'undefined'
+                  ? `${window.location.origin}/scoring`
+                  : 'https://kinesoscore.com/scoring'
+              }
+            />
+          ) : null
+        }
         onSaved={async ({ recordId }) => {
           if (!user?.id || !recordId || !result.score) return
           setSnapshotWarning('')
+          setAwardUnlockMessage('')
           try {
+            let previousAwards = null
+            try {
+              const prior = await fetchLatestFitnessScoreSnapshot(user.id)
+              if (prior) {
+                previousAwards = deriveAwards({
+                  runningScore: prior.running_score,
+                  strengthScore: prior.strength_score,
+                })
+              }
+            } catch {
+              previousAwards = null
+            }
+
             await saveFitnessScoreSnapshot({
               userId: user.id,
               sourceRecordId: recordId,
@@ -792,6 +821,24 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
               strengthScore: result.score.strengthScore,
               runningScore: result.score.runningScore,
             })
+
+            const nextAwards = deriveAwards({
+              runningScore: result.score.runningScore,
+              strengthScore: result.score.strengthScore,
+            })
+            const unlocks = detectAwardUnlocks(previousAwards, nextAwards)
+            if (unlocks.length) {
+              setAwardUnlockMessage(unlocks.join(' · '))
+            }
+
+            try {
+              await syncPublicAwardIdentityFromScores(user.id, {
+                runningScore: result.score.runningScore,
+                strengthScore: result.score.strengthScore,
+              })
+            } catch {
+              // Opt-in public badges are best-effort; private snapshot already saved.
+            }
           } catch (err) {
             // Performance save already succeeded; snapshot is private enrichment.
             setSnapshotWarning(
@@ -802,8 +849,17 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
             )
           }
         }}
-        onDeleted={() => {
+        onDeleted={async () => {
           setSnapshotWarning('')
+          setAwardUnlockMessage('')
+          // Jump-discard (or history delete) removes the snapshot with the
+          // record — re-sync public crests from whatever snapshot remains.
+          if (!user?.id) return
+          try {
+            await syncPublicAwardIdentityFromScores(user.id)
+          } catch {
+            // Best-effort; Keep private / missing 015 should not block delete.
+          }
         }}
       />
 

@@ -272,7 +272,7 @@ revoke all on function public.enforce_write_rate_limit(uuid, text, integer, inte
 revoke all on function public.enforce_write_rate_limit(uuid, text, integer, interval)
   from authenticated;
 
--- Leaderboard Name: 5 changes / hour (insert, update, or clear/delete)
+-- Leaderboard Name: 5 changes / hour (insert or rename only; clear/delete free)
 create or replace function public.leaderboard_profiles_enforce_rate_limit()
 returns trigger
 language plpgsql
@@ -292,6 +292,17 @@ begin
   -- Account deletion sets this so delete_own_account cannot be blocked.
   if v_skip = '1' then
     return coalesce(new, old);
+  end if;
+
+  -- Clear Name / profile delete: never rate-limited (privacy exit).
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+
+  -- Award toggles and other non-name updates do not count as a name change.
+  if tg_op = 'UPDATE'
+     and new.leaderboard_name is not distinct from old.leaderboard_name then
+    return new;
   end if;
 
   uid := coalesce(new.user_id, old.user_id);

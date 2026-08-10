@@ -14,6 +14,7 @@ import {
   reorderActiveHabits,
   setHabitCheckin,
 } from '../lib/habits'
+import { resolveHabitStreakAtRisk } from '../lib/habitStreakAtRisk'
 import {
   computeHabitStreak,
   habitDayProgress,
@@ -24,6 +25,7 @@ import {
   setHabitStreakShare,
 } from '../lib/habitStreakShares'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
+import { consumeOnboardingShareHint } from '../lib/onboarding'
 import { useFocusTrap } from '../lib/useFocusTrap'
 import { isSupabaseConfigured } from '../supabaseClient'
 
@@ -60,6 +62,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
   )
   const progress = habitDayProgress(todayKey, activeHabits, checkins, todayKey)
   const streak = computeHabitStreak(activeHabits, checkins, { todayKey })
+  const atRisk = resolveHabitStreakAtRisk(activeHabits, checkins, todayKey)
 
   const completedByHabit = useMemo(() => {
     const map = new Map()
@@ -89,6 +92,10 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
         if (cancelled) return
         setHabits(nextHabits)
         setCheckins(nextCheckins)
+        const preferShare =
+          !share?.is_active &&
+          Boolean(name) &&
+          consumeOnboardingShareHint()
         setHasLeaderboardName(Boolean(name))
         setShareActive(Boolean(share?.is_active))
         setPublicStreak(
@@ -96,6 +103,11 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
             ? Number(share.streak)
             : null,
         )
+        if (preferShare) {
+          setShareMessage(
+            'Setup tip: tap Share streak to appear on the Habit Streaks board.',
+          )
+        }
       } catch (err) {
         if (cancelled) return
         setError(friendlyHabitError(err, 'Could not load habits.'))
@@ -275,6 +287,14 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           </strong>
         </p>
       </div>
+
+      {atRisk ? (
+        <p className="habit-at-risk-banner" role="status">
+          🔥 Streak at risk — {atRisk.streakAtRisk} day
+          {atRisk.streakAtRisk === 1 ? '' : 's'} on the line. Finish today’s
+          habits ({atRisk.progress.ratioLabel}) to keep it alive.
+        </p>
+      ) : null}
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 

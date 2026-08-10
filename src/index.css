@@ -559,6 +559,7 @@ a.site-footer-link:hover {
 }
 
 .brand {
+  position: relative;
   font-family: var(--display);
   font-size: clamp(1.05rem, 2.4vw, 1.28rem);
   font-weight: 700;
@@ -569,6 +570,50 @@ a.site-footer-link:hover {
   transition: color var(--motion-fast) var(--motion-ease-soft);
 }
 
+.brand.is-mark-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.brand-mark-icon {
+  display: block;
+  /* Match brand wordmark hierarchy: larger than .nav-tab (0.85rem). */
+  width: clamp(1.55rem, 3.4vw, 1.85rem);
+  height: clamp(1.55rem, 3.4vw, 1.85rem);
+  object-fit: contain;
+  flex: 0 0 auto;
+  transition: filter var(--motion-fast) var(--motion-ease-soft);
+}
+
+.brand-wordmark {
+  display: inline;
+}
+
+/* Park the unused face without unmounting (avoids decode lag on tab change). */
+.brand:not(.is-mark-icon) .brand-mark-icon {
+  position: absolute;
+  width: clamp(1.55rem, 3.4vw, 1.85rem);
+  height: clamp(1.55rem, 3.4vw, 1.85rem);
+  opacity: 0;
+  pointer-events: none;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.brand.is-mark-icon .brand-wordmark {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 a.brand:visited {
   color: var(--text-strong);
 }
@@ -576,6 +621,13 @@ a.brand:visited {
 a.brand:hover,
 a.brand:hover:visited {
   color: var(--accent);
+}
+
+a.brand.is-mark-icon:hover .brand-mark-icon,
+a.brand.is-mark-icon:hover:visited .brand-mark-icon {
+  filter: drop-shadow(
+    0 0 0.55rem color-mix(in srgb, var(--accent) 70%, transparent)
+  );
 }
 
 .site-nav {
@@ -2425,6 +2477,22 @@ a:focus-visible {
   margin-top: 0.5rem;
 }
 
+.auth-leaderboard-name-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.auth-optional-tag {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.auth-leaderboard-hint {
+  margin: 0;
+}
+
 .auth-status {
   min-height: 0;
 }
@@ -2493,6 +2561,26 @@ a:focus-visible {
   gap: 0.75rem;
 }
 
+.save-share-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem 1.25rem;
+  align-items: start;
+  max-width: 48rem;
+}
+
+.save-share-aside .result-share {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+@media (max-width: 720px) {
+  .save-share-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .leaderboard-share-control {
   display: grid;
   gap: 0.4rem;
@@ -2541,6 +2629,367 @@ a:focus-visible {
 .leaderboard-share-option:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.this-week-share-status {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+  max-width: 36rem;
+  margin-top: 0.35rem;
+  padding: 1rem 0 0.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.this-week-share-status-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.this-week-rank-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 0.05rem;
+  line-height: 0.9;
+  animation: this-week-rank-pop var(--motion-enter) var(--motion-ease) both;
+}
+
+.this-week-rank-hero.is-ceremony {
+  animation:
+    this-week-rank-pop 0.55s var(--motion-ease) both,
+    this-week-rank-glow 1.1s var(--motion-ease) both;
+}
+
+.this-week-rank-hash {
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 8vw, 3.4rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 75%, var(--text-strong));
+}
+
+.this-week-rank-number {
+  font-family: var(--display);
+  font-size: clamp(4.5rem, 16vw, 6.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.this-week-rank-hero.is-unranked .this-week-rank-live {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 8vw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.this-week-share-status-board {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.this-week-share-status-board strong {
+  color: var(--text-strong);
+}
+
+.this-week-share-status-cta {
+  margin-top: 0;
+}
+
+.this-week-share-status-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.this-week-share-status-actions .share-moment-wrap {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.this-week-share-status-actions .share-moment-status {
+  white-space: nowrap;
+}
+
+.this-week-near-miss {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--accent) 75%, var(--text));
+}
+
+.habit-at-risk-banner {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text-strong);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.week-recap-card .week-recap-primary {
+  margin: 0.15rem 0 0.35rem;
+  font-size: 1.05rem;
+  color: var(--text-strong);
+}
+
+.dashboard-resume-line {
+  margin: 0.15rem 0 0.65rem;
+  color: var(--text);
+}
+
+.dashboard-resume-detail {
+  color: var(--muted-strong);
+  font-weight: 500;
+}
+
+.personal-best-toast {
+  font-weight: 650;
+}
+
+.share-moment-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.share-moment-status {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+@keyframes this-week-rank-pop {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes this-week-rank-glow {
+  0% {
+    filter: brightness(1);
+  }
+  35% {
+    filter: brightness(1.12);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .this-week-rank-hero,
+  .this-week-rank-hero.is-ceremony {
+    animation: none;
+  }
+}
+
+.this-week-countdown {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted-strong);
+}
+
+.this-week-countdown strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.this-week-countdown-meta {
+  color: var(--muted);
+}
+
+.this-week-countdown.is-urgent {
+  color: color-mix(in srgb, var(--accent) 55%, var(--muted-strong));
+  font-weight: 600;
+}
+
+.this-week-countdown.is-urgent strong {
+  color: var(--accent);
+}
+
+.dashboard-week-countdown,
+.leaderboard-week-countdown {
+  margin: 0.15rem 0 0.35rem;
+}
+
+.dashboard-this-week-strip .dashboard-your-week-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.dashboard-your-week-rank {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.35rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.dashboard-your-week-hash {
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 75%, var(--text-strong));
+}
+
+.dashboard-your-week-number {
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 7vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-your-week-board {
+  font-size: 0.95rem;
+  color: var(--muted-strong);
+}
+
+.award-unlock-toast {
+  animation: award-unlock-in var(--motion-enter) var(--motion-ease) both;
+}
+
+@keyframes award-unlock-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .award-unlock-toast {
+    animation: none;
+  }
+}
+
+.onboarding-wizard {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.onboarding-wizard-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.onboarding-wizard-top .result-section-title {
+  margin: 0.15rem 0 0;
+}
+
+.onboarding-skip {
+  margin-top: 0.2rem;
+}
+
+.onboarding-steps {
+  display: flex;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.onboarding-step-dot {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.onboarding-step-dot.is-active {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.onboarding-step-dot.is-done {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--text-strong);
+}
+
+.onboarding-panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.onboarding-lead {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--text-strong);
+}
+
+.onboarding-track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.onboarding-track {
+  display: grid;
+  gap: 0.2rem;
+  text-align: left;
+  min-height: 4.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.onboarding-track:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.onboarding-track.is-active {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated));
+}
+
+.onboarding-track-label {
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+.onboarding-track-blurb {
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 .text-link-button {
@@ -4569,10 +5018,15 @@ a:focus-visible {
   display: block;
 }
 
-.shared-input-shell.has-affordance input,
-.shared-input-shell.has-affordance select {
+.shared-input-shell.has-affordance input {
   width: 100%;
   padding-right: 2rem;
+}
+
+/* Selects already reserve ~2rem for the chevron; add room for the ↻ cue left of it. */
+.shared-input-shell.has-affordance select {
+  width: 100%;
+  padding-right: 3.35rem;
 }
 
 .shared-input-shell input,
@@ -4591,6 +5045,10 @@ a:focus-visible {
   pointer-events: auto;
   cursor: help;
   user-select: none;
+}
+
+.shared-input-shell.has-affordance:has(select) .shared-input-affordance {
+  right: 1.9rem;
 }
 
 /* Legacy under-field helper removed from the design system */
@@ -4697,6 +5155,130 @@ a:focus-visible {
 .leaderboard-name {
   font-weight: 600;
   word-break: break-word;
+}
+
+.leaderboard-name-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.45rem;
+}
+
+.leaderboard-name-text {
+  font-weight: 650;
+}
+
+.leaderboard-table tr.is-you {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.leaderboard-table tr.is-you td {
+  color: var(--text-strong);
+}
+
+.leaderboard-you-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.08rem 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 0.25rem;
+}
+
+.public-award-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem;
+  vertical-align: middle;
+}
+
+/* Mini crest/crown icons — same artwork as dashboard, no score numbers. */
+.fpc-award-badge.public-award-icon {
+  width: 1.7rem;
+  min-height: 0;
+  margin: 0;
+  animation: none;
+  justify-self: auto;
+}
+
+.fpc-award-badge.public-award-icon.is-strength,
+.fpc-award-badge.public-award-icon.is-running,
+.fpc-award-badge.public-award-icon.is-crown {
+  margin-top: 0;
+  width: 1.7rem;
+  min-height: 0;
+}
+
+.fpc-award-badge.public-award-icon::after {
+  display: none;
+}
+
+.fpc-award-badge.public-award-icon .fpc-award-crest {
+  width: 1.65rem;
+  height: 1.75rem;
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.06))
+    drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+}
+
+.fpc-award-badge.public-award-icon.is-bronze .fpc-award-crest,
+.fpc-award-badge.public-award-icon.is-silver .fpc-award-crest,
+.fpc-award-badge.public-award-icon.is-gold .fpc-award-crest,
+.fpc-award-badge.public-award-icon.is-diamond .fpc-award-crest {
+  width: 1.65rem;
+  height: 1.75rem;
+}
+
+.fpc-award-badge.public-award-icon .fpc-award-crest-face {
+  inset: 0.14rem;
+}
+
+.fpc-award-badge.public-award-icon .fpc-award-emblem {
+  width: 1.05rem;
+  height: 0.9rem;
+  filter:
+    drop-shadow(0 1px 0 color-mix(in srgb, var(--fpc-award-metal-hi) 30%, transparent))
+    drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+
+.fpc-award-badge.public-award-icon.is-crown {
+  width: 1.9rem;
+}
+
+.fpc-award-badge.public-award-icon .fpc-award-crown {
+  width: 1.9rem;
+  height: 1.45rem;
+  animation: none;
+}
+
+.fpc-award-badge.public-award-icon .fpc-award-crown-aura {
+  width: 1.7rem;
+  height: 1rem;
+}
+
+.fpc-award-badge.public-award-icon .fpc-award-crown-glyph {
+  width: 1.35rem;
+  height: 1.1rem;
+}
+
+.account-awards-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+}
+
+.account-awards-preview .public-award-badges {
+  transform: scale(1.15);
+  transform-origin: left center;
 }
 
 .leaderboard-result {

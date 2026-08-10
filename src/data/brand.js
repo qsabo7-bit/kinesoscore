@@ -1,6 +1,6 @@
 /** Product branding used across the UI. */
 export const BRAND = {
-  /** Compact mark for header on Home / About */
+  /** Legacy compact text mark (header now uses favicon icon on Home / About). */
   mark: 'KS',
   /** Website / platform name (no trademark suffix). */
   short: 'KinesoScore',

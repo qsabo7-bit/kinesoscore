@@ -11,6 +11,7 @@ describe('leaderboardSamples', () => {
     assert.equal(isSample, true)
     assert.equal(rows.length, 5)
     assert.equal(rows[0].leaderboard_name, 'NorthPeak')
+    assert.equal(rows[0].awards?.crown, true)
   })
 
   it('prefers live rows and drops samples', () => {

@@ -4,6 +4,7 @@ function SaveResultButton({
   onSave,
   saving,
   savedMessage,
+  celebrationMessage = '',
   disabled,
   label = 'Save Result',
 }) {
@@ -19,9 +20,17 @@ function SaveResultButton({
       >
         {saving ? 'Saving…' : label}
       </button>
-      {savedMessage ? (
-        <p className="feedback feedback-success">
-          Result saved to your progress.
+      {savedMessage || celebrationMessage ? (
+        <p className="feedback feedback-success" role="status">
+          {celebrationMessage
+            ? celebrationMessage
+            : 'Result saved to your progress.'}
+          {celebrationMessage && savedMessage ? (
+            <span className="save-result-saved-aside">
+              {' '}
+              · Saved to your progress
+            </span>
+          ) : null}
         </p>
       ) : null}
     </div>

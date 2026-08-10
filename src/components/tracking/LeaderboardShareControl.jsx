@@ -13,9 +13,9 @@ function LeaderboardShareControl({
     <div className="leaderboard-share-control">
       <p className="leaderboard-share-label">Global leaderboard</p>
       <p className="calc-hint leaderboard-share-hint">
-        Private by default. Applies when you save. Sharing only publishes your
-        Leaderboard Name and this result — never your email or first name.
-        Leaderboard scores are self-reported.
+        Private by default. Applies when you save. Share globally to appear on
+        All Time and This Week (UTC). Only your Leaderboard Name and this result
+        are published — never your email or first name. Scores are self-reported.
       </p>
       <div
         className="leaderboard-share-toggle"

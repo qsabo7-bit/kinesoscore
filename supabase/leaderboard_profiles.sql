@@ -15,6 +15,18 @@ create table if not exists public.leaderboard_profiles (
     check (leaderboard_name ~ '^[A-Za-z0-9_-]+$')
 );
 
+-- Stage C: opt-in public award identity (tiers/crown only — never raw scores).
+alter table public.leaderboard_profiles
+  add column if not exists show_awards_publicly boolean not null default true;
+alter table public.leaderboard_profiles
+  add column if not exists award_running text;
+alter table public.leaderboard_profiles
+  add column if not exists award_strength text;
+alter table public.leaderboard_profiles
+  add column if not exists award_crown boolean not null default false;
+alter table public.leaderboard_profiles
+  add column if not exists awards_updated_at timestamptz;
+
 create unique index if not exists leaderboard_profiles_name_ci_idx
   on public.leaderboard_profiles (lower(leaderboard_name));
 

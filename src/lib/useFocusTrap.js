@@ -71,7 +71,7 @@ export function useFocusTrap(active, onCancel, options = {}) {
       [...node.querySelectorAll(FOCUSABLE)].filter(isVisibleFocusable)
 
     const first = focusables()[0]
-    first?.focus()
+    first?.focus({ preventScroll: true })
 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
@@ -96,11 +96,11 @@ export function useFocusTrap(active, onCancel, options = {}) {
       if (event.shiftKey) {
         if (outside || current === firstItem) {
           event.preventDefault()
-          lastItem.focus()
+          lastItem.focus({ preventScroll: true })
         }
       } else if (outside || current === lastItem) {
         event.preventDefault()
-        firstItem.focus()
+        firstItem.focus({ preventScroll: true })
       }
     }
 
@@ -113,12 +113,13 @@ export function useFocusTrap(active, onCancel, options = {}) {
       const prev = previousFocusRef.current
       // Prefer restoring prior focus only if that node is still connected
       // (e.g. delete confirm removes the triggering Delete button).
+      // Always preventScroll — restoring into history lists was jumping the page.
       if (
         prev &&
         typeof prev.focus === 'function' &&
         document.contains(prev)
       ) {
-        prev.focus()
+        prev.focus({ preventScroll: true })
       } else {
         document
           .getElementById('main-content')

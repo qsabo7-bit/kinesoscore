@@ -1,4 +1,4 @@
--- Stage 5: Public leaderboard read RPC (narrow, validated, no raw shares).
+-- Stage 5 (+ Stage C awards): Public leaderboard read RPC.
 -- Idempotent — safe to re-run in Supabase Dashboard → SQL Editor.
 --
 -- Security model:
@@ -7,13 +7,13 @@
 --   * Validates period as all_time | this_week only
 --   * No dynamic SQL
 --   * Returns ONLY public fields (no user_id, email, source_record_id, etc.)
+--   * Award tiers/crown only when show_awards_publicly — never raw scores
 --   * Requires is_active + current leaderboard_profiles row (valid name)
 --   * Does NOT grant SELECT on leaderboard_shares to anon
---
--- Account deletion: delete_own_account already removes leaderboard_shares and
--- leaderboard_profiles, so deleted users disappear from this RPC automatically.
 
-create or replace function public.get_public_leaderboard(
+drop function if exists public.get_public_leaderboard(text, text);
+
+create function public.get_public_leaderboard(
   p_board_key text,
   p_period text default 'all_time'
 )
@@ -23,7 +23,10 @@ returns table (
   board_key text,
   result_value numeric,
   result_unit text,
-  higher_is_better boolean
+  higher_is_better boolean,
+  award_running text,
+  award_strength text,
+  award_crown boolean
 )
 language plpgsql
 stable
@@ -48,7 +51,6 @@ begin
       using errcode = '22023';
   end if;
 
-  -- Tight board-key allowlist (must stay aligned with leaderboard_share_target_allowed).
   select exists (
     select 1
     from (
@@ -97,7 +99,19 @@ begin
       s.result_value as value,
       s.result_unit as unit,
       s.higher_is_better as hib,
-      s.rank_value as rvalue
+      s.rank_value as rvalue,
+      case
+        when p.show_awards_publicly then p.award_running
+        else null
+      end as arun,
+      case
+        when p.show_awards_publicly then p.award_strength
+        else null
+      end as astr,
+      case
+        when p.show_awards_publicly then coalesce(p.award_crown, false)
+        else false
+      end as acrown
     from public.leaderboard_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
@@ -112,13 +126,11 @@ begin
       )
       and (
         v_period = 'all_time'
-        -- Posted during the current UTC calendar week (Mon 00:00 → next Mon).
         or s.shared_at >= v_week_start
       )
   ),
   ranked as (
     select
-      -- Rank by score only so equal values tie; name is display order below.
       dense_rank() over (
         order by e.rvalue desc
       ) as rnk,
@@ -126,7 +138,10 @@ begin
       e.bkey,
       e.value,
       e.unit,
-      e.hib
+      e.hib,
+      e.arun,
+      e.astr,
+      e.acrown
     from eligible e
   )
   select
@@ -135,7 +150,10 @@ begin
     ranked.bkey,
     ranked.value,
     ranked.unit,
-    ranked.hib
+    ranked.hib,
+    ranked.arun,
+    ranked.astr,
+    ranked.acrown
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -147,4 +165,4 @@ grant execute on function public.get_public_leaderboard(text, text)
   to anon, authenticated;
 
 comment on function public.get_public_leaderboard(text, text) is
-  'Public leaderboard read. This Week = shared_at in current UTC Mon–Sun week; All Time = all active shares. Equal scores dense-rank tie.';
+  'Public leaderboard read. This Week = shared_at in current UTC week; opt-in award tiers/crown only.';

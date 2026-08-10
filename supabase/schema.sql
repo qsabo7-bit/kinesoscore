@@ -145,6 +145,18 @@ create table if not exists public.leaderboard_profiles (
     check (leaderboard_name ~ '^[A-Za-z0-9_-]+$')
 );
 
+-- Stage C: opt-in public award identity (tiers/crown only — never raw scores).
+alter table public.leaderboard_profiles
+  add column if not exists show_awards_publicly boolean not null default true;
+alter table public.leaderboard_profiles
+  add column if not exists award_running text;
+alter table public.leaderboard_profiles
+  add column if not exists award_strength text;
+alter table public.leaderboard_profiles
+  add column if not exists award_crown boolean not null default false;
+alter table public.leaderboard_profiles
+  add column if not exists awards_updated_at timestamptz;
+
 create unique index if not exists leaderboard_profiles_name_ci_idx
   on public.leaderboard_profiles (lower(leaderboard_name));
 
@@ -586,7 +598,22 @@ grant execute on function public.delete_own_account() to authenticated;
 -- ---------------------------------------------------------------------------
 -- Stage 5: Public leaderboard read (narrow RPC — see migrations/004_*.sql)
 -- ---------------------------------------------------------------------------
-create or replace function public.get_public_leaderboard(
+-- Stage 5 (+ Stage C awards): Public leaderboard read RPC.
+-- Idempotent — safe to re-run in Supabase Dashboard → SQL Editor.
+--
+-- Security model:
+--   * SECURITY DEFINER with fixed search_path
+--   * Validates board_key against Stage 3 allowlist keys only
+--   * Validates period as all_time | this_week only
+--   * No dynamic SQL
+--   * Returns ONLY public fields (no user_id, email, source_record_id, etc.)
+--   * Award tiers/crown only when show_awards_publicly — never raw scores
+--   * Requires is_active + current leaderboard_profiles row (valid name)
+--   * Does NOT grant SELECT on leaderboard_shares to anon
+
+drop function if exists public.get_public_leaderboard(text, text);
+
+create function public.get_public_leaderboard(
   p_board_key text,
   p_period text default 'all_time'
 )
@@ -596,7 +623,10 @@ returns table (
   board_key text,
   result_value numeric,
   result_unit text,
-  higher_is_better boolean
+  higher_is_better boolean,
+  award_running text,
+  award_strength text,
+  award_crown boolean
 )
 language plpgsql
 stable
@@ -669,7 +699,19 @@ begin
       s.result_value as value,
       s.result_unit as unit,
       s.higher_is_better as hib,
-      s.rank_value as rvalue
+      s.rank_value as rvalue,
+      case
+        when p.show_awards_publicly then p.award_running
+        else null
+      end as arun,
+      case
+        when p.show_awards_publicly then p.award_strength
+        else null
+      end as astr,
+      case
+        when p.show_awards_publicly then coalesce(p.award_crown, false)
+        else false
+      end as acrown
     from public.leaderboard_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
@@ -684,13 +726,11 @@ begin
       )
       and (
         v_period = 'all_time'
-        -- Posted during the current UTC calendar week (Mon 00:00 → next Mon).
         or s.shared_at >= v_week_start
       )
   ),
   ranked as (
     select
-      -- Rank by score only so equal values tie; name is display order below.
       dense_rank() over (
         order by e.rvalue desc
       ) as rnk,
@@ -698,7 +738,10 @@ begin
       e.bkey,
       e.value,
       e.unit,
-      e.hib
+      e.hib,
+      e.arun,
+      e.astr,
+      e.acrown
     from eligible e
   )
   select
@@ -707,7 +750,10 @@ begin
     ranked.bkey,
     ranked.value,
     ranked.unit,
-    ranked.hib
+    ranked.hib,
+    ranked.arun,
+    ranked.astr,
+    ranked.acrown
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -719,7 +765,8 @@ grant execute on function public.get_public_leaderboard(text, text)
   to anon, authenticated;
 
 comment on function public.get_public_leaderboard(text, text) is
-  'Public leaderboard read. This Week = shared_at in current UTC Mon–Sun week; All Time = all active shares. Equal scores dense-rank tie.';
+  'Public leaderboard read. This Week = shared_at in current UTC week; opt-in award tiers/crown only.';
+
 -- ---------------------------------------------------------------------------
 -- Stage 8: Habit streak sharing
 -- ---------------------------------------------------------------------------
@@ -1060,13 +1107,18 @@ grant execute on function public.set_habit_streak_share(boolean, date)
 -- ---------------------------------------------------------------------------
 -- Public RPC — current streak board only (all_time)
 -- ---------------------------------------------------------------------------
-create or replace function public.get_public_habit_streaks(
+drop function if exists public.get_public_habit_streaks(text);
+
+create function public.get_public_habit_streaks(
   p_period text default 'all_time'
 )
 returns table (
   rank bigint,
   leaderboard_name text,
-  streak integer
+  streak integer,
+  award_running text,
+  award_strength text,
+  award_crown boolean
 )
 language plpgsql
 stable
@@ -1085,7 +1137,19 @@ begin
   with eligible as (
     select
       p.leaderboard_name as name,
-      s.streak as streak_value
+      s.streak as streak_value,
+      case
+        when p.show_awards_publicly then p.award_running
+        else null
+      end as arun,
+      case
+        when p.show_awards_publicly then p.award_strength
+        else null
+      end as astr,
+      case
+        when p.show_awards_publicly then coalesce(p.award_crown, false)
+        else false
+      end as acrown
     from public.habit_streak_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
@@ -1100,13 +1164,19 @@ begin
         order by e.streak_value desc
       ) as rnk,
       e.name,
-      e.streak_value
+      e.streak_value,
+      e.arun,
+      e.astr,
+      e.acrown
     from eligible e
   )
   select
     ranked.rnk,
     ranked.name,
-    ranked.streak_value
+    ranked.streak_value,
+    ranked.arun,
+    ranked.astr,
+    ranked.acrown
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -1118,7 +1188,9 @@ grant execute on function public.get_public_habit_streaks(text)
   to anon, authenticated;
 
 comment on function public.get_public_habit_streaks(text) is
-  'Stage 8 public habit streak board. Returns only rank, leaderboard_name, streak.';
+  'Stage 8 public habit streak board. Opt-in award tiers/crown only (never raw scores).';
+
+
 
 comment on table public.habit_streak_shares is
   'Stage 8 opt-in public habit streak projection. No habit/check-in details. Own-row RLS; public via RPC only.';
@@ -1434,6 +1506,17 @@ begin
 
   if v_skip = '1' then
     return coalesce(new, old);
+  end if;
+
+  -- Clear Name / profile delete: never rate-limited (privacy exit).
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+
+  -- Award toggles and other non-name updates do not count as a name change.
+  if tg_op = 'UPDATE'
+     and new.leaderboard_name is not distinct from old.leaderboard_name then
+    return new;
   end if;
 
   uid := coalesce(new.user_id, old.user_id);

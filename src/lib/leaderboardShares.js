@@ -286,6 +286,27 @@ export async function fetchActiveLeaderboardShare(userId, boardKey) {
 }
 
 /**
+ * Active board keys for the signed-in user (This Week / dashboard ritual).
+ * @param {string} userId
+ * @returns {Promise<string[]>}
+ */
+export async function fetchActiveLeaderboardBoardKeys(userId) {
+  requireConfigured()
+  if (!userId) return []
+
+  const { data, error } = await supabase
+    .from('leaderboard_shares')
+    .select('board_key')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+
+  if (error) throw error
+  return (data || [])
+    .map((row) => String(row.board_key || ''))
+    .filter(Boolean)
+}
+
+/**
  * Upsert an active share. Server trigger sets display_name, rank_value, period_week.
  * @param {object} input
  */
