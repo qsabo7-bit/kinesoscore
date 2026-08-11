@@ -1,3 +1,5 @@
+import { containsBlockedNameTerm } from './blockedNameTerms.js'
+
 /** Matches Stage 1 DB CHECKs on public.leaderboard_profiles. */
 export const LEADERBOARD_NAME_MIN = 3
 export const LEADERBOARD_NAME_MAX = 24
@@ -65,6 +67,12 @@ export function validateLeaderboardName(raw) {
       error: 'That Leaderboard Name is reserved. Choose another.',
     }
   }
+  if (containsBlockedNameTerm(name)) {
+    return {
+      ok: false,
+      error: 'That Leaderboard Name is not allowed. Choose another.',
+    }
+  }
   return { ok: true, name }
 }
 
@@ -89,6 +97,10 @@ export function friendlyLeaderboardNameError(
 
   if (/Leaderboard Name is reserved/i.test(text)) {
     return 'That Leaderboard Name is reserved. Choose another.'
+  }
+
+  if (/Leaderboard Name is not allowed/i.test(text)) {
+    return 'That Leaderboard Name is not allowed. Choose another.'
   }
 
   if (/Rate limit exceeded for leaderboard_name/i.test(text)) {
