@@ -13,6 +13,7 @@ import {
   applyPendingLeaderboardName,
   stashPendingLeaderboardName,
 } from '../lib/pendingLeaderboardName'
+import { validateFirstName } from '../lib/profileName'
 
 const RESET_SENT_MESSAGE =
   "If an account exists for this email, we've sent password reset instructions."
@@ -110,8 +111,9 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
       }
 
       if (isSignup) {
-        if (!firstName.trim()) {
-          const err = new Error('Please enter your first name.')
+        const nameChecked = validateFirstName(firstName)
+        if (!nameChecked.ok) {
+          const err = new Error(nameChecked.error)
           err.code = 'VALIDATION'
           throw err
         }
@@ -131,7 +133,11 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
           }
         }
 
-        const data = await signUp({ email, password, firstName })
+        const data = await signUp({
+          email,
+          password,
+          firstName: nameChecked.name,
+        })
         const userId = data?.user?.id || data?.session?.user?.id
 
         if (data.session && userId) {

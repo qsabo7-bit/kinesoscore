@@ -27,6 +27,12 @@ import {
 import { deriveAwards } from '../lib/fitnessAwards'
 import { fetchLatestFitnessScoreSnapshot } from '../lib/fitnessScoreSnapshots'
 import { saveAvatarId } from '../lib/profileAvatar'
+import {
+  FIRST_NAME_MAX,
+  friendlyFirstNameError,
+  saveFirstName,
+  validateFirstName,
+} from '../lib/profileName'
 import { useFocusTrap } from '../lib/useFocusTrap'
 
 function formatDate(iso) {
@@ -57,6 +63,11 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmClearName, setConfirmClearName] = useState(false)
+
+  const [nameDraft, setNameDraft] = useState(() => firstName || '')
+  const [nameBusy, setNameBusy] = useState(false)
+  const [nameError, setNameError] = useState('')
+  const [nameMessage, setNameMessage] = useState('')
 
   const [lbDraft, setLbDraft] = useState('')
   const [lbSaved, setLbSaved] = useState(null)
@@ -92,6 +103,11 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
     if (!avatarId) return
     setAvatarDraft(normalizeAvatarId(avatarId))
   }, [avatarId, user?.id])
+
+  useEffect(() => {
+    if (nameBusy) return
+    setNameDraft(firstName || '')
+  }, [firstName, user?.id, nameBusy])
 
   useEffect(() => {
     if (!user?.id) return undefined
@@ -200,6 +216,40 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   }
 
   const lbLoading = Boolean(user?.id) && lbLoadedFor !== user.id
+
+  const handleSaveFirstName = async (event) => {
+    event.preventDefault()
+    if (!user?.id || nameBusy) return
+
+    setNameBusy(true)
+    setNameError('')
+    setNameMessage('')
+
+    const checked = validateFirstName(nameDraft)
+    if (!checked.ok) {
+      setNameError(checked.error)
+      setNameBusy(false)
+      return
+    }
+
+    if (checked.name === String(firstName || '').trim()) {
+      setNameDraft(checked.name)
+      setNameMessage('Name is already up to date.')
+      setNameBusy(false)
+      return
+    }
+
+    try {
+      const saved = await saveFirstName(user.id, checked.name)
+      setNameDraft(saved)
+      setNameMessage('Name updated.')
+      await refreshProfile?.()
+    } catch (err) {
+      setNameError(friendlyFirstNameError(err))
+    } finally {
+      setNameBusy(false)
+    }
+  }
 
   const handleLogout = async () => {
     setBusy(true)
@@ -399,6 +449,12 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   const selectedAvatarLabel =
     AVATAR_CATALOG.find((item) => item.id === avatarDraft)?.label || 'Icon'
 
+  const nameCheck = validateFirstName(nameDraft)
+  const canSaveFirstName =
+    !nameBusy &&
+    nameCheck.ok &&
+    nameCheck.name !== String(firstName || '').trim()
+
   return (
     <main className="page account-page">
       <header className="page-header account-page-header">
@@ -423,7 +479,51 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
               <ProfileAvatar avatarId={avatarDraft} size="md" />
             </div>
             <div className="account-identity-copy">
-              <p className="account-identity-name">{firstName || 'Athlete'}</p>
+              <form
+                className="account-private-name-form"
+                onSubmit={handleSaveFirstName}
+              >
+                <div className="account-name-row">
+                  <label className="account-field account-field-grow">
+                    <span className="sr-only">Name</span>
+                    <input
+                      type="text"
+                      name="firstName"
+                      autoComplete="given-name"
+                      spellCheck={false}
+                      maxLength={FIRST_NAME_MAX}
+                      value={nameDraft}
+                      onChange={(event) => {
+                        setNameDraft(event.target.value)
+                        setNameError('')
+                        setNameMessage('')
+                      }}
+                      placeholder="Your name"
+                      disabled={nameBusy}
+                      className="account-identity-name-input"
+                    />
+                  </label>
+                  <div className="account-name-actions">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={!canSaveFirstName}
+                    >
+                      {nameBusy ? 'Saving…' : 'Update'}
+                    </button>
+                  </div>
+                </div>
+                {nameError ? (
+                  <p className="feedback feedback-error" role="alert">
+                    {nameError}
+                  </p>
+                ) : null}
+                {nameMessage ? (
+                  <p className="feedback feedback-success" role="status">
+                    {nameMessage}
+                  </p>
+                ) : null}
+              </form>
               <p className="account-identity-email">
                 {profile?.email || user.email || '—'}
               </p>
