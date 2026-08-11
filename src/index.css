@@ -3499,6 +3499,165 @@ a:focus-visible {
   font-size: 0.82rem;
 }
 
+.share-card-modal-layer {
+  z-index: 96;
+}
+
+.share-card-modal {
+  width: min(26rem, 100%);
+  max-height: min(92svh, 48rem);
+  gap: 0.75rem;
+}
+
+.share-card-modal-lead {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--muted-strong);
+}
+
+.share-card-format-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.share-card-format-btn {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: color-mix(in srgb, var(--bg) 70%, var(--bg-elevated));
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-soft),
+    background var(--motion-fast) var(--motion-ease-soft),
+    color var(--motion-fast) var(--motion-ease-soft);
+}
+
+.share-card-format-btn.is-selected {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated));
+  color: var(--text-strong);
+}
+
+.share-card-format-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.share-card-format-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.share-card-preview-shell {
+  position: relative;
+  width: min(100%, 18.5rem);
+  margin-inline: auto;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 0.45rem;
+  overflow: hidden;
+  background: #0b100e;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+
+.share-card-preview-shell.is-post {
+  aspect-ratio: 4 / 5;
+}
+
+.share-card-preview-shell.is-story {
+  aspect-ratio: 9 / 16;
+  width: min(100%, 14.5rem);
+}
+
+.share-card-preview-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.share-card-preview-skeleton {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.share-card-social {
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.share-card-social-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-strong);
+}
+
+.share-card-social-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.share-card-social-actions .btn {
+  min-height: 2.5rem;
+  flex: 1 1 calc(50% - 0.4rem);
+}
+
+.share-card-modal-actions {
+  position: sticky;
+  bottom: 0;
+  padding-top: 0.15rem;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--bg-elevated) 92%, transparent) 28%
+  );
+}
+
+@media (max-width: 560px) {
+  .share-card-modal {
+    width: min(100%, 24rem);
+    padding: 1.1rem 1rem 1rem;
+  }
+
+  .share-card-social-actions .btn {
+    flex: 1 1 calc(50% - 0.4rem);
+    justify-content: center;
+  }
+
+  .share-card-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+  }
+
+  .share-card-modal-actions .btn:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .share-card-modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @keyframes this-week-rank-pop {
   from {
     opacity: 0;
