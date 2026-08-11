@@ -111,16 +111,24 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
 
       if (isSignup) {
         if (!firstName.trim()) {
-          throw new Error('Please enter your first name.')
+          const err = new Error('Please enter your first name.')
+          err.code = 'VALIDATION'
+          throw err
         }
         if (password.length < 6) {
-          throw new Error('Password must be at least 6 characters.')
+          const err = new Error('Password must be at least 6 characters.')
+          err.code = 'VALIDATION'
+          throw err
         }
 
         const lbDraft = leaderboardName.trim()
         if (lbDraft) {
           const checked = validateLeaderboardName(lbDraft)
-          if (!checked.ok) throw new Error(checked.error)
+          if (!checked.ok) {
+            const err = new Error(checked.error)
+            err.code = 'VALIDATION'
+            throw err
+          }
         }
 
         const data = await signUp({ email, password, firstName })
@@ -169,7 +177,8 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
           setMessage(RESET_SENT_MESSAGE)
         }
       } else if (err?.code === 'VALIDATION') {
-        setError(friendlyLeaderboardError(err))
+        // First-name / password / Leaderboard Name client checks.
+        setError(err.message || friendlyLeaderboardError(err))
       } else {
         setError(friendlyAuthError(err, 'Authentication failed.'))
       }

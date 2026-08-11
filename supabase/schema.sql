@@ -62,23 +62,61 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_first text := coalesce(
+    nullif(new.raw_user_meta_data ->> 'first_name', ''),
+    'Athlete'
+  );
+  v_avatar text := (array[
+    'mark-sun',
+    'mark-pulse',
+    'mark-shield',
+    'mark-peak',
+    'mark-bolt'
+  ])[1 + floor(random() * 5)::int];
 begin
-  insert into public.profiles (id, first_name, email, avatar_id)
-  values (
-    new.id,
-    coalesce(nullif(new.raw_user_meta_data ->> 'first_name', ''), 'Athlete'),
-    new.email,
-    (array[
-      'mark-sun',
-      'mark-pulse',
-      'mark-shield',
-      'mark-peak',
-      'mark-bolt'
-    ])[1 + floor(random() * 5)::int]
-  )
-  on conflict (id) do update
-    set email = excluded.email,
-        first_name = coalesce(nullif(excluded.first_name, ''), public.profiles.first_name);
+  begin
+    insert into public.profiles (id, first_name, email, avatar_id)
+    values (new.id, v_first, new.email, v_avatar)
+    on conflict (id) do update
+      set email = excluded.email,
+          first_name = coalesce(
+            nullif(excluded.first_name, ''),
+            public.profiles.first_name
+          );
+  exception
+    when undefined_column then
+      begin
+        insert into public.profiles (id, first_name, email)
+        values (new.id, v_first, new.email)
+        on conflict (id) do update
+          set email = excluded.email,
+              first_name = coalesce(
+                nullif(excluded.first_name, ''),
+                public.profiles.first_name
+              );
+      exception
+        when others then
+          raise warning 'handle_new_user legacy profile insert failed: %', sqlerrm;
+      end;
+    when check_violation then
+      begin
+        insert into public.profiles (id, first_name, email, avatar_id)
+        values (new.id, v_first, new.email, 'mark-sun')
+        on conflict (id) do update
+          set email = excluded.email,
+              first_name = coalesce(
+                nullif(excluded.first_name, ''),
+                public.profiles.first_name
+              );
+      exception
+        when others then
+          raise warning 'handle_new_user profile fallback failed: %', sqlerrm;
+      end;
+    when others then
+      raise warning 'handle_new_user profile insert failed: %', sqlerrm;
+  end;
+
   return new;
 end;
 $$;
