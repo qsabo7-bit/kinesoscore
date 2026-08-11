@@ -1,3 +1,4 @@
+import { normalizeAvatarId } from '../data/avatarCatalog.js'
 import { mapPublicAwardIdentity } from './awardIdentityFormat.js'
 import { assignDenseRanks } from './leaderboardDenseRank.js'
 import { supabase, isSupabaseConfigured } from '../supabaseClient'
@@ -19,6 +20,7 @@ export async function fetchPublicHabitStreaks(period = 'all_time') {
     rank: Number(row.rank),
     leaderboard_name: String(row.leaderboard_name || ''),
     streak: Number(row.streak),
+    avatar_id: normalizeAvatarId(row.avatar_id),
     awards: mapPublicAwardIdentity(row),
   }))
 

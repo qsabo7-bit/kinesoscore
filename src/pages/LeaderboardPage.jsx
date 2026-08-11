@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import ProfileAvatar from '../components/ProfileAvatar'
 import PublicAwardBadges from '../components/PublicAwardBadges'
 import SeoIntro from '../components/SeoIntro'
 import ThisWeekCountdown from '../components/ThisWeekCountdown'
@@ -159,6 +160,7 @@ function LeaderboardPage({
           data.map((row) => ({
             rank: row.rank,
             leaderboard_name: row.leaderboard_name,
+            avatar_id: row.avatar_id,
             awards: row.awards,
             result_display: `${row.streak} day${row.streak === 1 ? '' : 's'}`,
           })),
@@ -217,9 +219,9 @@ function LeaderboardPage({
         <p className="page-eyebrow">Community</p>
         <h1>Leaderboard</h1>
         <p className="page-lead">
-          Global rankings from athletes who opt in to share. Public rows show
-          only a Leaderboard Name and the shared result — never email or legal
-          name.
+          Global rankings from athletes who opt in to share. Public rows show a
+          Leaderboard Name, profile icon, and the shared result — never email or
+          legal name.
         </p>
       </header>
 
@@ -519,6 +521,11 @@ function LeaderboardTable({
                 <td className="leaderboard-rank">{row.rank}</td>
                 <td className="leaderboard-name">
                   <span className="leaderboard-name-row">
+                    <ProfileAvatar
+                      avatarId={row.avatar_id}
+                      size="sm"
+                      className="leaderboard-row-avatar"
+                    />
                     <span className="leaderboard-name-text">
                       {row.leaderboard_name}
                       {isYou ? (

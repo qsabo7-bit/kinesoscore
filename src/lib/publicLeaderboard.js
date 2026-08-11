@@ -1,4 +1,5 @@
 import { BRAND } from '../data/brand.js'
+import { normalizeAvatarId } from '../data/avatarCatalog.js'
 import { mapPublicAwardIdentity } from './awardIdentityFormat.js'
 import { assignDenseRanks } from './leaderboardDenseRank.js'
 import { formatRecordValue, isCindyResult } from './performanceRecords.js'
@@ -187,6 +188,7 @@ export async function fetchPublicLeaderboard(boardKey, period = 'all_time') {
     result_value: Number(row.result_value),
     result_unit: row.result_unit ?? null,
     higher_is_better: Boolean(row.higher_is_better),
+    avatar_id: normalizeAvatarId(row.avatar_id),
     awards: mapPublicAwardIdentity(row),
     result_display: formatLeaderboardResult({
       result_value: row.result_value,

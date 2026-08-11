@@ -9,6 +9,7 @@ import LockedDashboardPreview from '../components/LockedDashboardPreview'
 import DashboardJumpNav from '../components/DashboardJumpNav'
 import DashboardTodayStrip from '../components/DashboardTodayStrip'
 import OnboardingWizard from '../components/OnboardingWizard'
+import ProfileAvatar from '../components/ProfileAvatar'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
 import { shouldShowOnboarding } from '../lib/onboarding'
 import {
@@ -161,6 +162,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
     user,
     profile,
     firstName,
+    avatarId,
     signOut,
     loading: authLoading,
     isAuthenticated,
@@ -591,7 +593,10 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
       >
         <div className="dashboard-hero-copy">
           <p className="page-eyebrow">Dashboard</p>
-          <h1>Welcome, {firstName || 'Athlete'}</h1>
+          <div className="dashboard-welcome-row">
+            <ProfileAvatar avatarId={avatarId} size="md" />
+            <h1>Welcome, {firstName || 'Athlete'}</h1>
+          </div>
           <p className="page-lead">
             {isDense ? 'Your week at a glance' : 'Your Fitness Progress'}
           </p>

@@ -29,17 +29,6 @@ function storageSet(key, value) {
   memoryStore.set(key, value)
 }
 
-function storageRemove(key) {
-  if (typeof localStorage !== 'undefined') {
-    try {
-      localStorage.removeItem(key)
-    } catch {
-      // fall through
-    }
-  }
-  memoryStore.delete(key)
-}
-
 /**
  * First-session tracks — maps to calculator / Habits tabs.
  * Keep copy short; one job per choice.

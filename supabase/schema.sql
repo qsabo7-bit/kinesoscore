@@ -8,6 +8,31 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- Preset avatars (019 + 021) — catalog marks only (no "none")
+alter table public.profiles
+  add column if not exists avatar_id text not null default 'mark-sun';
+
+alter table public.profiles
+  alter column avatar_id set default 'mark-sun';
+
+alter table public.profiles
+  drop constraint if exists profiles_avatar_id_check;
+
+alter table public.profiles
+  add constraint profiles_avatar_id_check
+  check (
+    avatar_id in (
+      'mark-sun',
+      'mark-pulse',
+      'mark-shield',
+      'mark-peak',
+      'mark-bolt'
+    )
+  );
+
+comment on column public.profiles.avatar_id is
+  'Preset mark id from the avatar catalog. Assigned randomly at signup; changeable in Account settings. Shown publicly with Leaderboard Name on shared boards.';
+
 alter table public.profiles enable row level security;
 
 drop policy if exists "Users can read own profile" on public.profiles;
@@ -38,11 +63,18 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, first_name, email)
+  insert into public.profiles (id, first_name, email, avatar_id)
   values (
     new.id,
     coalesce(nullif(new.raw_user_meta_data ->> 'first_name', ''), 'Athlete'),
-    new.email
+    new.email,
+    (array[
+      'mark-sun',
+      'mark-pulse',
+      'mark-shield',
+      'mark-peak',
+      'mark-bolt'
+    ])[1 + floor(random() * 5)::int]
   )
   on conflict (id) do update
     set email = excluded.email,
@@ -626,7 +658,8 @@ returns table (
   higher_is_better boolean,
   award_running text,
   award_strength text,
-  award_crown boolean
+  award_crown boolean,
+  avatar_id text
 )
 language plpgsql
 stable
@@ -711,10 +744,22 @@ begin
       case
         when p.show_awards_publicly then coalesce(p.award_crown, false)
         else false
-      end as acrown
+      end as acrown,
+      case
+        when pr.avatar_id in (
+          'mark-sun',
+          'mark-pulse',
+          'mark-shield',
+          'mark-peak',
+          'mark-bolt'
+        ) then pr.avatar_id
+        else 'mark-sun'
+      end as avid
     from public.leaderboard_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
+    left join public.profiles pr
+      on pr.id = s.user_id
     where s.is_active = true
       and s.board_key = v_board
       and char_length(btrim(p.leaderboard_name)) > 0
@@ -741,7 +786,8 @@ begin
       e.hib,
       e.arun,
       e.astr,
-      e.acrown
+      e.acrown,
+      e.avid
     from eligible e
   )
   select
@@ -753,7 +799,8 @@ begin
     ranked.hib,
     ranked.arun,
     ranked.astr,
-    ranked.acrown
+    ranked.acrown,
+    ranked.avid
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -765,7 +812,7 @@ grant execute on function public.get_public_leaderboard(text, text)
   to anon, authenticated;
 
 comment on function public.get_public_leaderboard(text, text) is
-  'Public leaderboard read. This Week = shared_at in current UTC week; opt-in award tiers/crown only.';
+  'Public leaderboard read. Includes avatar catalog id + opt-in award tiers/crown (never raw scores).';
 
 -- ---------------------------------------------------------------------------
 -- Stage 8: Habit streak sharing
@@ -1118,7 +1165,8 @@ returns table (
   streak integer,
   award_running text,
   award_strength text,
-  award_crown boolean
+  award_crown boolean,
+  avatar_id text
 )
 language plpgsql
 stable
@@ -1149,10 +1197,22 @@ begin
       case
         when p.show_awards_publicly then coalesce(p.award_crown, false)
         else false
-      end as acrown
+      end as acrown,
+      case
+        when pr.avatar_id in (
+          'mark-sun',
+          'mark-pulse',
+          'mark-shield',
+          'mark-peak',
+          'mark-bolt'
+        ) then pr.avatar_id
+        else 'mark-sun'
+      end as avid
     from public.habit_streak_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
+    left join public.profiles pr
+      on pr.id = s.user_id
     where s.is_active = true
       and s.streak >= 0
       and char_length(btrim(p.leaderboard_name)) > 0
@@ -1167,7 +1227,8 @@ begin
       e.streak_value,
       e.arun,
       e.astr,
-      e.acrown
+      e.acrown,
+      e.avid
     from eligible e
   )
   select
@@ -1176,7 +1237,8 @@ begin
     ranked.streak_value,
     ranked.arun,
     ranked.astr,
-    ranked.acrown
+    ranked.acrown,
+    ranked.avid
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -1188,7 +1250,7 @@ grant execute on function public.get_public_habit_streaks(text)
   to anon, authenticated;
 
 comment on function public.get_public_habit_streaks(text) is
-  'Stage 8 public habit streak board. Opt-in award tiers/crown only (never raw scores).';
+  'Public habit streak board. Includes avatar catalog id + opt-in award tiers/crown.';
 
 
 

@@ -69,7 +69,7 @@ function PrivacyPage({ onOpenTab }) {
           <li>
             <strong>Account information.</strong> Email address, password
             (stored by our authentication provider in hashed form), and optional
-            profile details such as first name.
+            profile details such as first name and a preset profile icon.
           </li>
           <li>
             <strong>Saved fitness data.</strong> Calculator inputs and results
@@ -77,6 +77,13 @@ function PrivacyPage({ onOpenTab }) {
             {BRAND.scoreName}, VO₂ estimates, BMI, fitness age, or military
             assessment estimates), plus shared preferences such as units or
             default form values.
+          </li>
+          <li>
+            <strong>Optional public leaderboard data.</strong> If you create a
+            Leaderboard Name and opt in to share, we may show that name, your
+            preset profile icon, the shared result or habit streak, and (unless
+            you hide them) medal tiers next to your name. Email and legal name
+            stay private.
           </li>
           <li>
             <strong>Technical data.</strong> Standard web logs and device

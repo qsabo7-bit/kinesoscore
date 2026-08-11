@@ -1,17 +1,76 @@
--- Stage 5 (+ Stage C awards): Public leaderboard read RPC.
--- Idempotent — safe to re-run in Supabase Dashboard → SQL Editor.
---
--- Security model:
---   * SECURITY DEFINER with fixed search_path
---   * Validates board_key against Stage 3 allowlist keys only
---   * Validates period as all_time | this_week only
---   * No dynamic SQL
---   * Returns ONLY public fields (no user_id, email, source_record_id, etc.)
---   * Award tiers/crown only when show_awards_publicly — never raw scores
-  * Includes sanitized avatar_id from profiles (catalog only)
---   * Requires is_active + current leaderboard_profiles row (valid name)
---   * Does NOT grant SELECT on leaderboard_shares to anon
+-- Drop "none" avatar: every profile gets a mark.
+-- Existing none → deterministic mark from user id.
+-- New users → random mark via handle_new_user.
 
+update public.profiles
+set avatar_id = (
+  array[
+    'mark-sun',
+    'mark-pulse',
+    'mark-shield',
+    'mark-peak',
+    'mark-bolt'
+  ]
+)[1 + (abs(hashtext(id::text)) % 5)]
+where avatar_id is null
+   or avatar_id = 'none'
+   or avatar_id not in (
+     'mark-sun',
+     'mark-pulse',
+     'mark-shield',
+     'mark-peak',
+     'mark-bolt'
+   );
+
+alter table public.profiles
+  alter column avatar_id set default 'mark-sun';
+
+alter table public.profiles
+  drop constraint if exists profiles_avatar_id_check;
+
+alter table public.profiles
+  add constraint profiles_avatar_id_check
+  check (
+    avatar_id in (
+      'mark-sun',
+      'mark-pulse',
+      'mark-shield',
+      'mark-peak',
+      'mark-bolt'
+    )
+  );
+
+comment on column public.profiles.avatar_id is
+  'Preset mark id from the avatar catalog. Assigned randomly at signup; changeable in Account settings. Shown publicly with Leaderboard Name on shared boards.';
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, first_name, email, avatar_id)
+  values (
+    new.id,
+    coalesce(nullif(new.raw_user_meta_data ->> 'first_name', ''), 'Athlete'),
+    new.email,
+    (array[
+      'mark-sun',
+      'mark-pulse',
+      'mark-shield',
+      'mark-peak',
+      'mark-bolt'
+    ])[1 + floor(random() * 5)::int]
+  )
+  on conflict (id) do update
+    set email = excluded.email,
+        first_name = coalesce(nullif(excluded.first_name, ''), public.profiles.first_name);
+  return new;
+end;
+$$;
+
+-- Public RPC avatar sanitization: marks only (fallback mark-sun).
 drop function if exists public.get_public_leaderboard(text, text);
 
 create function public.get_public_leaderboard(
@@ -181,3 +240,100 @@ grant execute on function public.get_public_leaderboard(text, text)
 
 comment on function public.get_public_leaderboard(text, text) is
   'Public leaderboard read. Includes avatar catalog id + opt-in award tiers/crown (never raw scores).';
+
+drop function if exists public.get_public_habit_streaks(text);
+
+create function public.get_public_habit_streaks(
+  p_period text default 'all_time'
+)
+returns table (
+  rank bigint,
+  leaderboard_name text,
+  streak integer,
+  award_running text,
+  award_strength text,
+  award_crown boolean,
+  avatar_id text
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_period text := lower(btrim(coalesce(p_period, 'all_time')));
+begin
+  if v_period is distinct from 'all_time' then
+    raise exception 'Invalid habit streak period'
+      using errcode = '22023';
+  end if;
+
+  return query
+  with eligible as (
+    select
+      p.leaderboard_name as name,
+      s.streak as streak_value,
+      case
+        when p.show_awards_publicly then p.award_running
+        else null
+      end as arun,
+      case
+        when p.show_awards_publicly then p.award_strength
+        else null
+      end as astr,
+      case
+        when p.show_awards_publicly then coalesce(p.award_crown, false)
+        else false
+      end as acrown,
+      case
+        when pr.avatar_id in (
+          'mark-sun',
+          'mark-pulse',
+          'mark-shield',
+          'mark-peak',
+          'mark-bolt'
+        ) then pr.avatar_id
+        else 'mark-sun'
+      end as avid
+    from public.habit_streak_shares s
+    inner join public.leaderboard_profiles p
+      on p.user_id = s.user_id
+    left join public.profiles pr
+      on pr.id = s.user_id
+    where s.is_active = true
+      and s.streak >= 0
+      and char_length(btrim(p.leaderboard_name)) > 0
+  ),
+  ranked as (
+    select
+      dense_rank() over (
+        order by e.streak_value desc
+      ) as rnk,
+      e.name,
+      e.streak_value,
+      e.arun,
+      e.astr,
+      e.acrown,
+      e.avid
+    from eligible e
+  )
+  select
+    ranked.rnk,
+    ranked.name,
+    ranked.streak_value,
+    ranked.arun,
+    ranked.astr,
+    ranked.acrown,
+    ranked.avid
+  from ranked
+  order by ranked.rnk asc, lower(ranked.name) asc
+  limit 100;
+end;
+$$;
+
+revoke all on function public.get_public_habit_streaks(text) from public;
+grant execute on function public.get_public_habit_streaks(text)
+  to anon, authenticated;
+
+comment on function public.get_public_habit_streaks(text) is
+  'Public habit streak board. Includes avatar catalog id + opt-in award tiers/crown.';

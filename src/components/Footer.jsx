@@ -1,8 +1,10 @@
+import { useAuth } from '../auth/AuthContext'
 import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
 import { handleNavLinkClick } from '../lib/navLinkClick'
 
 function Footer({ onOpenTab }) {
+  const { isAuthenticated } = useAuth()
   const handleLink = (event, tab) => handleNavLinkClick(event, tab, onOpenTab)
 
   return (
@@ -27,15 +29,17 @@ function Footer({ onOpenTab }) {
                 Home
               </a>
             </li>
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('dashboard')}
-                onClick={(event) => handleLink(event, 'dashboard')}
-              >
-                Dashboard
-              </a>
-            </li>
+            {isAuthenticated ? (
+              <li>
+                <a
+                  className="site-footer-link"
+                  href={pathForTab('dashboard')}
+                  onClick={(event) => handleLink(event, 'dashboard')}
+                >
+                  Dashboard
+                </a>
+              </li>
+            ) : null}
             <li>
               <a
                 className="site-footer-link"
@@ -54,15 +58,17 @@ function Footer({ onOpenTab }) {
                 Leaderboard
               </a>
             </li>
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('habits')}
-                onClick={(event) => handleLink(event, 'habits')}
-              >
-                Habits
-              </a>
-            </li>
+            {isAuthenticated ? (
+              <li>
+                <a
+                  className="site-footer-link"
+                  href={pathForTab('habits')}
+                  onClick={(event) => handleLink(event, 'habits')}
+                >
+                  Habits
+                </a>
+              </li>
+            ) : null}
             <li>
               <a
                 className="site-footer-link"

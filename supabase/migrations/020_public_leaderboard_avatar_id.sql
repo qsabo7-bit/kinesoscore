@@ -1,17 +1,8 @@
--- Stage 5 (+ Stage C awards): Public leaderboard read RPC.
--- Idempotent — safe to re-run in Supabase Dashboard → SQL Editor.
---
--- Security model:
---   * SECURITY DEFINER with fixed search_path
---   * Validates board_key against Stage 3 allowlist keys only
---   * Validates period as all_time | this_week only
---   * No dynamic SQL
---   * Returns ONLY public fields (no user_id, email, source_record_id, etc.)
---   * Award tiers/crown only when show_awards_publicly — never raw scores
-  * Includes sanitized avatar_id from profiles (catalog only)
---   * Requires is_active + current leaderboard_profiles row (valid name)
---   * Does NOT grant SELECT on leaderboard_shares to anon
+-- Public profile icons next to Leaderboard Names.
+-- avatar_id is a closed catalog (no PII). Returned only via SECURITY DEFINER
+-- RPCs — anon still has no SELECT on profiles.
 
+-- Return-type change requires drop.
 drop function if exists public.get_public_leaderboard(text, text);
 
 create function public.get_public_leaderboard(
@@ -115,13 +106,14 @@ begin
       end as acrown,
       case
         when pr.avatar_id in (
+          'none',
           'mark-sun',
           'mark-pulse',
           'mark-shield',
           'mark-peak',
           'mark-bolt'
         ) then pr.avatar_id
-        else 'mark-sun'
+        else 'none'
       end as avid
     from public.leaderboard_shares s
     inner join public.leaderboard_profiles p
@@ -181,3 +173,104 @@ grant execute on function public.get_public_leaderboard(text, text)
 
 comment on function public.get_public_leaderboard(text, text) is
   'Public leaderboard read. Includes avatar catalog id + opt-in award tiers/crown (never raw scores).';
+
+drop function if exists public.get_public_habit_streaks(text);
+
+create function public.get_public_habit_streaks(
+  p_period text default 'all_time'
+)
+returns table (
+  rank bigint,
+  leaderboard_name text,
+  streak integer,
+  award_running text,
+  award_strength text,
+  award_crown boolean,
+  avatar_id text
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_period text := lower(btrim(coalesce(p_period, 'all_time')));
+begin
+  if v_period is distinct from 'all_time' then
+    raise exception 'Invalid habit streak period'
+      using errcode = '22023';
+  end if;
+
+  return query
+  with eligible as (
+    select
+      p.leaderboard_name as name,
+      s.streak as streak_value,
+      case
+        when p.show_awards_publicly then p.award_running
+        else null
+      end as arun,
+      case
+        when p.show_awards_publicly then p.award_strength
+        else null
+      end as astr,
+      case
+        when p.show_awards_publicly then coalesce(p.award_crown, false)
+        else false
+      end as acrown,
+      case
+        when pr.avatar_id in (
+          'none',
+          'mark-sun',
+          'mark-pulse',
+          'mark-shield',
+          'mark-peak',
+          'mark-bolt'
+        ) then pr.avatar_id
+        else 'none'
+      end as avid
+    from public.habit_streak_shares s
+    inner join public.leaderboard_profiles p
+      on p.user_id = s.user_id
+    left join public.profiles pr
+      on pr.id = s.user_id
+    where s.is_active = true
+      and s.streak >= 0
+      and char_length(btrim(p.leaderboard_name)) > 0
+  ),
+  ranked as (
+    select
+      dense_rank() over (
+        order by e.streak_value desc
+      ) as rnk,
+      e.name,
+      e.streak_value,
+      e.arun,
+      e.astr,
+      e.acrown,
+      e.avid
+    from eligible e
+  )
+  select
+    ranked.rnk,
+    ranked.name,
+    ranked.streak_value,
+    ranked.arun,
+    ranked.astr,
+    ranked.acrown,
+    ranked.avid
+  from ranked
+  order by ranked.rnk asc, lower(ranked.name) asc
+  limit 100;
+end;
+$$;
+
+revoke all on function public.get_public_habit_streaks(text) from public;
+grant execute on function public.get_public_habit_streaks(text)
+  to anon, authenticated;
+
+comment on function public.get_public_habit_streaks(text) is
+  'Public habit streak board. Includes avatar catalog id + opt-in award tiers/crown.';
+
+comment on column public.profiles.avatar_id is
+  'Preset avatar catalog id shown in private UI and next to Leaderboard Name on public boards.';

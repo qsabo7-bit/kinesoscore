@@ -70,9 +70,9 @@ export function calculateFitnessScore({
   )
   if (!runningPeer) return null
 
-  let strengthPeer = null
-  let oneRepMax = null
-  let ratio = null
+  let strengthPeer
+  let oneRepMax
+  let ratio
   let strengthMetric = 'lift'
 
   const total = Number(sbdTotal)

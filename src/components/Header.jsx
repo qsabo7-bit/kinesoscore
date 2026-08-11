@@ -14,10 +14,11 @@ import { isNavTabActive } from '../lib/navTabActive'
 import { useFocusTrap } from '../lib/useFocusTrap'
 import { useWindowScrollY } from '../lib/useWindowScrollY'
 import { getVisibleNavTabs } from '../lib/visibleNavTabs'
+import ProfileAvatar from './ProfileAvatar'
 import SoftReveal from './SoftReveal'
 
 function Header({ activeTab, onTabChange }) {
-  const { isAuthenticated, firstName, loading } = useAuth()
+  const { isAuthenticated, firstName, avatarId, loading } = useAuth()
   const calculatorActive = isCalculatorTab(activeTab)
   const stickyHighlightTab = stickyToolsHighlightTab(activeTab)
   // Compact mark on Home / About / Dashboard (signed-in Home redirects to Dashboard).
@@ -173,7 +174,8 @@ function Header({ activeTab, onTabChange }) {
               aria-label="Open account settings"
               tabIndex={showWelcome ? undefined : -1}
             >
-              {`Welcome, ${firstName || 'Athlete'}`}
+              <ProfileAvatar avatarId={avatarId} size="sm" />
+              <span>{`Welcome, ${firstName || 'Athlete'}`}</span>
             </a>
           </div>
         </SoftReveal>

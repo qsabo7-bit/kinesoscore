@@ -366,13 +366,6 @@ export function calculateFitnessAge({
   vo2Max,
   fiveKSeconds,
   strengthScore,
-  // Accepted but unused — removed from the mathematical model:
-  weight: _weight,
-  massUnit: _massUnit,
-  height: _height,
-  heightUnit: _heightUnit,
-  weeklySessions: _weeklySessions,
-  bodyFatPercent: _bodyFatPercent,
 }) {
   if (
     !Number.isFinite(age) ||

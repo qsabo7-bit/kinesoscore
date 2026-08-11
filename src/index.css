@@ -280,11 +280,11 @@ select:focus {
   overflow: visible;
 }
 
-/* Soft appear when result panels / confirms mount */
-@keyframes soft-enter {
+/* Account-style motion tokens — surfaces lift, chips/marks scale in */
+@keyframes surface-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -292,6 +292,40 @@ select:focus {
   }
 }
 
+@keyframes chip-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mark-swap {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes label-swap {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Soft appear when result panels / confirms mount */
 .soft-enter,
 .results,
 .confirm-box,
@@ -301,7 +335,169 @@ select:focus {
 .shared-data-notification,
 .leaderboard-join-banner,
 .feedback {
-  animation: soft-enter var(--motion-enter) var(--motion-ease) both;
+  animation: surface-enter var(--motion-enter) var(--motion-ease) both;
+}
+
+/*
+ * Sitewide Account-style cascade — major surfaces + interactive tiles.
+ * Skip dense data rows (leaderboard table), home hero (custom), and long
+ * legal walls beyond a short capped stagger.
+ */
+.dashboard-page > .dashboard-section,
+.dashboard-page > .dashboard-empty,
+.dashboard-page > .onboarding-wizard,
+.dashboard-page > .dashboard-jump-nav,
+.habits-page > .habits-summary,
+.habits-page > .habits-share-control,
+.habits-page > .habits-checklist,
+.habits-page > .habits-edit,
+.habits-page > .habits-empty,
+.leaderboard-page > .leaderboard-filters,
+.leaderboard-page > .leaderboard-results,
+.leaderboard-page > .seo-intro,
+.calculators-hub-page > .home-tools-group,
+.about-page > .about-section,
+.auth-page .auth-brand-panel,
+.auth-page > .calc-form,
+.home .home-member-strip,
+.home .home-tools,
+.page > .calc-form,
+.page > .seo-intro,
+.not-found-page > .confirm-actions {
+  animation: surface-enter var(--motion-enter) var(--motion-ease) both;
+}
+
+.dashboard-page > .dashboard-section:nth-child(1 of .dashboard-section),
+.habits-page > .habits-summary,
+.leaderboard-page > .leaderboard-filters,
+.calculators-hub-page > .home-tools-group:nth-child(1 of .home-tools-group),
+.about-page > .about-section:nth-child(1 of .about-section) {
+  animation-delay: 40ms;
+}
+
+.dashboard-page > .dashboard-section:nth-child(2 of .dashboard-section),
+.habits-page > .habits-share-control,
+.habits-page > .habits-checklist,
+.habits-page > .habits-edit,
+.habits-page > .habits-empty,
+.leaderboard-page > .leaderboard-results,
+.calculators-hub-page > .home-tools-group:nth-child(2 of .home-tools-group),
+.about-page > .about-section:nth-child(2 of .about-section),
+.page > .calc-form,
+.page > .seo-intro {
+  animation-delay: 100ms;
+}
+
+.dashboard-page > .dashboard-section:nth-child(3 of .dashboard-section),
+.calculators-hub-page > .home-tools-group:nth-child(3 of .home-tools-group),
+.about-page > .about-section:nth-child(3 of .about-section),
+.home .home-tools {
+  animation-delay: 160ms;
+}
+
+.dashboard-page > .dashboard-section:nth-child(4 of .dashboard-section),
+.calculators-hub-page > .home-tools-group:nth-child(4 of .home-tools-group),
+.about-page > .about-section:nth-child(4 of .about-section) {
+  animation-delay: 210ms;
+}
+
+.dashboard-page > .dashboard-section:nth-child(n + 5 of .dashboard-section),
+.calculators-hub-page > .home-tools-group:nth-child(n + 5 of .home-tools-group),
+.about-page > .about-section:nth-child(n + 5 of .about-section) {
+  animation-delay: 240ms;
+}
+
+.dashboard-welcome-row .profile-avatar {
+  animation: mark-swap var(--motion-base) var(--motion-ease) both;
+  animation-delay: 50ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card,
+.dashboard-jump-nav > .dashboard-jump-nav-btn,
+.habits-check-list > .habits-check-item,
+.habits-edit-list > .habits-edit-item,
+.habits-catalog-list > .habits-catalog-item,
+.leaderboard-filter-group > .leaderboard-chip,
+.tool-list > .tool-item,
+.home-tool-chips > .home-tool-chip,
+.home-member-strip > .home-member-link {
+  animation: chip-enter var(--motion-enter) var(--motion-ease) both;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(1),
+.dashboard-jump-nav > .dashboard-jump-nav-btn:nth-child(1),
+.habits-check-list > .habits-check-item:nth-child(1),
+.habits-edit-list > .habits-edit-item:nth-child(1),
+.habits-catalog-list > .habits-catalog-item:nth-child(1),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(1),
+.tool-list > .tool-item:nth-child(1),
+.home-tool-chips > .home-tool-chip:nth-child(1),
+.home-member-strip > .home-member-link:nth-child(1) {
+  animation-delay: 90ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(2),
+.dashboard-jump-nav > .dashboard-jump-nav-btn:nth-child(2),
+.habits-check-list > .habits-check-item:nth-child(2),
+.habits-edit-list > .habits-edit-item:nth-child(2),
+.habits-catalog-list > .habits-catalog-item:nth-child(2),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(2),
+.tool-list > .tool-item:nth-child(2),
+.home-tool-chips > .home-tool-chip:nth-child(2),
+.home-member-strip > .home-member-link:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(3),
+.dashboard-jump-nav > .dashboard-jump-nav-btn:nth-child(3),
+.habits-check-list > .habits-check-item:nth-child(3),
+.habits-edit-list > .habits-edit-item:nth-child(3),
+.habits-catalog-list > .habits-catalog-item:nth-child(3),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(3),
+.tool-list > .tool-item:nth-child(3),
+.home-tool-chips > .home-tool-chip:nth-child(3) {
+  animation-delay: 150ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(4),
+.dashboard-jump-nav > .dashboard-jump-nav-btn:nth-child(4),
+.habits-check-list > .habits-check-item:nth-child(4),
+.habits-edit-list > .habits-edit-item:nth-child(4),
+.habits-catalog-list > .habits-catalog-item:nth-child(4),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(4),
+.tool-list > .tool-item:nth-child(4),
+.home-tool-chips > .home-tool-chip:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(5),
+.habits-check-list > .habits-check-item:nth-child(5),
+.habits-edit-list > .habits-edit-item:nth-child(5),
+.habits-catalog-list > .habits-catalog-item:nth-child(5),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(5),
+.tool-list > .tool-item:nth-child(5),
+.home-tool-chips > .home-tool-chip:nth-child(5) {
+  animation-delay: 210ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(6),
+.habits-check-list > .habits-check-item:nth-child(6),
+.habits-edit-list > .habits-edit-item:nth-child(6),
+.habits-catalog-list > .habits-catalog-item:nth-child(6),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(6),
+.tool-list > .tool-item:nth-child(6),
+.home-tool-chips > .home-tool-chip:nth-child(6) {
+  animation-delay: 240ms;
+}
+
+.dashboard-card-grid > .dashboard-metric-card:nth-child(n + 7),
+.habits-check-list > .habits-check-item:nth-child(n + 7),
+.habits-edit-list > .habits-edit-item:nth-child(n + 7),
+.habits-catalog-list > .habits-catalog-item:nth-child(n + 7),
+.leaderboard-filter-group > .leaderboard-chip:nth-child(n + 7),
+.tool-list > .tool-item:nth-child(n + 7),
+.home-tool-chips > .home-tool-chip:nth-child(n + 7) {
+  animation-delay: 260ms;
 }
 
 .dashboard-activity-list-more {
@@ -2088,6 +2284,9 @@ a.home-tool-chip:hover {
 }
 
 .account-welcome-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -2098,6 +2297,477 @@ a.home-tool-chip:hover {
 .account-welcome-link:hover {
   opacity: 0.85;
   text-decoration: underline;
+}
+
+/* Preset profile avatars */
+.profile-avatar {
+  --avatar-color: var(--muted-strong);
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: transparent;
+  color: var(--avatar-color);
+}
+
+.profile-avatar.is-sm {
+  width: 2.1rem;
+  height: 2.1rem;
+}
+
+.profile-avatar.is-md {
+  width: 3.1rem;
+  height: 3.1rem;
+}
+
+.profile-avatar.is-pending {
+  border: 1.5px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+}
+
+.profile-avatar.is-mark {
+  border: none;
+  background: transparent;
+}
+
+.profile-avatar.is-mark .profile-avatar-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.profile-avatar-svg {
+  display: block;
+}
+
+.dashboard-welcome-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.dashboard-welcome-row h1 {
+  margin: 0;
+  min-width: 0;
+}
+
+.account-page .page-header {
+  margin-bottom: 1rem;
+}
+
+.account-page .page-header h1 {
+  font-size: clamp(2rem, 6vw, 2.75rem);
+}
+
+.account-page-header .page-lead {
+  display: none;
+}
+
+.account-controls.account-panel {
+  padding-block: 0.9rem;
+}
+
+.account-layout {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.account-layout > .account-panel {
+  animation: surface-enter var(--motion-enter) var(--motion-ease) both;
+}
+
+.account-layout > .account-panel:nth-child(1) {
+  animation-delay: 40ms;
+}
+
+.account-layout > .account-panel:nth-child(2) {
+  animation-delay: 110ms;
+}
+
+.account-layout > .account-panel:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.account-identity-avatar {
+  flex-shrink: 0;
+  animation: mark-swap var(--motion-base) var(--motion-ease) both;
+}
+
+.account-awards-status {
+  animation: label-swap var(--motion-fast) var(--motion-ease) both;
+}
+
+.account-page .soft-reveal .confirm-box {
+  animation: none;
+}
+
+@media (min-width: 860px) {
+  .account-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: stretch;
+  }
+
+  .account-layout > .account-controls {
+    grid-column: 1 / -1;
+  }
+}
+
+.account-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.05rem 1.1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg-elevated) 92%, transparent),
+      color-mix(in srgb, var(--bg-elevated) 68%, transparent)
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 4%, transparent) inset;
+}
+
+.account-panel-head {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+}
+
+.account-panel-head h2 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+}
+
+.account-panel-head p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.account-panel-head-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 0.85rem;
+}
+
+.account-panel-head-inline h2 {
+  margin: 0;
+}
+
+.account-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.account-identity-copy {
+  min-width: 0;
+}
+
+.account-identity-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-strong);
+}
+
+.account-identity-email,
+.account-identity-meta {
+  margin: 0.12rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--muted-strong);
+  overflow-wrap: anywhere;
+}
+
+.account-identity-meta {
+  color: var(--muted);
+}
+
+.avatar-picker-block {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0 0 0.35rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+}
+
+.avatar-picker-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.avatar-picker-current {
+  display: inline-block;
+  color: var(--muted-strong);
+  letter-spacing: 0.04em;
+  animation: label-swap var(--motion-fast) var(--motion-ease) both;
+}
+
+.avatar-picker-hint {
+  margin: 0;
+}
+
+.avatar-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.avatar-picker-chip {
+  --avatar-tile-accent: var(--muted-strong);
+  display: inline-grid;
+  place-items: center;
+  width: 2.55rem;
+  height: 2.55rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+  background: color-mix(in srgb, var(--bg) 62%, var(--bg-elevated));
+  color: var(--text);
+  cursor: pointer;
+  animation: chip-enter var(--motion-enter) var(--motion-ease) both;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease-soft),
+    background var(--motion-fast) var(--motion-ease-soft),
+    box-shadow var(--motion-base) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.avatar-picker-chip:nth-child(1) {
+  animation-delay: 120ms;
+}
+.avatar-picker-chip:nth-child(2) {
+  animation-delay: 150ms;
+}
+.avatar-picker-chip:nth-child(3) {
+  animation-delay: 180ms;
+}
+.avatar-picker-chip:nth-child(4) {
+  animation-delay: 210ms;
+}
+.avatar-picker-chip:nth-child(5) {
+  animation-delay: 240ms;
+}
+
+.avatar-picker-chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--avatar-tile-accent) 55%, var(--border));
+  transform: translateY(-1px);
+}
+
+.avatar-picker-chip:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.avatar-picker-chip.is-selected {
+  border-color: color-mix(in srgb, var(--avatar-tile-accent) 88%, transparent);
+  background: color-mix(in srgb, var(--avatar-tile-accent) 14%, var(--bg-elevated));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--avatar-tile-accent) 40%, transparent);
+}
+
+.avatar-picker-chip:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.avatar-picker-chip:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.avatar-picker-chip .profile-avatar.is-sm {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.account-public-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 0;
+  min-height: 0;
+}
+
+.account-name-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+@media (min-width: 560px) {
+  .account-name-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+  }
+}
+
+.account-name-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.account-name-actions .btn {
+  min-height: 2.5rem;
+  padding-inline: 0.85rem;
+}
+
+.account-field {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.account-field-grow {
+  min-width: 0;
+}
+
+.account-field input {
+  width: 100%;
+  min-height: 2.5rem;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.account-subhead {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.account-awards-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  margin-top: auto;
+  padding-top: 0.7rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+}
+
+.account-awards-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1 1 9rem;
+}
+
+.account-awards-copy .calc-hint {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.account-awards-toggle {
+  flex: 0 0 auto;
+}
+
+.account-awards-toggle.leaderboard-share-toggle {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: 0.15rem;
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+}
+
+.account-awards-toggle .leaderboard-share-option {
+  min-height: 1.9rem;
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  transition:
+    background var(--motion-fast) var(--motion-ease-soft),
+    color var(--motion-fast) var(--motion-ease-soft),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.account-awards-toggle .leaderboard-share-option.is-active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--text-strong);
+}
+
+.account-awards-toggle .leaderboard-share-option:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.account-public-form > .feedback {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-layout > .account-panel,
+  .account-identity-avatar,
+  .avatar-picker-current,
+  .avatar-picker-chip,
+  .account-awards-status,
+  .account-public-form,
+  .dashboard-page > .dashboard-section,
+  .dashboard-page > .dashboard-empty,
+  .dashboard-page > .onboarding-wizard,
+  .dashboard-page > .dashboard-jump-nav,
+  .dashboard-welcome-row .profile-avatar,
+  .dashboard-card-grid > .dashboard-metric-card,
+  .dashboard-jump-nav > .dashboard-jump-nav-btn,
+  .habits-page > .habits-summary,
+  .habits-page > .habits-share-control,
+  .habits-page > .habits-checklist,
+  .habits-page > .habits-edit,
+  .habits-page > .habits-empty,
+  .habits-check-list > .habits-check-item,
+  .habits-edit-list > .habits-edit-item,
+  .habits-catalog-list > .habits-catalog-item,
+  .leaderboard-page > .leaderboard-filters,
+  .leaderboard-page > .leaderboard-results,
+  .leaderboard-page > .seo-intro,
+  .leaderboard-filter-group > .leaderboard-chip,
+  .calculators-hub-page > .home-tools-group,
+  .tool-list > .tool-item,
+  .about-page > .about-section,
+  .auth-page .auth-brand-panel,
+  .auth-page > .calc-form,
+  .home .home-member-strip,
+  .home .home-tools,
+  .home-tool-chips > .home-tool-chip,
+  .home-member-strip > .home-member-link,
+  .page > .calc-form,
+  .page > .seo-intro,
+  .not-found-page > .confirm-actions {
+    animation: none !important;
+  }
+
+  .avatar-picker-chip:hover:not(:disabled),
+  .avatar-picker-chip:active:not(:disabled),
+  .account-awards-toggle .leaderboard-share-option:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 .btn {
@@ -2523,7 +3193,7 @@ a:focus-visible {
 
 .account-controls {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .btn-danger-ghost {
@@ -3674,7 +4344,7 @@ a:focus-visible {
   gap: 0.95rem;
   margin-top: 0.85rem;
   padding: 0.15rem 0.15rem 0.35rem;
-  animation: soft-enter var(--motion-enter) var(--motion-ease) both;
+  animation: surface-enter var(--motion-enter) var(--motion-ease) both;
 }
 
 .dashboard-progress-prs {
@@ -5458,7 +6128,7 @@ a:focus-visible {
 
 .leaderboard-table th,
 .leaderboard-table td {
-  padding: 0.7rem 0.55rem;
+  padding: 0.52rem 0.55rem;
   text-align: left;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
@@ -5487,7 +6157,25 @@ a:focus-visible {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem 0.45rem;
+  gap: 0.4rem 0.5rem;
+}
+
+.leaderboard-row-avatar.profile-avatar.is-sm {
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .leaderboard-row-avatar.profile-avatar.is-sm {
+    width: 1.95rem;
+    height: 1.95rem;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.45rem 0.4rem;
+  }
 }
 
 .leaderboard-name-text {
@@ -5598,8 +6286,8 @@ a:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem;
-  margin: 0.35rem 0 0;
-  font-size: 0.92rem;
+  margin: 0;
+  font-size: 0.88rem;
 }
 
 .account-awards-preview .public-award-badges {
@@ -5647,6 +6335,12 @@ a:focus-visible {
 @media (max-width: 640px) {
   .leaderboard-filter-group {
     padding-bottom: 0.15rem;
+    mask-image: linear-gradient(
+      to right,
+      #000 0%,
+      #000 calc(100% - 1.35rem),
+      transparent 100%
+    );
   }
 
   .leaderboard-categories .sub-nav-tab {

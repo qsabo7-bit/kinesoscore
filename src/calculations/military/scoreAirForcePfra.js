@@ -50,9 +50,9 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
       ? 'Hand-release push-ups'
       : '1-min push-ups'
 
-  let corePoints = null
-  let coreLabel = 'Core'
-  let coreRaw = null
+  let corePoints
+  let coreLabel
+  let coreRaw
   if (coreChoice === 'plank') {
     if (plankSec == null) return null
     corePoints = pointsFromAscendingSteps(plankSec, chart.plank)
@@ -70,9 +70,9 @@ export function scoreAirForcePfra({ ageBand, gender, values }) {
     coreRaw = coreReps
   }
 
-  let cardioPoints = null
-  let cardioLabel = 'Cardio'
-  let cardioRaw = null
+  let cardioPoints
+  let cardioLabel
+  let cardioRaw
   if (cardioChoice === 'hamr') {
     if (hamrShuttles == null || hamrShuttles < 0) return null
     cardioPoints = pointsFromAscendingSteps(hamrShuttles, chart.hamr)

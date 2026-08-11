@@ -58,7 +58,7 @@ export function readWeekRankSnapshot(userId) {
   if (!userId) return null
   const currentWeekStart = weekStartIso()
   const raw = storageGet(`${SNAPSHOT_PREFIX}${userId}`)
-  let snapshot = null
+  let snapshot
   try {
     snapshot = raw ? JSON.parse(raw) : null
   } catch {
@@ -98,7 +98,7 @@ export function consumeWeekRecap(userId) {
   if (seen === currentWeekStart) return null
 
   const raw = storageGet(`${SNAPSHOT_PREFIX}${userId}`)
-  let snapshot = null
+  let snapshot
   try {
     snapshot = raw ? JSON.parse(raw) : null
   } catch {

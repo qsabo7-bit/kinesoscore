@@ -404,16 +404,13 @@ function StrengthPage({ onRequestAuth, onOpenTab }) {
   const sbdResult = useMemo(() => {
     if (!isSbdMode) return null
 
-    let total = null
-    let breakdown = null
-
     const bench = resolveLiftOneRepMax('bench')
     const squat = resolveLiftOneRepMax('squat')
     const deadlift = resolveLiftOneRepMax('deadlift')
 
     if (bench == null || squat == null || deadlift == null) return null
-    total = calculateSbdTotal(bench, squat, deadlift)
-    breakdown = { bench, squat, deadlift }
+    const total = calculateSbdTotal(bench, squat, deadlift)
+    const breakdown = { bench, squat, deadlift }
 
     if (total == null) return null
 

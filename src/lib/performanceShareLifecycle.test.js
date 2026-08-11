@@ -35,7 +35,7 @@ describe('Stage 10 correction — performance share lifecycle', () => {
     assert.doesNotMatch(sql, /delete from public\.leaderboard_profiles/i)
   })
 
-  it('skips auth.uid\(\)-null cascade path and share rate limits', () => {
+  it('skips auth.uid()-null cascade path and share rate limits', () => {
     assert.match(sql, /if auth\.uid\(\) is null then/i)
     assert.match(sql, /request\.skip_share_rate_limit/i)
   })

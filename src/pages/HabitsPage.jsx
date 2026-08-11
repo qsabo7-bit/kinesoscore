@@ -323,8 +323,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           <p className="leaderboard-share-label">Habit Streaks</p>
           <p className="calc-hint leaderboard-share-hint">
             Private by default. Publishes immediately (unlike calculator shares,
-            which apply when you save). Shares only your Leaderboard Name and
-            current streak — never which habits you track.
+            which apply when you save). Shares your Leaderboard Name, profile
+            icon, and current streak — never which habits you track.
             Private streaks use your local calendar day; public streaks use a UTC
             as-of date, so they can briefly differ near midnight.
             {publicStreak != null ? ` Public streak: ${publicStreak} day${publicStreak === 1 ? '' : 's'}.` : ''}

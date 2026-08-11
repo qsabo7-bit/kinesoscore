@@ -3,6 +3,21 @@
  * Disappear automatically once real shares exist for that board/period.
  */
 
+const SAMPLE_AVATARS = [
+  'mark-sun',
+  'mark-pulse',
+  'mark-shield',
+  'mark-peak',
+  'mark-bolt',
+]
+
+function withSampleAvatars(rows) {
+  return rows.map((row, index) => ({
+    ...row,
+    avatar_id: row.avatar_id || SAMPLE_AVATARS[index % SAMPLE_AVATARS.length],
+  }))
+}
+
 const SAMPLE_AWARDS_TOP = {
   strength: 'gold',
   running: 'diamond',
@@ -192,20 +207,20 @@ const HABIT_SAMPLES = [
  */
 export function getLeaderboardSampleRows(boardKey) {
   const key = String(boardKey || '')
-  if (key === 'habits:streak') return HABIT_SAMPLES
-  if (key === 'mykinesoscore') return SCORE_SAMPLES
-  if (key.startsWith('running:')) return RUNNING_SAMPLES
-  if (key.startsWith('strength:')) return STRENGTH_SAMPLES
-  if (key.startsWith('assessment:')) return ASSESSMENT_SAMPLES
-  if (
+  let rows = SCORE_SAMPLES
+  if (key === 'habits:streak') rows = HABIT_SAMPLES
+  else if (key === 'mykinesoscore') rows = SCORE_SAMPLES
+  else if (key.startsWith('running:')) rows = RUNNING_SAMPLES
+  else if (key.startsWith('strength:')) rows = STRENGTH_SAMPLES
+  else if (key.startsWith('assessment:')) rows = ASSESSMENT_SAMPLES
+  else if (
     key.startsWith('fitness:fran') ||
     key.startsWith('fitness:murph')
   ) {
-    return FITNESS_TIME_SAMPLES
-  }
-  if (key.startsWith('fitness:cindy')) return FITNESS_CINDY_SAMPLES
-  if (key.startsWith('fitness:')) return FITNESS_REPS_SAMPLES
-  return SCORE_SAMPLES
+    rows = FITNESS_TIME_SAMPLES
+  } else if (key.startsWith('fitness:cindy')) rows = FITNESS_CINDY_SAMPLES
+  else if (key.startsWith('fitness:')) rows = FITNESS_REPS_SAMPLES
+  return withSampleAvatars(rows)
 }
 
 /**

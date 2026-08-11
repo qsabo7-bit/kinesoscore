@@ -20,9 +20,16 @@ import {
   passwordRecoveryRedirectTo,
   signupConfirmRedirectTo,
 } from '../lib/authRedirects'
+import {
+  DEFAULT_AVATAR_ID,
+  normalizeAvatarId,
+  pickRandomAvatarId,
+} from '../data/avatarCatalog'
 import { clearCachedDashboardRecords } from '../lib/dashboardRecordsCache'
 import { clearLocalDefaults } from '../lib/userDefaults'
 import { isSupabaseConfigured, supabase } from '../supabaseClient'
+
+const PROFILE_SELECT = 'id, first_name, email, created_at, avatar_id'
 
 const AuthContext = createContext(null)
 
@@ -38,6 +45,7 @@ function profileFromUser(nextUser) {
       'Athlete',
     email: nextUser.email,
     created_at: nextUser.created_at,
+    avatar_id: DEFAULT_AVATAR_ID,
   }
 }
 
@@ -59,9 +67,24 @@ function isMissingProfilesTable(error) {
 async function fetchProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, first_name, email, created_at')
+    .select(PROFILE_SELECT)
     .eq('id', userId)
     .maybeSingle()
+
+  if (
+    error &&
+    /avatar_id|column .* does not exist/i.test(String(error.message || ''))
+  ) {
+    const legacy = await supabase
+      .from('profiles')
+      .select('id, first_name, email, created_at')
+      .eq('id', userId)
+      .maybeSingle()
+    if (legacy.error) throw legacy.error
+    return legacy.data
+      ? { ...legacy.data, avatar_id: DEFAULT_AVATAR_ID }
+      : legacy.data
+  }
 
   if (error) throw error
   return data
@@ -131,25 +154,46 @@ export function AuthProvider({ children }) {
 
       const firstName = profileFromUser(nextUser).first_name
 
+      // Insert-only on conflict so we never overwrite a trigger-assigned avatar.
       const { data: created, error } = await supabase
         .from('profiles')
-        .upsert({
-          id: nextUser.id,
-          first_name: firstName,
-          email: nextUser.email,
-        })
-        .select('id, first_name, email, created_at')
-        .single()
+        .upsert(
+          {
+            id: nextUser.id,
+            first_name: firstName,
+            email: nextUser.email,
+            avatar_id: pickRandomAvatarId(),
+          },
+          { onConflict: 'id', ignoreDuplicates: true },
+        )
+        .select(PROFILE_SELECT)
+        .maybeSingle()
 
       if (error) throw error
-      setProfile(created)
+      if (created) {
+        setProfile(created)
+        return
+      }
+
+      const raced = await fetchProfile(nextUser.id)
+      if (raced) {
+        setProfile(raced)
+        return
+      }
+      setProfile((prev) =>
+        prev?.id === nextUser.id ? prev : profileFromUser(nextUser),
+      )
     } catch (error) {
       if (isMissingProfilesTable(error)) {
         profilesTableUnavailable = true
       } else {
         console.error('Failed to load profile', error)
       }
-      setProfile(profileFromUser(nextUser))
+      // Keep the last good profile for this user so a transient fetch blip
+      // does not flash the default Sun icon in the header/Account UI.
+      setProfile((prev) =>
+        prev?.id === nextUser.id ? prev : profileFromUser(nextUser),
+      )
     }
   }, [])
 
@@ -406,6 +450,8 @@ export function AuthProvider({ children }) {
       emailJustConfirmed,
       authUrlError,
       firstName: profile?.first_name || user?.user_metadata?.first_name || '',
+      // null until a profile row is loaded — avoids flashing default Sun.
+      avatarId: profile ? normalizeAvatarId(profile.avatar_id) : null,
       signUp,
       signIn,
       signOut,

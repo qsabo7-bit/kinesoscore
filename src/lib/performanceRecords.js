@@ -163,6 +163,7 @@ export async function deletePerformanceRecord(recordId) {
       /fitness_score_snapshots|snapshot/i.test(text)
         ? 'Could not delete this myKinesoScore save (linked awards snapshot). Please try again.'
         : text || 'Could not delete that result.',
+      { cause: snapErr },
     )
   }
 

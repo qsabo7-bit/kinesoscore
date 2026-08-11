@@ -670,7 +670,7 @@ export const HOME_SEO_TAGLINE =
 export const LEADERBOARD_SEO = {
   title: 'About the KinesoScore leaderboard',
   paragraphs: [
-    'Global rankings from results athletes choose to share — self-reported community comparisons, not independently verified scores, and not a feed of every private save.',
+    'Global rankings from results athletes choose to share — self-reported community comparisons with Leaderboard Name, profile icon, and result, not independently verified scores, and not a feed of every private save.',
     'Browse myKinesoScore™, running, strength, fitness assessments, military assessments, and Habit Streaks. Performance boards support All Time and This Week (UTC); Habit Streaks use All Time only.',
     'Create a Leaderboard Name in Account Settings, then opt in when saving an eligible result (or share your streak from Habits). Private history stays private by default.',
   ],
@@ -678,7 +678,7 @@ export const LEADERBOARD_SEO = {
     {
       question: 'Who appears on the KinesoScore leaderboard?',
       answer:
-        'Only athletes who create a Leaderboard Name and choose to share an eligible result. Public rows show a Leaderboard Name and the shared performance value — not email or legal name. Values are self-reported and not independently verified.',
+        'Only athletes who create a Leaderboard Name and choose to share an eligible result. Public rows show a Leaderboard Name, profile icon, and the shared performance value — not email or legal name. Values are self-reported and not independently verified.',
     },
     {
       question: 'What is the difference between All Time and This Week?',
@@ -693,7 +693,7 @@ export const LEADERBOARD_SEO = {
     {
       question: 'What do Habit Streaks show?',
       answer:
-        'Habit Streaks list athletes who opt in from Habits. Public rows show a Leaderboard Name and current streak only — never which habits you track or your check-in history. Habit Streaks use All Time (current streak), not This Week.',
+        'Habit Streaks list athletes who opt in from Habits. Public rows show a Leaderboard Name, profile icon, and current streak — never which habits you track or your check-in history. Habit Streaks use All Time (current streak), not This Week.',
     },
   ],
   relatedNote: {

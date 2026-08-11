@@ -102,8 +102,9 @@ function AboutPage({ onOpenTab }) {
           >
             leaderboard
           </a>
-          . Habits stay private unless you share a streak. Awards stay private
-          unless you opt in to show medal tiers next to your Leaderboard Name.
+          . Habits stay private unless you share a streak. Your profile icon
+          appears next to your Leaderboard Name. Medal tiers show by default
+          next to your name — you can hide them in Account Settings.
         </p>
       </section>
 

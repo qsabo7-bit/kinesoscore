@@ -680,7 +680,7 @@ function CalculatorTracking({
     setShareMessage('')
     try {
       const {
-        track,
+        track: _track,
         companionRecordIds: _companionRecordIds,
         isPersonalBest: jumpIsPersonalBest,
         isFirstPersonalBest: jumpIsFirstPersonalBest,

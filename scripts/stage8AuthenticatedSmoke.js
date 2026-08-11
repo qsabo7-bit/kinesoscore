@@ -294,7 +294,7 @@ async function main() {
   let priorShareB = null
   let smokeHabitMeta = null
   let smokeCheckinMeta = null
-  let bShareId = null
+  let bShareId
 
   try {
     console.log('Stage 8 authenticated smoke harness (dev-only)')

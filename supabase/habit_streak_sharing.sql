@@ -346,7 +346,8 @@ returns table (
   streak integer,
   award_running text,
   award_strength text,
-  award_crown boolean
+  award_crown boolean,
+  avatar_id text
 )
 language plpgsql
 stable
@@ -377,17 +378,28 @@ begin
       case
         when p.show_awards_publicly then coalesce(p.award_crown, false)
         else false
-      end as acrown
+      end as acrown,
+      case
+        when pr.avatar_id in (
+          'mark-sun',
+          'mark-pulse',
+          'mark-shield',
+          'mark-peak',
+          'mark-bolt'
+        ) then pr.avatar_id
+        else 'mark-sun'
+      end as avid
     from public.habit_streak_shares s
     inner join public.leaderboard_profiles p
       on p.user_id = s.user_id
+    left join public.profiles pr
+      on pr.id = s.user_id
     where s.is_active = true
       and s.streak >= 0
       and char_length(btrim(p.leaderboard_name)) > 0
   ),
   ranked as (
     select
-      -- Rank by streak only so equal streaks tie; name is display order below.
       dense_rank() over (
         order by e.streak_value desc
       ) as rnk,
@@ -395,7 +407,8 @@ begin
       e.streak_value,
       e.arun,
       e.astr,
-      e.acrown
+      e.acrown,
+      e.avid
     from eligible e
   )
   select
@@ -404,7 +417,8 @@ begin
     ranked.streak_value,
     ranked.arun,
     ranked.astr,
-    ranked.acrown
+    ranked.acrown,
+    ranked.avid
   from ranked
   order by ranked.rnk asc, lower(ranked.name) asc
   limit 100;
@@ -416,7 +430,7 @@ grant execute on function public.get_public_habit_streaks(text)
   to anon, authenticated;
 
 comment on function public.get_public_habit_streaks(text) is
-  'Stage 8 public habit streak board. Opt-in award tiers/crown only (never raw scores).';
+  'Public habit streak board. Includes avatar catalog id + opt-in award tiers/crown.';
 
 comment on table public.habit_streak_shares is
   'Stage 8 opt-in public habit streak projection. No habit/check-in details. Own-row RLS; public via RPC only.';

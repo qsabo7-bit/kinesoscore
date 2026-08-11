@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import LockedAuthCard from '../components/LockedAuthCard'
+import ProfileAvatar from '../components/ProfileAvatar'
 import PublicAwardBadges from '../components/PublicAwardBadges'
+import SoftReveal from '../components/SoftReveal'
 import { ACCOUNT_LOCKED_PREVIEW } from '../components/tracking'
+import {
+  AVATAR_CATALOG,
+  friendlyAvatarError,
+  normalizeAvatarId,
+} from '../data/avatarCatalog'
 import { BRAND } from '../data/brand'
 import {
   clearLeaderboardName,
@@ -19,6 +26,7 @@ import {
 } from '../lib/awardIdentity'
 import { deriveAwards } from '../lib/fitnessAwards'
 import { fetchLatestFitnessScoreSnapshot } from '../lib/fitnessScoreSnapshots'
+import { saveAvatarId } from '../lib/profileAvatar'
 import { useFocusTrap } from '../lib/useFocusTrap'
 
 function formatDate(iso) {
@@ -35,8 +43,16 @@ function formatDate(iso) {
 }
 
 function AccountPage({ onOpenTab, onRequestAuth }) {
-  const { user, profile, firstName, signOut, deleteAccount, loading } =
-    useAuth()
+  const {
+    user,
+    profile,
+    firstName,
+    avatarId,
+    signOut,
+    deleteAccount,
+    loading,
+    refreshProfile,
+  } = useAuth()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -53,8 +69,15 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   const [awardsBusy, setAwardsBusy] = useState(false)
   const [awardsError, setAwardsError] = useState('')
   const [awardsMessage, setAwardsMessage] = useState('')
+  const [avatarDraft, setAvatarDraft] = useState(() =>
+    avatarId ? normalizeAvatarId(avatarId) : AVATAR_CATALOG[0].id,
+  )
+  const [avatarBusy, setAvatarBusy] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
+  const [avatarMessage, setAvatarMessage] = useState('')
   const busyRef = useRef(false)
   const lbBusyRef = useRef(false)
+  const avatarPickerRef = useRef(null)
   busyRef.current = busy
   lbBusyRef.current = lbBusy
   const clearNameDialogRef = useFocusTrap(confirmClearName, () => {
@@ -63,6 +86,12 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   const deleteDialogRef = useFocusTrap(confirmDelete, () => {
     if (!busyRef.current) setConfirmDelete(false)
   })
+
+  useEffect(() => {
+    // Only sync when auth has a real mark — ignore null during profile load.
+    if (!avatarId) return
+    setAvatarDraft(normalizeAvatarId(avatarId))
+  }, [avatarId, user?.id])
 
   useEffect(() => {
     if (!user?.id) return undefined
@@ -279,6 +308,61 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
     }
   }
 
+  const handlePickAvatar = async (nextId) => {
+    if (!user?.id || avatarBusy) return
+    const id = normalizeAvatarId(nextId)
+    if (avatarId && id === normalizeAvatarId(avatarId)) {
+      setAvatarDraft(id)
+      return
+    }
+
+    setAvatarDraft(id)
+    setAvatarBusy(true)
+    setAvatarError('')
+    setAvatarMessage('')
+    try {
+      await saveAvatarId(user.id, id)
+      await refreshProfile?.()
+      setAvatarMessage('Icon updated.')
+    } catch (err) {
+      setAvatarDraft(
+        avatarId ? normalizeAvatarId(avatarId) : AVATAR_CATALOG[0].id,
+      )
+      setAvatarError(friendlyAvatarError(err, 'Could not save icon.'))
+    } finally {
+      setAvatarBusy(false)
+    }
+  }
+
+  const focusAvatarChip = (index) => {
+    const buttons = avatarPickerRef.current?.querySelectorAll('[role="radio"]')
+    const target = buttons?.[index]
+    if (target instanceof HTMLElement) target.focus()
+  }
+
+  const handleAvatarKeyDown = (event) => {
+    if (avatarBusy) return
+    const ids = AVATAR_CATALOG.map((item) => item.id)
+    const currentIndex = Math.max(0, ids.indexOf(avatarDraft))
+    let nextIndex
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = (currentIndex + 1) % ids.length
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = (currentIndex - 1 + ids.length) % ids.length
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = ids.length - 1
+    } else {
+      return
+    }
+
+    event.preventDefault()
+    focusAvatarChip(nextIndex)
+    void handlePickAvatar(ids[nextIndex])
+  }
+
   if (loading) {
     return (
       <main className="page">
@@ -312,286 +396,342 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
     String(lbDraft ?? '').trim().length > 0 &&
     !lbUnchanged
 
+  const selectedAvatarLabel =
+    AVATAR_CATALOG.find((item) => item.id === avatarDraft)?.label || 'Icon'
+
   return (
     <main className="page account-page">
-      <header className="page-header">
+      <header className="page-header account-page-header">
         <p className="page-eyebrow">Account</p>
         <h1>Account Settings</h1>
-        <p className="page-lead">
-          Manage your KinesoScore profile, sign out, or permanently delete your
-          account.
-        </p>
       </header>
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 
-      <section className="account-card">
-        <h2 className="result-section-title">Profile</h2>
-        <ul className="result-table">
-          <li>
-            <span>First name</span>
-            <strong>{firstName || '—'}</strong>
-          </li>
-          <li>
-            <span>Email address</span>
-            <strong>{profile?.email || user.email || '—'}</strong>
-          </li>
-          <li>
-            <span>Account creation date</span>
-            <strong>
-              {formatDate(profile?.created_at || user.created_at)}
-            </strong>
-          </li>
-        </ul>
-      </section>
+      <div className="account-layout">
+        <section
+          className="account-panel"
+          aria-labelledby="account-profile-heading"
+        >
+          <div className="account-panel-head">
+            <h2 id="account-profile-heading">Profile</h2>
+            <p>Name and email stay private</p>
+          </div>
 
-      <section className="account-card" aria-labelledby="leaderboard-name-heading">
-        <h2 id="leaderboard-name-heading" className="result-section-title">
-          Leaderboard Name
-        </h2>
-        <p className="calc-hint">
-          Optional — required to appear on global leaderboards.
-        </p>
-        <p className="calc-hint">
-          This public handle is separate from your first name and email. Use
-          3–24 characters: letters, numbers, underscores, or hyphens.
-        </p>
-
-        {lbLoading ? (
-          <p className="calc-hint">Loading Leaderboard Name…</p>
-        ) : (
-          <form className="auth-form" onSubmit={handleSaveLeaderboardName}>
-            <label>
-              Leaderboard Name
-              <input
-                type="text"
-                name="leaderboardName"
-                autoComplete="off"
-                spellCheck={false}
-                maxLength={LEADERBOARD_NAME_MAX}
-                value={lbDraft}
-                onChange={(event) => {
-                  setLbDraft(event.target.value)
-                  setLbError('')
-                  setLbMessage('')
-                }}
-                placeholder="e.g. TrailRunner_7"
-                disabled={lbBusy}
-                aria-describedby="leaderboard-name-help"
-              />
-            </label>
-            <p id="leaderboard-name-help" className="calc-hint">
-              {lbSaved
-                ? `Current: ${lbSaved}`
-                : 'No Leaderboard Name set yet.'}
-            </p>
-
-            {lbError ? (
-              <p className="feedback feedback-error" role="alert">
-                {lbError}
-              </p>
-            ) : null}
-            {lbMessage ? (
-              <p className="feedback feedback-success" role="status">
-                {lbMessage}
-              </p>
-            ) : null}
-
-            <div className="confirm-actions">
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={!canSave || confirmClearName}
-              >
-                {lbBusy ? 'Saving…' : lbSaved ? 'Update name' : 'Save name'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => {
-                  setLbError('')
-                  setLbMessage('')
-                  setConfirmClearName(true)
-                }}
-                disabled={!canClear || confirmClearName}
-              >
-                Clear name
-              </button>
+          <div className="account-identity">
+            <div key={avatarDraft} className="account-identity-avatar">
+              <ProfileAvatar avatarId={avatarDraft} size="md" />
             </div>
+            <div className="account-identity-copy">
+              <p className="account-identity-name">{firstName || 'Athlete'}</p>
+              <p className="account-identity-email">
+                {profile?.email || user.email || '—'}
+              </p>
+              <p className="account-identity-meta">
+                Joined {formatDate(profile?.created_at || user.created_at)}
+              </p>
+            </div>
+          </div>
+        </section>
 
-            {confirmClearName ? (
-              <div
-                ref={clearNameDialogRef}
-                className="confirm-box confirm-box-danger"
-                role="alertdialog"
-                aria-modal="true"
-                aria-labelledby="clear-name-title"
-              >
-                <p id="clear-name-title">
-                  <strong>Clear your Leaderboard Name?</strong>
-                </p>
-                <p>
-                  You&apos;ll leave all public leaderboards until you set a new
-                  name and choose to share your results again. Your private
-                  calculator history and habit data will not be deleted.
-                </p>
-                <div className="confirm-actions">
+        <section
+          className="account-panel"
+          aria-labelledby="account-public-heading"
+        >
+          <div className="account-panel-head">
+            <h2 id="account-public-heading">Public</h2>
+            <p>Leaderboard name, icon, and medals</p>
+          </div>
+
+          <div className="avatar-picker-block">
+            <div className="avatar-picker-label-row">
+              <span>Icon</span>
+              <span key={avatarDraft} className="avatar-picker-current">
+                {selectedAvatarLabel}
+              </span>
+            </div>
+            <p className="calc-hint avatar-picker-hint">
+              Shows next to your Leaderboard Name on public boards. No separate
+              hide control — choose a mark you are comfortable sharing.
+            </p>
+            <div
+              ref={avatarPickerRef}
+              className="avatar-picker-row"
+              role="radiogroup"
+              aria-label="Profile icon"
+              onKeyDown={handleAvatarKeyDown}
+            >
+              {AVATAR_CATALOG.map((item, index) => {
+                const selected = avatarDraft === item.id
+                const tileAccent = item.color || 'var(--muted-strong)'
+                const tabStop =
+                  selected ||
+                  (!AVATAR_CATALOG.some((entry) => entry.id === avatarDraft) &&
+                    index === 0)
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    aria-label={item.label}
+                    title={item.label}
+                    tabIndex={tabStop ? 0 : -1}
+                    className={`avatar-picker-chip${
+                      selected ? ' is-selected' : ''
+                    }`}
+                    style={{ '--avatar-tile-accent': tileAccent }}
+                    disabled={avatarBusy}
+                    onClick={() => {
+                      void handlePickAvatar(item.id)
+                    }}
+                  >
+                    <ProfileAvatar avatarId={item.id} size="sm" />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          {avatarError ? (
+            <p className="feedback feedback-error" role="alert">
+              {avatarError}
+            </p>
+          ) : null}
+          {avatarMessage ? (
+            <p className="feedback feedback-success" role="status">
+              {avatarMessage}
+            </p>
+          ) : null}
+
+          {lbLoading ? (
+            <p className="calc-hint account-loading-hint">Loading…</p>
+          ) : (
+            <form
+              className="account-public-form"
+              onSubmit={handleSaveLeaderboardName}
+            >
+              <div className="account-name-row">
+                <label className="account-field account-field-grow">
+                  <span className="sr-only">Leaderboard name</span>
+                  <input
+                    type="text"
+                    name="leaderboardName"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={LEADERBOARD_NAME_MAX}
+                    value={lbDraft}
+                    onChange={(event) => {
+                      setLbDraft(event.target.value)
+                      setLbError('')
+                      setLbMessage('')
+                    }}
+                    placeholder="Leaderboard name"
+                    disabled={lbBusy}
+                  />
+                </label>
+                <div className="account-name-actions">
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={!canSave || confirmClearName}
+                  >
+                    {lbBusy ? 'Saving…' : lbSaved ? 'Update' : 'Save'}
+                  </button>
                   <button
                     type="button"
                     className="btn btn-ghost"
-                    onClick={() => setConfirmClearName(false)}
-                    disabled={lbBusy}
+                    onClick={() => {
+                      setLbError('')
+                      setLbMessage('')
+                      setConfirmClearName(true)
+                    }}
+                    disabled={!canClear || confirmClearName}
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    onClick={handleClearLeaderboardName}
-                    disabled={lbBusy}
-                  >
-                    {lbBusy ? 'Clearing…' : 'Clear Name'}
+                    Clear
                   </button>
                 </div>
               </div>
-            ) : null}
-          </form>
-        )}
-      </section>
 
-      <section
-        className="account-card"
-        aria-labelledby="public-awards-heading"
-      >
-        <h2 id="public-awards-heading" className="result-section-title">
-          Public awards
-        </h2>
-        <p className="calc-hint">
-          Strength/Running medal tiers and Crown show next to your Leaderboard
-          Name by default. Raw scores stay private — switch to Keep private
-          anytime.
-        </p>
-        {!lbSaved ? (
-          <p className="calc-hint">
-            Set a Leaderboard Name first to enable public awards.
-          </p>
-        ) : (
-          <>
-            <div
-              className="leaderboard-share-toggle"
-              role="group"
-              aria-label="Show awards on leaderboards"
-            >
-              <button
-                type="button"
-                className={`leaderboard-share-option${
-                  !showAwardsPublicly ? ' is-active' : ''
-                }`}
-                onClick={() => handleTogglePublicAwards(false)}
-                disabled={awardsBusy || lbLoading}
-                aria-pressed={!showAwardsPublicly}
-              >
-                Keep private
-              </button>
-              <button
-                type="button"
-                className={`leaderboard-share-option${
-                  showAwardsPublicly ? ' is-active' : ''
-                }`}
-                onClick={() => handleTogglePublicAwards(true)}
-                disabled={awardsBusy || lbLoading}
-                aria-pressed={showAwardsPublicly}
-              >
-                Show on leaderboard
-              </button>
-            </div>
-            {showAwardsPublicly ? (
-              <p className="account-awards-preview">
-                Preview:{' '}
-                {publicAwards &&
-                (publicAwards.running ||
-                  publicAwards.strength ||
-                  publicAwards.crown) ? (
-                  <PublicAwardBadges awards={publicAwards} />
-                ) : (
-                  <span className="calc-hint">
-                    No medals yet — save {BRAND.scoreName} to earn them.
-                  </span>
-                )}
-              </p>
-            ) : null}
-            {awardsError ? (
-              <p className="feedback feedback-error" role="alert">
-                {awardsError}
-              </p>
-            ) : null}
-            {awardsMessage ? (
-              <p className="feedback feedback-success" role="status">
-                {awardsMessage}
-              </p>
-            ) : null}
-          </>
-        )}
-      </section>
+              {lbError ? (
+                <p className="feedback feedback-error" role="alert">
+                  {lbError}
+                </p>
+              ) : null}
+              {lbMessage ? (
+                <p className="feedback feedback-success" role="status">
+                  {lbMessage}
+                </p>
+              ) : null}
 
-      <section className="account-card account-controls">
-        <h2 className="result-section-title">Account controls</h2>
-        <div className="confirm-actions">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={handleLogout}
-            disabled={busy}
-          >
-            {busy && !confirmDelete ? 'Logging out…' : 'Log out'}
-          </button>
-          <button
-            type="button"
-            className="btn btn-danger"
-            onClick={() => {
-              setError('')
-              setConfirmDelete(true)
-            }}
-            disabled={busy}
-          >
-            Delete Account
-          </button>
-        </div>
+              <SoftReveal open={confirmClearName}>
+                <div
+                  ref={clearNameDialogRef}
+                  className="confirm-box confirm-box-danger"
+                  role="alertdialog"
+                  aria-modal="true"
+                  aria-labelledby="clear-name-title"
+                >
+                  <p id="clear-name-title">
+                    <strong>Clear your Leaderboard Name?</strong>
+                  </p>
+                  <p>
+                    You&apos;ll leave public leaderboards until you set a new
+                    name. Private history stays.
+                  </p>
+                  <div className="confirm-actions">
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setConfirmClearName(false)}
+                      disabled={lbBusy}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={handleClearLeaderboardName}
+                      disabled={lbBusy}
+                    >
+                      {lbBusy ? 'Clearing…' : 'Clear name'}
+                    </button>
+                  </div>
+                </div>
+              </SoftReveal>
 
-        {confirmDelete ? (
-          <div
-            ref={deleteDialogRef}
-            className="confirm-box confirm-box-danger"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="delete-account-title"
-          >
-            <p id="delete-account-title">
-              <strong>Delete your account permanently?</strong> This ends your
-              session and removes your account and associated data. This cannot
-              be undone.
-            </p>
+              <div className="account-awards-row">
+                <div className="account-awards-copy">
+                  <span className="account-subhead">Medals</span>
+                  <div key={`${lbSaved ? 'on' : 'off'}-${showAwardsPublicly}`} className="account-awards-status">
+                    {!lbSaved ? (
+                      <p className="calc-hint">Add a name to enable</p>
+                    ) : showAwardsPublicly ? (
+                      <p className="account-awards-preview">
+                        {publicAwards &&
+                        (publicAwards.running ||
+                          publicAwards.strength ||
+                          publicAwards.crown) ? (
+                          <PublicAwardBadges awards={publicAwards} />
+                        ) : (
+                          <span className="calc-hint">
+                            None yet — save {BRAND.scoreName}
+                          </span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="calc-hint">Hidden on boards</p>
+                    )}
+                  </div>
+                </div>
+                <SoftReveal open={Boolean(lbSaved)}>
+                  <div
+                    className="leaderboard-share-toggle account-awards-toggle"
+                    role="group"
+                    aria-label="Show awards on leaderboards"
+                  >
+                    <button
+                      type="button"
+                      className={`leaderboard-share-option${
+                        !showAwardsPublicly ? ' is-active' : ''
+                      }`}
+                      onClick={() => handleTogglePublicAwards(false)}
+                      disabled={awardsBusy || lbLoading}
+                      aria-pressed={!showAwardsPublicly}
+                    >
+                      Private
+                    </button>
+                    <button
+                      type="button"
+                      className={`leaderboard-share-option${
+                        showAwardsPublicly ? ' is-active' : ''
+                      }`}
+                      onClick={() => handleTogglePublicAwards(true)}
+                      disabled={awardsBusy || lbLoading}
+                      aria-pressed={showAwardsPublicly}
+                    >
+                      Public
+                    </button>
+                  </div>
+                </SoftReveal>
+              </div>
+              {awardsError ? (
+                <p className="feedback feedback-error" role="alert">
+                  {awardsError}
+                </p>
+              ) : null}
+              {awardsMessage ? (
+                <p className="feedback feedback-success" role="status">
+                  {awardsMessage}
+                </p>
+              ) : null}
+            </form>
+          )}
+        </section>
+
+        <section
+          className="account-panel account-controls"
+          aria-labelledby="account-controls-heading"
+        >
+          <div className="account-panel-head account-panel-head-inline">
+            <h2 id="account-controls-heading">Session</h2>
             <div className="confirm-actions">
               <button
                 type="button"
-                className="btn btn-danger"
-                onClick={handleDeleteAccount}
+                className="btn btn-ghost"
+                onClick={handleLogout}
                 disabled={busy}
               >
-                {busy ? 'Deleting…' : 'Yes, delete my account'}
+                {busy && !confirmDelete ? 'Logging out…' : 'Log out'}
               </button>
               <button
                 type="button"
-                className="btn btn-ghost"
-                onClick={() => setConfirmDelete(false)}
+                className="btn btn-danger"
+                onClick={() => {
+                  setError('')
+                  setConfirmDelete(true)
+                }}
                 disabled={busy}
               >
-                Cancel
+                Delete account
               </button>
             </div>
           </div>
-        ) : null}
-      </section>
+
+          <SoftReveal open={confirmDelete}>
+            <div
+              ref={deleteDialogRef}
+              className="confirm-box confirm-box-danger"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="delete-account-title"
+            >
+              <p id="delete-account-title">
+                <strong>Delete your account permanently?</strong> This ends your
+                session and removes your account and associated data. This
+                cannot be undone.
+              </p>
+              <div className="confirm-actions">
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleDeleteAccount}
+                  disabled={busy}
+                >
+                  {busy ? 'Deleting…' : 'Yes, delete my account'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={busy}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </SoftReveal>
+        </section>
+      </div>
     </main>
   )
 }
