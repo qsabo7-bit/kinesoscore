@@ -24,15 +24,15 @@ export const DASHBOARD_LOCKED_PREVIEW = {
   ],
 }
 
-/** Guest CTA for the KinesoScore calculator. */
+/** Guest CTA for the KinesoScore calculator (below the near-score save prompt). */
 export const FPC_SCORE_LOCKED_PREVIEW = {
-  title: `Save your ${BRAND.scoreName}`,
-  lead: 'Create a free account to unlock:',
+  title: 'See your progress over time',
+  lead: 'With a free account you also unlock:',
   benefits: [
     `${BRAND.scoreName} history`,
-    'Progress tracking',
+    'Progress graphs',
     'Personal records',
-    'Performance graphs',
+    'Dashboard trends',
   ],
 }
 

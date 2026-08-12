@@ -9,6 +9,7 @@ import FitnessAwardsDisplay, {
   FitnessAwardsLegend,
 } from '../components/FitnessAwardsDisplay'
 import FpcScoreRing from '../components/FpcScoreRing'
+import GuestSaveScorePrompt from '../components/GuestSaveScorePrompt'
 import SeoIntro from '../components/SeoIntro'
 import SoftReveal from '../components/SoftReveal'
 import ResultShareActions from '../components/ResultShareActions'
@@ -64,7 +65,7 @@ function toSeconds(hours, minutes, seconds) {
 const ESTIMATED_5K_MILES = getRaceById('5k')?.miles ?? 3.10686
 
 function ScoringPage({ onRequestAuth, onOpenTab }) {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const { patchDefaults, isEstimated5kEdited } = useUserDefaults()
   const [massUnit, setMassUnit] = useSyncedDefault('massUnit', 'lb')
   const [scoreStrengthMode, setScoreStrengthMode] = useSyncedDefault(
@@ -766,6 +767,13 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       ) : (
         <p className="calc-hint">{hint}</p>
       )}
+
+      {result.score && !authLoading && !isAuthenticated ? (
+        <GuestSaveScorePrompt
+          score={result.score.FPCScore}
+          onRequestAuth={onRequestAuth}
+        />
+      ) : null}
 
       {snapshotWarning ? (
         <p className="feedback feedback-error" role="status">

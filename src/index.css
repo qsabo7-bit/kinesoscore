@@ -5221,6 +5221,87 @@ a:focus-visible {
   margin-top: 0.85rem;
 }
 
+/* Guest soft CTA under myKinesoScore — score stays free; save/dashboard ask. */
+.guest-save-prompt {
+  margin: 0.35rem 0 1.15rem;
+  padding: 1.1rem 1.15rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--control-radius) + 0.15rem);
+  background:
+    radial-gradient(
+      ellipse 85% 70% at 0% 0%,
+      color-mix(in srgb, var(--accent) 12%, transparent) 0%,
+      transparent 55%
+    ),
+    var(--bg-elevated);
+  display: grid;
+  gap: 0.85rem;
+}
+
+.guest-save-prompt-title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.15rem, 3.2vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+  line-height: 1.25;
+}
+
+.guest-save-prompt-lead {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 36rem;
+}
+
+.guest-save-prompt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.65rem;
+}
+
+.guest-save-prompt-dismiss {
+  margin-left: 0.15rem;
+  padding: 0.45rem 0.35rem;
+  border: 0;
+  background: transparent;
+  color: var(--muted-strong);
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+  min-height: 2.75rem;
+}
+
+.guest-save-prompt-dismiss:hover,
+.guest-save-prompt-dismiss:focus-visible {
+  color: var(--text-strong);
+}
+
+@media (max-width: 520px) {
+  .guest-save-prompt {
+    padding: 1rem 0.95rem 1.05rem;
+  }
+
+  .guest-save-prompt-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guest-save-prompt-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .guest-save-prompt-dismiss {
+    margin-left: 0;
+    text-align: center;
+  }
+}
+
 .fpc-award-stage:not(.has-flanks):not(.has-strength-only):not(.has-running-only) {
   width: min(100%, 16rem);
 }
