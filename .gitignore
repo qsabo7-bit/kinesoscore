@@ -15,6 +15,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Weekly content studio exports
+content-studio/out/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

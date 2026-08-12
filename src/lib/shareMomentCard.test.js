@@ -50,6 +50,21 @@ describe('shareMomentCard formats', () => {
     assert.equal(model.momentPrimary, '#3')
   })
 
+  it('does not treat null scores as zero', () => {
+    const model = buildShareCardModel({
+      fitnessScore: null,
+      strengthScore: null,
+      runningScore: null,
+      primary: '#3',
+      title: 'This Week',
+      secondary: 'myKinesoScore',
+    })
+    assert.equal(model.fitnessScore, null)
+    assert.equal(model.strengthScore, null)
+    assert.equal(model.runningScore, null)
+    assert.equal(model.momentPrimary, '#3')
+  })
+
   it('derives award badges from component scores when awards are missing', () => {
     const awards = resolveAwardsForCard(null, 92, 88)
     assert.equal(awards.strength, 'diamond')

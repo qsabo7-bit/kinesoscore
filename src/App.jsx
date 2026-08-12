@@ -6,6 +6,7 @@ import PageChunkFallback from './components/PageChunkFallback'
 import PageErrorBoundary from './components/PageErrorBoundary'
 import PageTransition from './components/PageTransition'
 import ScrollToTopButton from './components/ScrollToTopButton'
+import ShareMomentHost from './components/ShareMomentHost'
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -476,6 +477,7 @@ function App() {
         Skip to content
       </a>
       <Header activeTab={activeTab} onTabChange={handleTabChange} />
+      <ShareMomentHost />
       <div className="app">
         <div className="app-content" id="main-content" tabIndex={-1}>
           <PageTransition pageKey={activeTab}>

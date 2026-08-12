@@ -12,6 +12,8 @@ import FpcScoreRing from '../components/FpcScoreRing'
 import SeoIntro from '../components/SeoIntro'
 import SoftReveal from '../components/SoftReveal'
 import ResultShareActions from '../components/ResultShareActions'
+import ShareClimaxBar from '../components/ShareClimaxBar'
+import ShareMomentButton from '../components/ShareMomentButton'
 import DemographicFields from '../components/DemographicFields'
 import EpleyAccuracyNotice from '../components/EpleyAccuracyNotice'
 import PeerComparison from '../components/PeerComparison'
@@ -42,6 +44,11 @@ import {
   syncPublicAwardIdentityFromScores,
 } from '../lib/awardIdentity'
 import { detectAwardUnlocks, deriveAwards } from '../lib/fitnessAwards'
+import {
+  buildScoreShareMoment,
+  requestShareMoment,
+  shouldAutoPromptShareMoment,
+} from '../lib/shareMoments'
 import {
   fetchLatestFitnessScoreSnapshot,
   friendlyFitnessSnapshotError,
@@ -134,6 +141,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
   const [gender, setGender, genderShared] = useSyncedDefault('gender', '')
   const [snapshotWarning, setSnapshotWarning] = useState('')
   const [awardUnlockMessage, setAwardUnlockMessage] = useState('')
+  const [shareClimax, setShareClimax] = useState(null)
 
   // Seed Estimated 5K from latest saved run (or clear). Skip if user is mid-edit.
   useEffect(() => {
@@ -781,19 +789,34 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         saveFeedback={awardUnlockMessage}
         resultShare={
           result.score ? (
-            <ResultShareActions
-              title={BRAND.scoreName}
-              text={(() => {
-                const awardLine = formatPublicAwardCaption(liveAwards)
-                const base = `Just scored ${result.score.FPCScore} on ${BRAND.scoreName} — ${result.score.band}. What’s yours?`
-                return awardLine ? `${base} ${awardLine}.` : base
-              })()}
-              url={
-                typeof window !== 'undefined'
-                  ? `${window.location.origin}/scoring`
-                  : 'https://kinesoscore.com/scoring'
-              }
-            />
+            <div className="scoring-share-stack">
+              <ShareMomentButton
+                type="score_saved"
+                title="myKinesoScore"
+                primary={String(Math.round(result.score.FPCScore))}
+                secondary={`${result.score.band} · Strength + Running`}
+                filename="kinesoscore-score.png"
+                fitnessScore={result.score.FPCScore}
+                strengthScore={result.score.strengthScore}
+                runningScore={result.score.runningScore}
+                awards={liveAwards}
+                label="Share image"
+                className="btn btn-primary"
+              />
+              <ResultShareActions
+                title={BRAND.scoreName}
+                text={(() => {
+                  const awardLine = formatPublicAwardCaption(liveAwards)
+                  const base = `Just scored ${result.score.FPCScore} on ${BRAND.scoreName} — ${result.score.band}. What’s yours?`
+                  return awardLine ? `${base} ${awardLine}.` : base
+                })()}
+                url={
+                  typeof window !== 'undefined'
+                    ? `${window.location.origin}/scoring`
+                    : 'https://kinesoscore.com/scoring'
+                }
+              />
+            </div>
           ) : null
         }
         onSaved={async ({ recordId }) => {
@@ -839,6 +862,24 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
             } catch {
               // Opt-in public badges are best-effort; private snapshot already saved.
             }
+
+            const moment = buildScoreShareMoment({
+              fitnessScore: result.score.FPCScore,
+              strengthScore: result.score.strengthScore,
+              runningScore: result.score.runningScore,
+              awards: nextAwards,
+              unlock: unlocks.length > 0,
+            })
+            setShareClimax(moment)
+
+            const promptType = unlocks.length ? 'award_unlock' : 'score_saved'
+            if (shouldAutoPromptShareMoment(promptType)) {
+              requestShareMoment({
+                ...moment,
+                type: promptType,
+                autoOpen: true,
+              })
+            }
           } catch (err) {
             // Performance save already succeeded; snapshot is private enrichment.
             setSnapshotWarning(
@@ -852,6 +893,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
         onDeleted={async () => {
           setSnapshotWarning('')
           setAwardUnlockMessage('')
+          setShareClimax(null)
           // Jump-discard (or history delete) removes the snapshot with the
           // record — re-sync public crests from whatever snapshot remains.
           if (!user?.id) return
@@ -862,6 +904,13 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
           }
         }}
       />
+
+      {shareClimax ? (
+        <ShareClimaxBar
+          moment={shareClimax}
+          onDismiss={() => setShareClimax(null)}
+        />
+      ) : null}
 
       {result.score ? (
         <section className="results results-followup" aria-live="polite">

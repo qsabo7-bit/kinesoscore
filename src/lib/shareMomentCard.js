@@ -181,6 +181,8 @@ export function downloadMomentCard(blob, filename = 'kinesoscore.png') {
 }
 
 function toScore(value) {
+  // Number(null) === 0 — treat nullish / blank as missing, never invent a zero.
+  if (value == null || value === '') return null
   const n = Math.round(Number(value))
   return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null
 }

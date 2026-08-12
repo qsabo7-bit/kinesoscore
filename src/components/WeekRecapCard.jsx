@@ -53,6 +53,7 @@ function WeekRecapCard({ userId, onOpenTab }) {
           Claim This Week
         </button>
         <ShareMomentButton
+          type="week_recap"
           title="Last week"
           primary={`#${recap.previousRank}`}
           secondary={recap.boardLabel}

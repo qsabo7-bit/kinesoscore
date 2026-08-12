@@ -198,6 +198,7 @@ function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
               Claim This Week
             </button>
             <ShareMomentButton
+              type="week_recap"
               title="Last week"
               primary={`#${recap.previousRank}`}
               secondary={recap.boardLabel}
@@ -297,6 +298,7 @@ function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
         </button>
         {week.best ? (
           <ShareMomentButton
+            type="this_week_rank"
             title="This Week"
             primary={`#${week.best.rank}`}
             secondary={week.best.boardLabel}

@@ -181,6 +181,7 @@ function DashboardThisWeekStrip({ userId, onOpenTab }) {
         </button>
         {state.best ? (
           <ShareMomentButton
+            type="this_week_rank"
             title="This Week"
             primary={`#${state.best.rank}`}
             secondary={state.best.boardLabel}

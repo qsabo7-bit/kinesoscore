@@ -14,6 +14,11 @@ import {
   markOnboardingSkipped,
   trackById,
 } from '../lib/onboarding'
+import {
+  requestShareMoment,
+  shouldAutoPromptShareMoment,
+} from '../lib/shareMoments'
+import ShareMomentButton from './ShareMomentButton'
 
 /**
  * First-session path: pick track → Leaderboard Name → go save / share.
@@ -58,6 +63,18 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
     markOnboardingCompleted(userId, trackId)
     // Pre-select Share globally / Share streak on the destination page.
     markOnboardingShareHint()
+    const name = savedName || String(nameDraft || '').trim()
+    if (name && shouldAutoPromptShareMoment('onboarding_complete')) {
+      requestShareMoment({
+        type: 'onboarding_complete',
+        title: 'Welcome',
+        primary: name,
+        secondary: 'Leaderboard Name',
+        filename: 'kinesoscore-welcome.png',
+        athleteName: name,
+        autoOpen: true,
+      })
+    }
     onDismiss?.()
     onOpenTab?.(track?.tab || 'scoring')
   }
@@ -236,6 +253,18 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
             <p className="calc-hint">
               Competing as <strong>{savedName}</strong>
             </p>
+          ) : null}
+          {savedName ? (
+            <ShareMomentButton
+              type="onboarding_complete"
+              title="Welcome"
+              primary={savedName}
+              secondary="Leaderboard Name"
+              filename="kinesoscore-welcome.png"
+              athleteName={savedName}
+              label="Share your name card"
+              className="btn btn-ghost"
+            />
           ) : null}
           <div className="confirm-actions">
             <button

@@ -80,6 +80,7 @@ function ThisWeekShareStatus({ status, onOpenBoard }) {
         {hasRank ? (
           <ShareMomentButton
             title="This Week"
+            type="this_week_rank"
             primary={`#${status.rank}`}
             secondary={status.boardLabel}
             filename="kinesoscore-this-week.png"
