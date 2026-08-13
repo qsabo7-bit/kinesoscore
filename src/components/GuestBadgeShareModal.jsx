@@ -1,15 +1,12 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { BRAND } from '../data/brand'
 import { captureElementPng } from '../lib/captureElementPng'
+import { openSocialApp } from '../lib/openSocialApp'
 import {
   SHARE_SCORING_URL,
   buildGuestScoreShareCaption,
 } from '../lib/shareCaption'
-import {
-  downloadMomentCard,
-  shareOrDownloadMomentCard,
-} from '../lib/shareMomentCard'
+import { downloadMomentCard } from '../lib/shareMomentCard'
 import { trackShareEvent } from '../lib/shareMoments'
 import { useFocusTrap } from '../lib/useFocusTrap'
 import FitnessAwardsDisplay, { FitnessAwardsLegend } from './FitnessAwardsDisplay'
@@ -61,7 +58,7 @@ function SocialShareButton({ label, busy, disabled, onClick, busyLabel }) {
 /**
  * Guest share popup for myKinesoScore.
  * Desktop: download card + text-only social compose links (@KinesosScore + URL).
- * Mobile: social buttons open a ready post with the card image attached when possible.
+ * Mobile: stacked badge layout; social buttons open the native app (or store).
  */
 function GuestBadgeShareModal({
   open,
@@ -92,11 +89,11 @@ function GuestBadgeShareModal({
     runningScore,
     band: secondary || band,
   }
-  // Same ready post for every network: try-it-out copy + link + @KinesosScore
   const caption = buildGuestScoreShareCaption(scoreInput, {
     includeHandle: true,
   })
   const outName = 'kinesoscore-badges.png'
+  const ringSize = isMobileShare ? 168 : 200
 
   useEffect(() => {
     if (!open) return undefined
@@ -119,9 +116,13 @@ function GuestBadgeShareModal({
       if (cancelled || seq !== generateSeq.current) return
       const node = captureRef.current
       if (!node) throw new Error('Share stage not ready.')
+      // Let mobile stacked layout paint before capture.
+      await new Promise((r) => {
+        requestAnimationFrame(() => requestAnimationFrame(r))
+      })
       node.classList.add('is-capture-ready')
       const blob = await captureElementPng(node, {
-        pixelRatio: 3,
+        pixelRatio: isMobileShare ? 2.5 : 3,
         backgroundColor: '#0f1412',
       })
       if (cancelled || seq !== generateSeq.current) return
@@ -141,7 +142,16 @@ function GuestBadgeShareModal({
     return () => {
       cancelled = true
     }
-  }, [open, score, band, balance, strengthScore, runningScore, awards])
+  }, [
+    open,
+    score,
+    band,
+    balance,
+    strengthScore,
+    runningScore,
+    awards,
+    isMobileShare,
+  ])
 
   useEffect(() => {
     if (open) return undefined
@@ -193,99 +203,53 @@ function GuestBadgeShareModal({
     }
   }
 
-  const shareMobileWithCard = async (network) => {
-    const file = new File([exportBlob], outName, { type: 'image/png' })
-    if (
-      typeof navigator !== 'undefined' &&
-      typeof navigator.share === 'function' &&
-      navigator.canShare?.({ files: [file] })
-    ) {
-      await navigator.share({
-        files: [file],
-        title: BRAND.short,
-        text: caption,
-      })
-      trackShareEvent('share_native', {
-        type: 'score_saved',
-        network,
-        source: 'guest_badge_capture',
-        mode: 'card_attached',
-      })
-      setMessage('Ready post opened with your card + @KinesosScore.')
-      return true
+  const shareMobileToApp = async (network) => {
+    try {
+      await copyText(caption)
+    } catch {
+      /* continue */
     }
-    return false
+
+    if (exportBlob) {
+      try {
+        downloadMomentCard(exportBlob, outName)
+      } catch {
+        /* still open app */
+      }
+    }
+
+    const mode = await openSocialApp(network, {
+      caption,
+      scoringUrl: SHARE_SCORING_URL,
+    })
+    trackShareEvent(`share_${network}`, {
+      type: 'score_saved',
+      source: 'guest_badge_capture',
+      mode: `mobile_${mode}`,
+    })
+    if (mode === 'store') {
+      setMessage('Opening the store — install, then post with your saved card.')
+    } else if (mode === 'app') {
+      setMessage('Opening the app — caption copied; card saved to attach.')
+    } else {
+      setMessage('Caption copied — card saved if download was allowed.')
+    }
   }
 
   const handleSocial = async (network) => {
     if (busyAction) return
-    if (isMobileShare && !exportBlob) return
+    if (isMobileShare && !exportBlob && loadingCard) return
     setBusyAction(network)
     setMessage('')
     setError('')
     try {
       if (isMobileShare) {
-        try {
-          const shared = await shareMobileWithCard(network)
-          if (shared) return
-        } catch (err) {
-          if (err?.name === 'AbortError') return
-        }
-        // Fallback: save card + open compose with caption
-        downloadMomentCard(exportBlob, outName)
-        await openDesktopCompose(network)
-        setMessage(
-          'Card saved — open your app and attach the PNG; caption is ready with @KinesosScore.',
-        )
+        await shareMobileToApp(network)
         return
       }
-
       await openDesktopCompose(network)
     } catch (err) {
       setError(err?.message || 'Could not open share.')
-    } finally {
-      setBusyAction('')
-    }
-  }
-
-  const handleNativeShare = async () => {
-    if (!exportBlob || busyAction) return
-    setBusyAction('share')
-    setMessage('')
-    setError('')
-    try {
-      const file = new File([exportBlob], outName, { type: 'image/png' })
-      if (
-        typeof navigator !== 'undefined' &&
-        typeof navigator.share === 'function' &&
-        navigator.canShare?.({ files: [file] })
-      ) {
-        await navigator.share({
-          files: [file],
-          title: BRAND.short,
-          text: caption,
-        })
-        trackShareEvent('share_native', {
-          type: 'score_saved',
-          source: 'guest_badge_capture',
-          mode: 'card_attached',
-        })
-        setMessage('Ready post opened with your card + @KinesosScore.')
-        return
-      }
-      const mode = await shareOrDownloadMomentCard(exportBlob, outName)
-      trackShareEvent(
-        mode === 'shared' ? 'share_native' : 'share_download',
-        { type: 'score_saved', source: 'guest_badge_capture' },
-      )
-      setMessage(
-        mode === 'shared'
-          ? 'Shared with your score + badges card.'
-          : 'Image saved — attach it to your post.',
-      )
-    } catch (err) {
-      if (err?.name === 'AbortError') setMessage('')
-      else setError(err?.message || 'Could not share image.')
     } finally {
       setBusyAction('')
     }
@@ -320,9 +284,8 @@ function GuestBadgeShareModal({
     onRequestAuth?.('signup')
   }
 
-  const canNativeShare =
-    typeof navigator !== 'undefined' && typeof navigator.share === 'function'
-  const socialDisabled = Boolean(busyAction) || (isMobileShare && !exportBlob)
+  const socialDisabled =
+    Boolean(busyAction) || (isMobileShare && loadingCard && !exportBlob)
 
   return createPortal(
     <div
@@ -349,7 +312,9 @@ function GuestBadgeShareModal({
 
         <div
           ref={captureRef}
-          className="guest-badge-share-capture"
+          className={`guest-badge-share-capture${
+            isMobileShare ? ' is-mobile-capture' : ''
+          }`}
           aria-live="polite"
         >
           <div className="guest-badge-share-stage is-capture">
@@ -358,7 +323,11 @@ function GuestBadgeShareModal({
               runningScore={runningScore}
               strengthScore={strengthScore}
             >
-              <FpcScoreRing score={score} secondary={secondary} size={200} />
+              <FpcScoreRing
+                score={score}
+                secondary={secondary}
+                size={ringSize}
+              />
             </FitnessAwardsDisplay>
           </div>
           <p className="guest-badge-share-capture-footer">kinesoscore.com</p>
@@ -393,15 +362,6 @@ function GuestBadgeShareModal({
             {isMobileShare ? 'Share your result' : 'Post your result'}
           </p>
           <div className="guest-badge-share-action-row">
-            {isMobileShare && canNativeShare ? (
-              <SocialShareButton
-                label="Share card"
-                busyLabel="Sharing…"
-                busy={busyAction === 'share'}
-                disabled={socialDisabled}
-                onClick={handleNativeShare}
-              />
-            ) : null}
             <SocialShareButton
               label="X"
               busy={busyAction === 'x'}

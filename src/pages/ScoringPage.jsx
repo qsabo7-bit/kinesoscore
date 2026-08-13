@@ -828,12 +828,13 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
                 />
                 <button
                   type="button"
-                  className="btn btn-primary scoring-show-badges-btn is-enticing"
+                  className="btn btn-primary scoring-show-badges-btn is-enticing is-irresistible"
                   onClick={openGuestBadgeShare}
                   aria-haspopup="dialog"
                 >
+                  <span className="scoring-show-badges-ping" aria-hidden="true" />
                   <span className="scoring-show-badges-spark" aria-hidden="true" />
-                  Reveal your badges
+                  <span className="scoring-show-badges-label">Reveal your badges</span>
                 </button>
               </div>
             )}

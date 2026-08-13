@@ -5243,16 +5243,31 @@ a:focus-visible {
   width: 100%;
 }
 
-.scoring-guest-score.is-revealed .fpc-award-badge {
-  animation: fpc-award-enter 0.45s var(--motion-ease) both;
+/* After reveal: enter once, then keep nudging every couple seconds (staggered). */
+.scoring-guest-score.is-revealed .fpc-award-badge.is-strength {
+  animation:
+    fpc-award-enter 0.55s var(--motion-ease) both,
+    fpc-award-idle-nudge 3.4s var(--motion-ease) 0.9s infinite;
 }
 
 .scoring-guest-score.is-revealed .fpc-award-badge.is-running {
-  animation-delay: 0.08s;
+  animation:
+    fpc-award-enter 0.55s var(--motion-ease) 0.12s both,
+    fpc-award-idle-nudge 3.4s var(--motion-ease) 2s infinite;
 }
 
 .scoring-guest-score.is-revealed .fpc-award-badge.is-crown {
-  animation-delay: 0.14s;
+  animation:
+    fpc-award-enter 0.55s var(--motion-ease) 0.2s both,
+    fpc-award-idle-nudge 3.4s var(--motion-ease) 3.1s infinite;
+}
+
+.scoring-guest-score.is-revealed .fpc-award-badge.is-strength .fpc-award-crest-shine {
+  animation: fpc-award-idle-shine 3.4s var(--motion-ease) 0.9s infinite;
+}
+
+.scoring-guest-score.is-revealed .fpc-award-badge.is-running .fpc-award-crest-shine {
+  animation: fpc-award-idle-shine 3.4s var(--motion-ease) 2s infinite;
 }
 
 .scoring-show-badges-btn {
@@ -5269,18 +5284,53 @@ a:focus-visible {
     0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* Hard-to-miss Reveal CTA */
+.scoring-show-badges-btn.is-irresistible {
+  width: min(100%, 22rem);
+  min-height: 3.65rem;
+  padding: 0.95rem 1.75rem;
+  font-size: 1.12rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  border-radius: calc(var(--control-radius) + 0.15rem);
+  animation: scoring-show-badges-pulse-strong 1.7s var(--motion-ease) infinite;
+  box-shadow:
+    0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent),
+    0 12px 32px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.scoring-show-badges-label {
+  position: relative;
+  z-index: 2;
+}
+
+.scoring-show-badges-ping {
+  pointer-events: none;
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 2px solid color-mix(in srgb, var(--accent) 70%, #fff);
+  opacity: 0;
+  animation: scoring-show-badges-ping 1.7s var(--motion-ease) infinite;
+}
+
 .scoring-show-badges-spark {
   pointer-events: none;
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     110deg,
-    transparent 30%,
-    color-mix(in srgb, #fff 34%, transparent) 48%,
-    transparent 62%
+    transparent 28%,
+    color-mix(in srgb, #fff 42%, transparent) 48%,
+    transparent 66%
   );
   transform: translateX(-120%);
-  animation: scoring-show-badges-sheen 2.4s var(--motion-ease) infinite;
+  animation: scoring-show-badges-sheen 1.9s var(--motion-ease) infinite;
+}
+
+.scoring-show-badges-btn.is-irresistible .scoring-show-badges-spark {
+  animation-duration: 1.55s;
 }
 
 @keyframes scoring-show-badges-pulse {
@@ -5299,12 +5349,40 @@ a:focus-visible {
   }
 }
 
-@keyframes scoring-show-badges-sheen {
+@keyframes scoring-show-badges-pulse-strong {
   0%,
-  35% {
-    transform: translateX(-120%);
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent),
+      0 12px 30px color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.055);
+    box-shadow:
+      0 0 0 14px color-mix(in srgb, var(--accent) 0%, transparent),
+      0 16px 40px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+}
+
+@keyframes scoring-show-badges-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.65;
   }
   70%,
+  100% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+}
+
+@keyframes scoring-show-badges-sheen {
+  0%,
+  28% {
+    transform: translateX(-120%);
+  }
+  68%,
   100% {
     transform: translateX(120%);
   }
@@ -5312,15 +5390,19 @@ a:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .scoring-show-badges-btn.is-enticing,
+  .scoring-show-badges-btn.is-irresistible,
   .scoring-show-badges-spark,
+  .scoring-show-badges-ping,
   .guest-badge-share-social-btn.is-enticing,
   .guest-badge-share-save-btn.is-enticing,
   .guest-badge-share-entice-label,
-  .scoring-guest-score.is-revealed .fpc-award-badge {
+  .scoring-guest-score.is-revealed .fpc-award-badge,
+  .scoring-guest-score.is-revealed .fpc-award-crest-shine {
     animation: none;
   }
 
   .scoring-show-badges-btn.is-enticing,
+  .scoring-show-badges-btn.is-irresistible,
   .guest-badge-share-social-btn.is-enticing,
   .guest-badge-share-save-btn.is-enticing:not(.is-inverted) {
     box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -5341,6 +5423,12 @@ a:focus-visible {
 @media (min-width: 640px) {
   .scoring-guest-score {
     gap: 1rem;
+  }
+
+  .scoring-show-badges-btn.is-irresistible {
+    width: min(100%, 24rem);
+    min-height: 3.85rem;
+    font-size: 1.18rem;
   }
 }
 
@@ -5370,30 +5458,92 @@ a:focus-visible {
   transform: none;
 }
 
-/* Always flank badges in the share capture (match desktop ceremony on every device). */
-.guest-badge-share-capture .fpc-award-stage.has-flanks,
-.guest-badge-share-capture .fpc-award-stage.has-flanks.has-crown {
-  width: min(100%, 28.5rem);
-  grid-template-columns: 6.25rem minmax(13.5rem, 1fr) 6.25rem;
-  grid-template-areas: 'strength core running';
-  column-gap: 0;
-  row-gap: 0.2rem;
+/* Desktop capture: side-by-side ceremony. Mobile uses stacked page layout. */
+@media (min-width: 721px) {
+  .guest-badge-share-capture .fpc-award-stage.has-flanks,
+  .guest-badge-share-capture .fpc-award-stage.has-flanks.has-crown {
+    width: min(100%, 28.5rem);
+    grid-template-columns: 6.25rem minmax(13.5rem, 1fr) 6.25rem;
+    grid-template-areas: 'strength core running';
+    column-gap: 0;
+    row-gap: 0.2rem;
+  }
+
+  .guest-badge-share-capture .fpc-award-stage.has-flanks.has-crown {
+    grid-template-areas:
+      '. crown .'
+      'strength core running';
+  }
+
+  .guest-badge-share-capture .fpc-award-badge.is-strength,
+  .guest-badge-share-capture .fpc-award-badge.is-running {
+    margin-top: 1.4rem;
+  }
+
+  .guest-badge-share-capture .fpc-award-badge.is-strength::after,
+  .guest-badge-share-capture .fpc-award-badge.is-running::after {
+    display: block;
+  }
 }
 
-.guest-badge-share-capture .fpc-award-stage.has-flanks.has-crown {
+/* Mobile capture: match stacked badge layout so nothing gets clipped. */
+.guest-badge-share-capture.is-mobile-capture {
+  overflow: visible;
+  padding: 0.85rem 0.55rem 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.guest-badge-share-capture.is-mobile-capture .fpc-award-stage,
+.guest-badge-share-capture.is-mobile-capture .fpc-award-stage.has-flanks,
+.guest-badge-share-capture.is-mobile-capture .fpc-award-stage.has-flanks.has-crown {
+  width: min(100%, 20rem);
+  max-width: 100%;
+  grid-template-columns: 1fr 1fr;
   grid-template-areas:
-    '. crown .'
-    'strength core running';
+    'crown crown'
+    'core core'
+    'strength running';
+  column-gap: 0.55rem;
+  row-gap: 0.45rem;
+  justify-items: center;
 }
 
-.guest-badge-share-capture .fpc-award-badge.is-strength,
-.guest-badge-share-capture .fpc-award-badge.is-running {
-  margin-top: 1.4rem;
+.guest-badge-share-capture.is-mobile-capture .fpc-award-stage.has-strength-only,
+.guest-badge-share-capture.is-mobile-capture
+  .fpc-award-stage.has-strength-only.has-crown {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'crown'
+    'core'
+    'strength';
 }
 
-.guest-badge-share-capture .fpc-award-badge.is-strength::after,
-.guest-badge-share-capture .fpc-award-badge.is-running::after {
-  display: block;
+.guest-badge-share-capture.is-mobile-capture .fpc-award-stage.has-running-only,
+.guest-badge-share-capture.is-mobile-capture
+  .fpc-award-stage.has-running-only.has-crown {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'crown'
+    'core'
+    'running';
+}
+
+.guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-strength,
+.guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-running {
+  margin-top: 0;
+  width: min(100%, 6.25rem);
+}
+
+.guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-strength::after,
+.guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-running::after {
+  display: none;
+}
+
+.guest-badge-share-capture.is-mobile-capture .fpc-score-ring {
+  width: min(100%, 14.5rem);
+  padding-block: 0.35rem 0.2rem;
 }
 
 .guest-badge-share-capture-footer {
@@ -5649,7 +5799,7 @@ a:focus-visible {
     grid-template-columns: 1fr 1fr;
   }
 
-  .guest-badge-share-action-row .guest-badge-share-social-btn:first-child {
+  .guest-badge-share-action-row .guest-badge-share-social-btn:last-child {
     grid-column: 1 / -1;
   }
 
@@ -5949,77 +6099,66 @@ a:focus-visible {
   }
 }
 
-/* Touch / no-hover: replay the hover lift on a staggered loop. */
+/* Idle badge lift + shine — every couple seconds, staggered (not all at once). */
 @keyframes fpc-award-idle-nudge {
   0%,
-  10%,
+  12%,
   100% {
     transform: translateY(0) scale(1);
     filter: brightness(1);
   }
-  5% {
-    transform: translateY(-2px) scale(1.02);
-    filter: brightness(1.03);
+  6% {
+    transform: translateY(-3px) scale(1.045);
+    filter: brightness(1.06);
   }
 }
 
 @keyframes fpc-award-idle-shine {
   0%,
-  10%,
+  12%,
   100% {
     background-position: 130% 0;
   }
-  5% {
+  6% {
     background-position: -40% 0;
   }
 }
 
-@media (hover: none), (pointer: coarse) {
-  @media (prefers-reduced-motion: no-preference) {
-    .fpc-award-badge.is-strength,
-    .scoring-guest-score.is-revealed .fpc-award-badge.is-strength,
-    .guest-badge-share-stage .fpc-award-badge.is-strength {
-      animation:
-        fpc-award-enter 0.5s var(--motion-ease) both,
-        fpc-award-idle-nudge 5.6s var(--motion-ease) 1.2s infinite;
-    }
-
-    .fpc-award-badge.is-running,
-    .scoring-guest-score.is-revealed .fpc-award-badge.is-running,
-    .guest-badge-share-stage .fpc-award-badge.is-running {
-      animation:
-        fpc-award-enter 0.5s var(--motion-ease) 0.08s both,
-        fpc-award-idle-nudge 5.6s var(--motion-ease) 3s infinite;
-    }
-
-    .fpc-award-badge.is-crown,
-    .scoring-guest-score.is-revealed .fpc-award-badge.is-crown,
-    .guest-badge-share-stage .fpc-award-badge.is-crown {
-      animation:
-        fpc-award-enter 0.5s var(--motion-ease) 0.14s both,
-        fpc-award-idle-nudge 5.6s var(--motion-ease) 4.8s infinite;
-    }
-
-    .fpc-award-badge.is-strength .fpc-award-crest-shine,
-    .scoring-guest-score.is-revealed .fpc-award-badge.is-strength .fpc-award-crest-shine,
-    .guest-badge-share-stage .fpc-award-badge.is-strength .fpc-award-crest-shine {
-      animation: fpc-award-idle-shine 5.6s var(--motion-ease) 1.2s infinite;
-    }
-
-    .fpc-award-badge.is-running .fpc-award-crest-shine,
-    .scoring-guest-score.is-revealed .fpc-award-badge.is-running .fpc-award-crest-shine,
-    .guest-badge-share-stage .fpc-award-badge.is-running .fpc-award-crest-shine {
-      animation: fpc-award-idle-shine 5.6s var(--motion-ease) 3s infinite;
-    }
-
-    /* Keep PNG captures still. */
-    .guest-badge-share-capture.is-capture-ready .fpc-award-badge,
-    .guest-badge-share-capture.is-capture-ready .fpc-award-crest-shine,
-    .is-share-capture-root .fpc-award-badge,
-    .is-share-capture-root .fpc-award-crest-shine {
-      animation: none !important;
-    }
+/* Share modal badges: same idle loop on every device. */
+@media (prefers-reduced-motion: no-preference) {
+  .guest-badge-share-stage .fpc-award-badge.is-strength {
+    animation:
+      fpc-award-enter 0.5s var(--motion-ease) both,
+      fpc-award-idle-nudge 3.4s var(--motion-ease) 0.9s infinite;
   }
+
+  .guest-badge-share-stage .fpc-award-badge.is-running {
+    animation:
+      fpc-award-enter 0.5s var(--motion-ease) 0.12s both,
+      fpc-award-idle-nudge 3.4s var(--motion-ease) 2s infinite;
+  }
+
+  .guest-badge-share-stage .fpc-award-badge.is-crown {
+    animation:
+      fpc-award-enter 0.5s var(--motion-ease) 0.2s both,
+      fpc-award-idle-nudge 3.4s var(--motion-ease) 3.1s infinite;
+  }
+
+  .guest-badge-share-stage .fpc-award-badge.is-strength .fpc-award-crest-shine {
+    animation: fpc-award-idle-shine 3.4s var(--motion-ease) 0.9s infinite;
+  }
+
+  .guest-badge-share-stage .fpc-award-badge.is-running .fpc-award-crest-shine {
+    animation: fpc-award-idle-shine 3.4s var(--motion-ease) 2s infinite;
+  }
+}
+
+/* Keep PNG captures still. */
+.guest-badge-share-capture.is-capture-ready .fpc-award-badge,
+.guest-badge-share-capture.is-capture-ready .fpc-award-crest-shine,
+.is-share-capture-root .fpc-award-badge,
+.is-share-capture-root .fpc-award-crest-shine {
+  animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
