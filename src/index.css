@@ -3666,6 +3666,18 @@ a:focus-visible {
   max-width: 100%;
 }
 
+.share-card-preview-shell.is-capture {
+  aspect-ratio: auto;
+  width: min(100%, 22rem);
+  max-height: min(48svh, 26rem);
+  height: auto;
+}
+
+.share-card-preview-shell.is-capture .share-card-preview-image {
+  height: auto;
+  max-height: min(48svh, 26rem);
+}
+
 .share-card-preview-image {
   display: block;
   width: 100%;
@@ -5202,9 +5214,11 @@ a:focus-visible {
 }
 
 .fpc-award-legend {
-  margin: 0.55rem 0 0;
+  margin: 0.55rem auto 0;
   max-width: 22rem;
+  width: 100%;
   text-align: center;
+  justify-self: center;
 }
 
 /* Calculator results: keep awards as one centered ceremony, not a 3-col shatter. */
@@ -5219,6 +5233,445 @@ a:focus-visible {
 
 .scoring-awards-block .fpc-award-legend {
   margin-top: 0.85rem;
+}
+
+/* Guest score: ring only + Show badges (opens share card with awards). */
+.scoring-guest-score {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.scoring-guest-score.is-revealed .fpc-award-badge {
+  animation: fpc-award-enter 0.45s var(--motion-ease) both;
+}
+
+.scoring-guest-score.is-revealed .fpc-award-badge.is-running {
+  animation-delay: 0.08s;
+}
+
+.scoring-guest-score.is-revealed .fpc-award-badge.is-crown {
+  animation-delay: 0.14s;
+}
+
+.scoring-show-badges-btn {
+  position: relative;
+  overflow: hidden;
+  min-height: 2.75rem;
+  padding-inline: 1.35rem;
+}
+
+.scoring-show-badges-btn.is-enticing {
+  animation: scoring-show-badges-pulse 2.2s var(--motion-ease) infinite;
+  box-shadow:
+    0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent),
+    0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.scoring-show-badges-spark {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    color-mix(in srgb, #fff 34%, transparent) 48%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: scoring-show-badges-sheen 2.4s var(--motion-ease) infinite;
+}
+
+@keyframes scoring-show-badges-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent),
+      0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  55% {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow:
+      0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent),
+      0 10px 28px color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+}
+
+@keyframes scoring-show-badges-sheen {
+  0%,
+  35% {
+    transform: translateX(-120%);
+  }
+  70%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoring-show-badges-btn.is-enticing,
+  .scoring-show-badges-spark,
+  .guest-badge-share-social-btn.is-enticing,
+  .guest-badge-share-save-btn.is-enticing,
+  .guest-badge-share-entice-label,
+  .scoring-guest-score.is-revealed .fpc-award-badge {
+    animation: none;
+  }
+
+  .scoring-show-badges-btn.is-enticing,
+  .guest-badge-share-social-btn.is-enticing,
+  .guest-badge-share-save-btn.is-enticing:not(.is-inverted) {
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .guest-badge-share-save-btn.is-inverted.is-enticing {
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .guest-badge-share-entice-label {
+    color: color-mix(in srgb, var(--accent) 82%, var(--text));
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+  }
+}
+
+@media (min-width: 640px) {
+  .scoring-guest-score {
+    gap: 1rem;
+  }
+}
+
+.guest-badge-share-modal {
+  width: min(36rem, calc(100vw - 1.25rem));
+  max-height: min(92svh, 54rem);
+  overflow: auto;
+  padding-bottom: 1.1rem;
+}
+
+.guest-badge-share-capture {
+  margin: 0.35rem 0 0.65rem;
+  padding: 1.35rem 1rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: calc(var(--control-radius) + 0.2rem);
+  background: var(--bg);
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.guest-badge-share-capture.is-capture-ready .fpc-award-badge {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* Always flank badges in the share capture (match desktop ceremony on every device). */
+.guest-badge-share-capture .fpc-award-stage.has-flanks,
+.guest-badge-share-capture .fpc-award-stage.has-flanks.has-crown {
+  width: min(100%, 28.5rem);
+  grid-template-columns: 6.25rem minmax(13.5rem, 1fr) 6.25rem;
+  grid-template-areas: 'strength core running';
+  column-gap: 0;
+  row-gap: 0.2rem;
+}
+
+.guest-badge-share-capture .fpc-award-stage.has-flanks.has-crown {
+  grid-template-areas:
+    '. crown .'
+    'strength core running';
+}
+
+.guest-badge-share-capture .fpc-award-badge.is-strength,
+.guest-badge-share-capture .fpc-award-badge.is-running {
+  margin-top: 1.4rem;
+}
+
+.guest-badge-share-capture .fpc-award-badge.is-strength::after,
+.guest-badge-share-capture .fpc-award-badge.is-running::after {
+  display: block;
+}
+
+.guest-badge-share-capture-footer {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted-strong);
+}
+
+.is-share-capture-root .fpc-award-crest {
+  filter: none !important;
+  box-shadow: 0 14px 22px rgba(0, 0, 0, 0.42);
+}
+
+.is-share-capture-root .fpc-award-emblem {
+  filter: none !important;
+}
+
+.guest-badge-share-stage {
+  margin: 0;
+  padding: 0.35rem 0.25rem 0.15rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.scoring-share-capture {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.35rem 0.25rem;
+  background: #0b100e;
+  border-radius: calc(var(--control-radius) + 0.1rem);
+}
+
+.scoring-share-capture .fpc-award-legend,
+.scoring-guest-score .fpc-award-legend {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.guest-badge-share-stage .fpc-award-stage {
+  width: min(100%, 22rem);
+}
+
+.guest-badge-share-stage .fpc-award-badge {
+  animation: fpc-award-enter 0.5s var(--motion-ease) both;
+}
+
+.guest-badge-share-stage .fpc-award-badge.is-running {
+  animation-delay: 0.1s;
+}
+
+.guest-badge-share-stage .fpc-award-badge.is-crown {
+  animation-delay: 0.16s;
+}
+
+.guest-badge-share-hint {
+  margin: 0.15rem 0 0.65rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--muted-strong);
+}
+
+.guest-badge-share-legend {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.guest-badge-share-legend .fpc-award-legend {
+  margin-top: 0.35rem;
+}
+
+.guest-badge-share-actions {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.guest-badge-share-entice-label {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+  font-size: 0.86rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 82%, var(--text));
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--muted-strong) 88%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 90%, #fff) 42%,
+    color-mix(in srgb, #fff 88%, var(--accent)) 50%,
+    color-mix(in srgb, var(--accent) 90%, #fff) 58%,
+    color-mix(in srgb, var(--muted-strong) 88%, transparent) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: guest-badge-share-label-glimmer 2.4s var(--motion-ease) infinite;
+}
+
+@keyframes guest-badge-share-label-glimmer {
+  0%,
+  28% {
+    background-position: 100% 50%;
+  }
+  72%,
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.guest-badge-share-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.guest-badge-share-action-row .btn {
+  min-height: 2.75rem;
+}
+
+.guest-badge-share-social-btn {
+  position: relative;
+  overflow: hidden;
+  min-height: 2.75rem;
+  padding-inline: 1.2rem;
+  flex: 1 1 auto;
+}
+
+.guest-badge-share-social-btn.is-enticing {
+  animation: scoring-show-badges-pulse 2.2s var(--motion-ease) infinite;
+  box-shadow:
+    0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent),
+    0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.guest-badge-share-action-row .guest-badge-share-social-btn:nth-child(2).is-enticing {
+  animation-delay: 0.18s;
+}
+
+.guest-badge-share-action-row .guest-badge-share-social-btn:nth-child(3).is-enticing {
+  animation-delay: 0.36s;
+}
+
+.guest-badge-share-action-row .guest-badge-share-social-btn:nth-child(4).is-enticing {
+  animation-delay: 0.54s;
+}
+
+.guest-badge-share-social-label {
+  position: relative;
+  z-index: 1;
+}
+
+.guest-badge-share-account-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  width: 100%;
+  margin-top: 0.15rem;
+}
+
+.guest-badge-share-save-btn {
+  position: relative;
+  overflow: hidden;
+  min-height: 2.75rem;
+  padding-inline: 1.2rem;
+  width: 100%;
+}
+
+.guest-badge-share-save-btn.is-enticing {
+  animation: scoring-show-badges-pulse 2.2s var(--motion-ease) infinite;
+  box-shadow:
+    0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent),
+    0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.guest-badge-share-download-btn {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+/* Mobile: inverted scheme vs primary social buttons */
+.guest-badge-share-save-btn.is-inverted {
+  margin-top: 0.2rem;
+  background: color-mix(in srgb, var(--bg) 88%, #fff);
+  color: var(--accent);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 72%, var(--border));
+  box-shadow:
+    0 0 0 0 color-mix(in srgb, var(--accent) 28%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 8%, transparent);
+}
+
+.guest-badge-share-save-btn.is-inverted.is-enticing {
+  animation: guest-badge-share-inverted-pulse 2.2s var(--motion-ease) infinite;
+}
+
+.guest-badge-share-save-btn.is-inverted .scoring-show-badges-spark {
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    color-mix(in srgb, var(--accent) 42%, transparent) 48%,
+    transparent 62%
+  );
+}
+
+@keyframes guest-badge-share-inverted-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent) 30%, transparent),
+      0 6px 18px color-mix(in srgb, var(--accent) 12%, transparent);
+    background: color-mix(in srgb, var(--bg) 88%, #fff);
+  }
+  55% {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow:
+      0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent),
+      0 10px 26px color-mix(in srgb, var(--accent) 22%, transparent);
+    background: color-mix(in srgb, var(--bg) 72%, #fff);
+  }
+}
+
+@media (max-width: 520px) {
+  .guest-badge-share-modal {
+    width: calc(100vw - 0.75rem);
+    max-height: 94svh;
+    padding-inline: 0.85rem;
+  }
+
+  .guest-badge-share-stage {
+    padding: 0.7rem 0.35rem 0.35rem;
+  }
+
+  .guest-badge-share-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .guest-badge-share-action-row .guest-badge-share-social-btn:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .guest-badge-share-account-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 720px) {
+  .guest-badge-share-modal {
+    width: min(40rem, calc(100vw - 2rem));
+  }
+
+  .guest-badge-share-stage {
+    padding: 1rem 1rem 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guest-badge-share-stage .fpc-award-badge {
+    animation: none;
+  }
 }
 
 /* Guest soft CTA under myKinesoScore — score stays free; save/dashboard ask. */
@@ -5496,6 +5949,79 @@ a:focus-visible {
   }
 }
 
+/* Touch / no-hover: replay the hover lift on a staggered loop. */
+@keyframes fpc-award-idle-nudge {
+  0%,
+  10%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  5% {
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.03);
+  }
+}
+
+@keyframes fpc-award-idle-shine {
+  0%,
+  10%,
+  100% {
+    background-position: 130% 0;
+  }
+  5% {
+    background-position: -40% 0;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fpc-award-badge.is-strength,
+    .scoring-guest-score.is-revealed .fpc-award-badge.is-strength,
+    .guest-badge-share-stage .fpc-award-badge.is-strength {
+      animation:
+        fpc-award-enter 0.5s var(--motion-ease) both,
+        fpc-award-idle-nudge 5.6s var(--motion-ease) 1.2s infinite;
+    }
+
+    .fpc-award-badge.is-running,
+    .scoring-guest-score.is-revealed .fpc-award-badge.is-running,
+    .guest-badge-share-stage .fpc-award-badge.is-running {
+      animation:
+        fpc-award-enter 0.5s var(--motion-ease) 0.08s both,
+        fpc-award-idle-nudge 5.6s var(--motion-ease) 3s infinite;
+    }
+
+    .fpc-award-badge.is-crown,
+    .scoring-guest-score.is-revealed .fpc-award-badge.is-crown,
+    .guest-badge-share-stage .fpc-award-badge.is-crown {
+      animation:
+        fpc-award-enter 0.5s var(--motion-ease) 0.14s both,
+        fpc-award-idle-nudge 5.6s var(--motion-ease) 4.8s infinite;
+    }
+
+    .fpc-award-badge.is-strength .fpc-award-crest-shine,
+    .scoring-guest-score.is-revealed .fpc-award-badge.is-strength .fpc-award-crest-shine,
+    .guest-badge-share-stage .fpc-award-badge.is-strength .fpc-award-crest-shine {
+      animation: fpc-award-idle-shine 5.6s var(--motion-ease) 1.2s infinite;
+    }
+
+    .fpc-award-badge.is-running .fpc-award-crest-shine,
+    .scoring-guest-score.is-revealed .fpc-award-badge.is-running .fpc-award-crest-shine,
+    .guest-badge-share-stage .fpc-award-badge.is-running .fpc-award-crest-shine {
+      animation: fpc-award-idle-shine 5.6s var(--motion-ease) 3s infinite;
+    }
+
+    /* Keep PNG captures still. */
+    .guest-badge-share-capture.is-capture-ready .fpc-award-badge,
+    .guest-badge-share-capture.is-capture-ready .fpc-award-crest-shine,
+    .is-share-capture-root .fpc-award-badge,
+    .is-share-capture-root .fpc-award-crest-shine {
+      animation: none !important;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fpc-award-badge {
     animation: none;
@@ -5512,6 +6038,7 @@ a:focus-visible {
 
   .fpc-award-crest-shine {
     transition: none;
+    animation: none;
   }
 }
 
@@ -5717,6 +6244,34 @@ a:focus-visible {
     .fpc-award-badge.is-running:hover {
       transform: translateY(-2px) scale(1.03);
     }
+  }
+}
+
+/* Guest share modal: restore side-by-side badges whenever the dialog is wide. */
+@media (min-width: 720px) {
+  .guest-badge-share-stage .fpc-award-stage.has-flanks,
+  .guest-badge-share-stage .fpc-award-stage.has-flanks.has-crown {
+    width: min(100%, 28.5rem);
+    grid-template-columns: 6.25rem minmax(13.5rem, 1fr) 6.25rem;
+    grid-template-areas: 'strength core running';
+    column-gap: 0;
+    row-gap: 0.2rem;
+  }
+
+  .guest-badge-share-stage .fpc-award-stage.has-flanks.has-crown {
+    grid-template-areas:
+      '. crown .'
+      'strength core running';
+  }
+
+  .guest-badge-share-stage .fpc-award-badge.is-strength,
+  .guest-badge-share-stage .fpc-award-badge.is-running {
+    margin-top: 1.4rem;
+  }
+
+  .guest-badge-share-stage .fpc-award-badge.is-strength::after,
+  .guest-badge-share-stage .fpc-award-badge.is-running::after {
+    display: block;
   }
 }
 

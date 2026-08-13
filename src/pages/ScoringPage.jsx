@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { buildGuestScoreShareCaption } from '../lib/shareCaption'
+import { captureElementPng } from '../lib/captureElementPng'
 import { useAuth } from '../auth/AuthContext'
 import {
   useSyncedDefault,
@@ -9,6 +11,7 @@ import FitnessAwardsDisplay, {
   FitnessAwardsLegend,
 } from '../components/FitnessAwardsDisplay'
 import FpcScoreRing from '../components/FpcScoreRing'
+import GuestBadgeShareModal from '../components/GuestBadgeShareModal'
 import GuestSaveScorePrompt from '../components/GuestSaveScorePrompt'
 import SeoIntro from '../components/SeoIntro'
 import SoftReveal from '../components/SoftReveal'
@@ -49,6 +52,7 @@ import {
   buildScoreShareMoment,
   requestShareMoment,
   shouldAutoPromptShareMoment,
+  trackShareEvent,
 } from '../lib/shareMoments'
 import {
   fetchLatestFitnessScoreSnapshot,
@@ -334,6 +338,30 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       strengthScore: result.score.strengthScore,
     })
   }, [result.score])
+
+  const [guestBadgeShareOpen, setGuestBadgeShareOpen] = useState(false)
+  const [guestBadgesRevealed, setGuestBadgesRevealed] = useState(false)
+  const scoreCaptureRef = useRef(null)
+
+  useEffect(() => {
+    if (result.score) return undefined
+    queueMicrotask(() => {
+      setGuestBadgeShareOpen(false)
+      setGuestBadgesRevealed(false)
+    })
+    return undefined
+  }, [result.score])
+
+  const openGuestBadgeShare = () => {
+    if (!result.score) return
+    setGuestBadgesRevealed(true)
+    setGuestBadgeShareOpen(true)
+    trackShareEvent('share_button_click', {
+      type: 'score_saved',
+      source: 'guest_show_badges',
+      ok: true,
+    })
+  }
 
   return (
     <main className="page">
@@ -751,22 +779,83 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       {result.score ? (
         <section className="results" aria-live="polite">
           <div className="scoring-awards-block">
-            <FitnessAwardsDisplay
-              awards={liveAwards}
-              runningScore={result.score.runningScore}
-              strengthScore={result.score.strengthScore}
-            >
+            {authLoading ? (
               <FpcScoreRing
                 score={result.score.FPCScore}
                 secondary={`${result.score.band} · ${result.score.balance}`}
               />
-            </FitnessAwardsDisplay>
-            <FitnessAwardsLegend awards={liveAwards} />
+            ) : isAuthenticated ? (
+              <div ref={scoreCaptureRef} className="scoring-share-capture">
+                <FitnessAwardsDisplay
+                  awards={liveAwards}
+                  runningScore={result.score.runningScore}
+                  strengthScore={result.score.strengthScore}
+                >
+                  <FpcScoreRing
+                    score={result.score.FPCScore}
+                    secondary={`${result.score.band} · ${result.score.balance}`}
+                  />
+                </FitnessAwardsDisplay>
+                <FitnessAwardsLegend awards={liveAwards} />
+              </div>
+            ) : guestBadgesRevealed ? (
+              <div className="scoring-guest-score is-revealed">
+                <FitnessAwardsDisplay
+                  awards={liveAwards}
+                  runningScore={result.score.runningScore}
+                  strengthScore={result.score.strengthScore}
+                >
+                  <FpcScoreRing
+                    score={result.score.FPCScore}
+                    secondary={`${result.score.band} · ${result.score.balance}`}
+                  />
+                </FitnessAwardsDisplay>
+                <FitnessAwardsLegend awards={liveAwards} />
+                <button
+                  type="button"
+                  className="btn btn-primary scoring-show-badges-btn"
+                  onClick={openGuestBadgeShare}
+                  aria-haspopup="dialog"
+                >
+                  Share your badges
+                </button>
+              </div>
+            ) : (
+              <div className="scoring-guest-score">
+                <FpcScoreRing
+                  score={result.score.FPCScore}
+                  secondary={`${result.score.band} · ${result.score.balance}`}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary scoring-show-badges-btn is-enticing"
+                  onClick={openGuestBadgeShare}
+                  aria-haspopup="dialog"
+                >
+                  <span className="scoring-show-badges-spark" aria-hidden="true" />
+                  Reveal your badges
+                </button>
+              </div>
+            )}
           </div>
         </section>
       ) : (
         <p className="calc-hint">{hint}</p>
       )}
+
+      {result.score && !authLoading && !isAuthenticated ? (
+        <GuestBadgeShareModal
+          open={guestBadgeShareOpen}
+          onClose={() => setGuestBadgeShareOpen(false)}
+          score={result.score.FPCScore}
+          band={result.score.band}
+          balance={result.score.balance}
+          strengthScore={result.score.strengthScore}
+          runningScore={result.score.runningScore}
+          awards={liveAwards}
+          onRequestAuth={onRequestAuth}
+        />
+      ) : null}
 
       {result.score && !authLoading && !isAuthenticated ? (
         <GuestSaveScorePrompt
@@ -803,11 +892,21 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
                 title="myKinesoScore"
                 primary={String(Math.round(result.score.FPCScore))}
                 secondary={`${result.score.band} · Strength + Running`}
-                filename="kinesoscore-score.png"
+                filename="kinesoscore-badges.png"
                 fitnessScore={result.score.FPCScore}
                 strengthScore={result.score.strengthScore}
                 runningScore={result.score.runningScore}
                 awards={liveAwards}
+                captureElement={() => scoreCaptureRef.current}
+                captionOverride={buildGuestScoreShareCaption(
+                  {
+                    fitnessScore: result.score.FPCScore,
+                    strengthScore: result.score.strengthScore,
+                    runningScore: result.score.runningScore,
+                    band: `${result.score.band} · ${result.score.balance}`,
+                  },
+                  { platform: 'generic' },
+                )}
                 label="Share image"
                 className="btn btn-primary"
               />
@@ -882,11 +981,42 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
 
             const promptType = unlocks.length ? 'award_unlock' : 'score_saved'
             if (shouldAutoPromptShareMoment(promptType)) {
-              requestShareMoment({
-                ...moment,
-                type: promptType,
-                autoOpen: true,
-              })
+              const captionOverride = buildGuestScoreShareCaption(
+                {
+                  fitnessScore: result.score.FPCScore,
+                  strengthScore: result.score.strengthScore,
+                  runningScore: result.score.runningScore,
+                  band: `${result.score.band} · ${result.score.balance}`,
+                },
+                { platform: 'generic' },
+              )
+              const openCaptured = async () => {
+                try {
+                  await new Promise((r) => setTimeout(r, 80))
+                  const node = scoreCaptureRef.current
+                  const imageBlob = node
+                    ? await captureElementPng(node, {
+                        pixelRatio: 2,
+                        backgroundColor: '#0b100e',
+                      })
+                    : null
+                  requestShareMoment({
+                    ...moment,
+                    type: promptType,
+                    filename: 'kinesoscore-badges.png',
+                    captionOverride,
+                    imageBlob,
+                    autoOpen: true,
+                  })
+                } catch {
+                  requestShareMoment({
+                    ...moment,
+                    type: promptType,
+                    autoOpen: true,
+                  })
+                }
+              }
+              void openCaptured()
             }
           } catch (err) {
             // Performance save already succeeded; snapshot is private enrichment.
@@ -916,6 +1046,7 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       {shareClimax ? (
         <ShareClimaxBar
           moment={shareClimax}
+          captureElement={() => scoreCaptureRef.current}
           onDismiss={() => setShareClimax(null)}
         />
       ) : null}

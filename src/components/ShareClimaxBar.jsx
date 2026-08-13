@@ -7,6 +7,7 @@ import { dismissShareMoment } from '../lib/shareMoments'
 function ShareClimaxBar({
   moment,
   onDismiss,
+  captureElement = null,
 }) {
   if (!moment?.primary) return null
 
@@ -21,7 +22,7 @@ function ShareClimaxBar({
         </p>
         <p className="share-climax-body">
           {moment.climaxBody ||
-            'Post a premium KinesoScore card — Instagram-ready.'}
+            'Share a snapshot of your score and badges.'}
         </p>
       </div>
       <div className="share-climax-actions">
@@ -30,12 +31,13 @@ function ShareClimaxBar({
           title={moment.title}
           primary={moment.primary}
           secondary={moment.secondary}
-          filename={moment.filename}
+          filename={moment.filename || 'kinesoscore-badges.png'}
           athleteName={moment.athleteName}
           awards={moment.awards}
           fitnessScore={moment.fitnessScore}
           strengthScore={moment.strengthScore}
           runningScore={moment.runningScore}
+          captureElement={captureElement}
           label="Share image"
           className="btn btn-primary"
         />

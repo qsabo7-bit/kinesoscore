@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { BRAND } from '../data/brand'
 
 /**
@@ -11,11 +12,12 @@ function FpcScoreRing({
   size = 188,
   stroke = 14,
 }) {
+  const reactId = useId().replace(/:/g, '')
   const clamped = Math.min(100, Math.max(0, Number(score) || 0))
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
   const offset = circumference * (1 - clamped / 100)
-  const gradientId = 'fpc-score-ring-grad'
+  const gradientId = `fpc-score-ring-grad-${reactId}`
   const t = clamped / 100
 
   // Track: muted. Progress: light mint → deep athletic green as score rises.

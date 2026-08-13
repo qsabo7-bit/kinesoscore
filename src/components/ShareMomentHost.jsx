@@ -2,7 +2,12 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../auth/AuthContext'
 import { BRAND } from '../data/brand'
-import { SHARE_SITE_URL, buildShareCaption } from '../lib/shareCaption'
+import {
+  SHARE_SCORING_URL,
+  SHARE_SITE_URL,
+  X_BRAND_HANDLE,
+  buildShareCaption,
+} from '../lib/shareCaption'
 import { resolveShareCardData } from '../lib/shareCardData'
 import {
   downloadMomentCard,
@@ -120,17 +125,20 @@ function ShareMomentHost() {
     const run = async () => {
       setError('')
       try {
-        const blob = await renderShareMomentCardBlob({
-          format: formatId,
-          title: request.title,
-          primary: request.primary,
-          secondary: request.secondary,
-          athleteName: cardData.athleteName,
-          awards: cardData.awards,
-          fitnessScore: cardData.fitnessScore,
-          strengthScore: cardData.strengthScore,
-          runningScore: cardData.runningScore,
-        })
+        const blob =
+          request.imageBlob instanceof Blob
+            ? request.imageBlob
+            : await renderShareMomentCardBlob({
+                format: formatId,
+                title: request.title,
+                primary: request.primary,
+                secondary: request.secondary,
+                athleteName: cardData.athleteName,
+                awards: cardData.awards,
+                fitnessScore: cardData.fitnessScore,
+                strengthScore: cardData.strengthScore,
+                runningScore: cardData.runningScore,
+              })
         if (cancelled || seq !== generateSeq.current) return
 
         const url = URL.createObjectURL(blob)
@@ -150,6 +158,8 @@ function ShareMomentHost() {
       cancelled = true
     }
   }, [open, cardData, formatId, request])
+
+  const captureOnly = request?.imageBlob instanceof Blob
 
   useEffect(() => {
     if (open) return undefined
@@ -183,13 +193,33 @@ function ShareMomentHost() {
   if (!open || typeof document === 'undefined') return null
 
   const format = resolveShareFormat(formatId)
-  const outName = shareFilename(request.filename, formatId)
-  const ratioClass = formatId === 'story' ? 'is-story' : 'is-post'
-  const caption = buildShareCaption(cardData, {
-    title: request.title,
-    primary: request.primary,
-    secondary: request.secondary,
-  })
+  const outName = shareFilename(
+    request.filename || (captureOnly ? 'kinesoscore-badges.png' : null),
+    captureOnly ? 'post' : formatId,
+  )
+  const ratioClass = captureOnly
+    ? 'is-capture'
+    : formatId === 'story'
+      ? 'is-story'
+      : 'is-post'
+  const caption =
+    typeof request.captionOverride === 'string' &&
+    request.captionOverride.trim()
+      ? request.captionOverride.trim()
+      : buildShareCaption(cardData, {
+          title: request.title,
+          primary: request.primary,
+          secondary: request.secondary,
+        })
+  const modalEyebrow = request.modalEyebrow || 'Share image'
+  const modalTitle = request.modalTitle || `${BRAND.short} card`
+  const modalLead =
+    request.modalLead ||
+    (loading
+      ? 'Loading your scores…'
+      : captureOnly
+        ? 'Snapshot of your score and badges — ready to attach to your post.'
+        : 'Instagram-ready graphic from your live scores — not a page screenshot.')
 
   const handleDownload = () => {
     if (!exportBlob || busyAction) return
@@ -292,15 +322,22 @@ function ShareMomentHost() {
             : 'Image saved — open Instagram and attach it',
         )
       } else if (network === 'x') {
+        let xCaption = String(caption || '').trim()
+        if (!/kinesoscore\.com/i.test(xCaption)) {
+          xCaption = `${xCaption}\n${SHARE_SCORING_URL}`
+        }
+        if (!xCaption.includes(X_BRAND_HANDLE)) {
+          xCaption = `${xCaption}\n${X_BRAND_HANDLE}`
+        }
         window.open(
-          `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}`,
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(xCaption)}`,
           '_blank',
           'noopener,noreferrer',
         )
         setMessage(
           copied
-            ? 'Image saved + caption ready — attach the PNG in your post'
-            : 'Image saved — attach the PNG in your post',
+            ? 'Opened X with your post — attach the downloaded PNG as the image'
+            : 'Opened X with your post — attach the PNG',
         )
       } else if (network === 'facebook') {
         window.open(
@@ -339,40 +376,40 @@ function ShareMomentHost() {
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <p className="confirm-modal-eyebrow">Share image</p>
+        <p className="confirm-modal-eyebrow">{modalEyebrow}</p>
         <h2 id={titleId} className="confirm-modal-title">
-          {BRAND.short} card
+          {modalTitle}
         </h2>
         <p className="share-card-modal-lead">
-          {loading
-            ? 'Loading your scores…'
-            : 'Instagram-ready graphic from your live scores — not a page screenshot.'}
+          {loading ? 'Loading your scores…' : modalLead}
         </p>
 
-        <div
-          className="share-card-format-toggle"
-          role="radiogroup"
-          aria-label="Image format"
-        >
-          {Object.values(SHARE_FORMATS).map((item) => {
-            const selected = formatId === item.id
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                className={`share-card-format-btn${
-                  selected ? ' is-selected' : ''
-                }`}
-                onClick={() => setFormatId(item.id)}
-                disabled={Boolean(busyAction)}
-              >
-                {item.shortLabel}
-              </button>
-            )
-          })}
-        </div>
+        {captureOnly ? null : (
+          <div
+            className="share-card-format-toggle"
+            role="radiogroup"
+            aria-label="Image format"
+          >
+            {Object.values(SHARE_FORMATS).map((item) => {
+              const selected = formatId === item.id
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  className={`share-card-format-btn${
+                    selected ? ' is-selected' : ''
+                  }`}
+                  onClick={() => setFormatId(item.id)}
+                  disabled={Boolean(busyAction)}
+                >
+                  {item.shortLabel}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         <div
           className={`share-card-preview-shell ${ratioClass}`}

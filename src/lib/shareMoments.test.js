@@ -9,7 +9,11 @@ import {
   markSessionSharePromptUsed,
   hasUsedSessionSharePrompt,
 } from './shareMoments.js'
-import { buildShareCaption, buildWeeklyCaptions } from './shareCaption.js'
+import {
+  buildGuestScoreShareCaption,
+  buildShareCaption,
+  buildWeeklyCaptions,
+} from './shareCaption.js'
 
 describe('shareMoments dismiss + prompts', () => {
   beforeEach(() => {
@@ -73,5 +77,51 @@ describe('shareCaption', () => {
     })
     assert.match(pack.scoreCuriosity, /90/)
     assert.match(pack.rankEnergy, /#1/)
+  })
+
+  it('builds polished guest score captions for social share', () => {
+    const caption = buildGuestScoreShareCaption({
+      fitnessScore: 77,
+      strengthScore: 72,
+      runningScore: 82,
+      band: 'Strong · Balanced',
+    })
+    assert.match(caption, /77/)
+    assert.match(caption, /Strength 72/)
+    assert.match(caption, /Running 82/)
+    assert.match(caption, /Try it free/)
+    assert.match(caption, /What’s yours/)
+    assert.match(caption, /kinesoscore\.com\/scoring/)
+    assert.doesNotMatch(caption, /@KinesosScore/)
+    assert.ok(caption.length <= 280)
+  })
+
+  it('adds @KinesosScore on X captions', () => {
+    const caption = buildGuestScoreShareCaption(
+      {
+        fitnessScore: 77,
+        strengthScore: 72,
+        runningScore: 82,
+        band: 'Strong · Balanced',
+      },
+      { platform: 'x' },
+    )
+    assert.match(caption, /@KinesosScore/)
+    assert.match(caption, /Try it free/)
+    assert.match(caption, /kinesoscore\.com\/scoring/)
+    assert.ok(caption.length <= 280)
+  })
+
+  it('includes handle when includeHandle is true', () => {
+    const caption = buildGuestScoreShareCaption(
+      {
+        fitnessScore: 77,
+        strengthScore: 72,
+        runningScore: 82,
+        band: 'Strong · Balanced',
+      },
+      { includeHandle: true },
+    )
+    assert.match(caption, /@KinesosScore/)
   })
 })
