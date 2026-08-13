@@ -1,6 +1,6 @@
 /**
- * Open a social native app / text compose when possible; fall back to store or web.
- * Web cannot guarantee installed-app detection — uses visibility timeout for schemes.
+ * Open a social native app when possible; fall back to web compose / store.
+ * Caption should already be copied by the caller for paste-ready posts.
  */
 
 export function detectMobileOs() {
@@ -27,11 +27,16 @@ const STORE = {
   },
 }
 
-/** Android text share intent into a specific package (opens compose with text). */
+/** Android: open package with optional text SEND (lands in that app). */
 function androidTextSendIntent(packageName, text, fallbackUrl) {
   const encoded = encodeURIComponent(text)
   const fallback = encodeURIComponent(fallbackUrl)
   return `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encoded};package=${packageName};S.browser_fallback_url=${fallback};end`
+}
+
+function androidOpenPackage(packageName, httpsHost, fallbackUrl) {
+  const fallback = encodeURIComponent(fallbackUrl)
+  return `intent://${httpsHost}/#Intent;scheme=https;package=${packageName};S.browser_fallback_url=${fallback};end`
 }
 
 /**
@@ -43,124 +48,87 @@ export function buildSocialLaunchUrls(network, opts = {}) {
   const scoringUrl = String(opts.scoringUrl || 'https://kinesoscore.com/scoring')
   const encoded = encodeURIComponent(caption)
   const encodedUrl = encodeURIComponent(scoringUrl)
-  // Caption already includes the scoring URL for guest shares.
-  const shareBody = caption
 
   if (network === 'x') {
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encoded}`
     return {
-      httpsUrl: `https://twitter.com/intent/tweet?text=${encoded}`,
+      httpsUrl: tweetUrl,
       iosScheme: `twitter://post?message=${encoded}`,
       androidIntent: androidTextSendIntent(
         'com.twitter.android',
-        shareBody,
-        `https://twitter.com/intent/tweet?text=${encoded}`,
+        caption,
+        tweetUrl,
       ),
       iosStore: STORE.x.ios,
       androidStore: STORE.x.android,
+      // Tweet intent usually opens the X app on mobile.
       preferHttps: true,
-      supportsTextCompose: true,
     }
   }
 
   if (network === 'instagram') {
     return {
-      // No official IG web compose with prefilled text — share sheet / Android SEND.
       httpsUrl: 'https://www.instagram.com/',
+      // Direct app open (caption already copied for paste).
       iosScheme: 'instagram://app',
       androidIntent: androidTextSendIntent(
         'com.instagram.android',
-        shareBody,
+        caption,
+        'https://www.instagram.com/',
+      ),
+      androidOpen: androidOpenPackage(
+        'com.instagram.android',
+        'instagram.com',
         'https://www.instagram.com/',
       ),
       iosStore: STORE.instagram.ios,
       androidStore: STORE.instagram.android,
       preferHttps: false,
-      supportsTextCompose: true,
-      preferSystemShare: true,
     }
   }
 
-  // facebook — sharer + quote is the closest web text compose; Android SEND is better.
+  const fbSharer = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encoded}`
   return {
-    httpsUrl: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encoded}`,
-    iosScheme: `fb://share?href=${encodedUrl}&quote=${encoded}`,
+    httpsUrl: fbSharer,
+    // fb://feed reliably opens the Facebook app; caption is on the clipboard.
+    iosScheme: 'fb://feed',
     androidIntent: androidTextSendIntent(
       'com.facebook.katana',
-      shareBody,
-      `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encoded}`,
+      caption,
+      fbSharer,
+    ),
+    androidOpen: androidOpenPackage(
+      'com.facebook.katana',
+      'www.facebook.com',
+      fbSharer,
     ),
     iosStore: STORE.facebook.ios,
     androidStore: STORE.facebook.android,
-    preferHttps: true,
-    supportsTextCompose: true,
+    // Prefer native scheme so we don't stick on mobile web.
+    preferHttps: false,
   }
 }
 
 /**
- * System share sheet with text only (best iOS path into Instagram/Facebook compose).
- * @param {{ caption: string, url?: string }} opts
- * @returns {Promise<'shared' | 'abort' | 'unavailable'>}
- */
-export async function shareTextViaSystemSheet(opts) {
-  const text = String(opts.caption || '')
-  const url = opts.url ? String(opts.url) : ''
-  if (
-    typeof navigator === 'undefined' ||
-    typeof navigator.share !== 'function'
-  ) {
-    return 'unavailable'
-  }
-  try {
-    const payload = url ? { text, url, title: 'KinesoScore' } : { text, title: 'KinesoScore' }
-    // Some browsers reject url+text duplicates; caption already has the link.
-    await navigator.share(url && !text.includes(url) ? payload : { text, title: 'KinesoScore' })
-    return 'shared'
-  } catch (err) {
-    if (err?.name === 'AbortError') return 'abort'
-    return 'unavailable'
-  }
-}
-
-/**
- * Navigate into the native app / text compose when possible.
+ * Navigate into the native app when possible; otherwise web / store.
  * @param {'x' | 'instagram' | 'facebook'} network
  * @param {{ caption?: string, scoringUrl?: string }} [opts]
- * @returns {Promise<'app' | 'store' | 'web' | 'shared' | 'abort'>}
+ * @returns {Promise<'app' | 'store' | 'web'>}
  */
-export async function openSocialApp(network, opts = {}) {
+export function openSocialApp(network, opts = {}) {
   const urls = buildSocialLaunchUrls(network, opts)
   const os = detectMobileOs()
-  const caption = String(opts.caption || '')
-  const scoringUrl = String(opts.scoringUrl || 'https://kinesoscore.com/scoring')
-
-  // iOS: Instagram has no compose URL — system share sheet is the text-ready path.
-  // Android uses package-targeted SEND intents below instead.
-  if (urls.preferSystemShare && os === 'ios') {
-    const sheet = await shareTextViaSystemSheet({
-      caption,
-      url: scoringUrl,
-    })
-    if (sheet === 'shared' || sheet === 'abort') return sheet
-  }
-
-  // iOS Facebook: try system share first for a text-ready handoff, then sharer URL.
-  if (network === 'facebook' && os === 'ios') {
-    const sheet = await shareTextViaSystemSheet({
-      caption,
-      url: scoringUrl,
-    })
-    if (sheet === 'shared' || sheet === 'abort') return sheet
-  }
 
   if (os === 'other') {
     window.open(urls.httpsUrl, '_blank', 'noopener,noreferrer')
-    return 'web'
+    return Promise.resolve('web')
   }
 
   const store = os === 'ios' ? urls.iosStore : urls.androidStore
+  // Prefer opening the installed app (scheme / package), not the system share sheet.
   const primary =
     os === 'android'
-      ? urls.androidIntent || urls.httpsUrl
+      ? urls.androidIntent || urls.androidOpen || urls.httpsUrl
       : urls.preferHttps
         ? urls.httpsUrl
         : urls.iosScheme || urls.httpsUrl
@@ -186,6 +154,32 @@ export async function openSocialApp(network, opts = {}) {
         return
       }
 
+      // Still here — try https compose/web (esp. Facebook sharer), then store.
+      if (urls.httpsUrl && primary !== urls.httpsUrl) {
+        let leftHttps = false
+        const markHttps = () => {
+          leftHttps = true
+        }
+        document.addEventListener('visibilitychange', markHttps)
+        window.addEventListener('pagehide', markHttps)
+        window.location.href = urls.httpsUrl
+        window.setTimeout(() => {
+          document.removeEventListener('visibilitychange', markHttps)
+          window.removeEventListener('pagehide', markHttps)
+          if (leftHttps || document.hidden) {
+            resolve('web')
+            return
+          }
+          if (store) {
+            window.location.href = store
+            resolve('store')
+            return
+          }
+          resolve('web')
+        }, 1200)
+        return
+      }
+
       if (urls.preferHttps && primary === urls.httpsUrl) {
         resolve('web')
         return
@@ -196,7 +190,6 @@ export async function openSocialApp(network, opts = {}) {
         resolve('store')
         return
       }
-      window.location.href = urls.httpsUrl
       resolve('web')
     }, 1400)
   })

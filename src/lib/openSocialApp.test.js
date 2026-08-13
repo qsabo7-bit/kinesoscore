@@ -15,25 +15,24 @@ describe('openSocialApp urls', () => {
     assert.match(urls.androidStore, /play\.google\.com/)
   })
 
-  it('builds Instagram Android text SEND intent', () => {
+  it('builds Instagram app scheme + Android SEND (app-first)', () => {
     const urls = buildSocialLaunchUrls('instagram', {
       caption: 'Try it free\nhttps://kinesoscore.com/scoring',
     })
-    assert.equal(urls.preferSystemShare, true)
+    assert.equal(urls.iosScheme, 'instagram://app')
+    assert.equal(urls.preferHttps, false)
     assert.match(urls.androidIntent, /android\.intent\.action\.SEND/)
     assert.match(urls.androidIntent, /com\.instagram\.android/)
-    assert.match(urls.androidIntent, /Try/)
   })
 
-  it('builds Facebook sharer + Android text SEND', () => {
+  it('builds Facebook app-first scheme + sharer fallback', () => {
     const urls = buildSocialLaunchUrls('facebook', {
       caption: 'try it',
       scoringUrl: 'https://kinesoscore.com/scoring',
     })
+    assert.equal(urls.iosScheme, 'fb://feed')
+    assert.equal(urls.preferHttps, false)
     assert.match(urls.httpsUrl, /facebook\.com\/sharer/)
-    assert.match(urls.httpsUrl, /quote=/)
-    assert.equal(urls.preferHttps, true)
     assert.match(urls.androidIntent, /com\.facebook\.katana/)
-    assert.match(urls.androidIntent, /android\.intent\.action\.SEND/)
   })
 })

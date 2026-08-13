@@ -74,6 +74,9 @@ function GuestBadgeShareModal({
   const titleId = useId()
   const dialogRef = useFocusTrap(open, onClose)
   const captureRef = useRef(null)
+  const modalScrollRef = useRef(null)
+  const shareActionsRef = useRef(null)
+  const userBrokeAutoScroll = useRef(false)
   const [exportBlob, setExportBlob] = useState(null)
   const [loadingCard, setLoadingCard] = useState(false)
   const [busyAction, setBusyAction] = useState('')
@@ -102,6 +105,35 @@ function GuestBadgeShareModal({
     window.addEventListener('resize', sync)
     return () => window.removeEventListener('resize', sync)
   }, [open])
+
+  // Mobile: after 7s looking at score/badges, ease down to share — cancel if they scroll.
+  useEffect(() => {
+    if (!open || !isMobileShare) return undefined
+    userBrokeAutoScroll.current = false
+    const scroller = modalScrollRef.current
+    if (!scroller) return undefined
+
+    const breakAuto = () => {
+      userBrokeAutoScroll.current = true
+    }
+    // Only intentional user gestures cancel (not layout scroll).
+    scroller.addEventListener('wheel', breakAuto, { passive: true })
+    scroller.addEventListener('touchmove', breakAuto, { passive: true })
+
+    const timer = window.setTimeout(() => {
+      if (userBrokeAutoScroll.current) return
+      shareActionsRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 7000)
+
+    return () => {
+      window.clearTimeout(timer)
+      scroller.removeEventListener('wheel', breakAuto)
+      scroller.removeEventListener('touchmove', breakAuto)
+    }
+  }, [open, isMobileShare])
 
   useEffect(() => {
     if (!open || score == null) return undefined
@@ -227,14 +259,10 @@ function GuestBadgeShareModal({
       source: 'guest_badge_capture',
       mode: `mobile_text_${mode}`,
     })
-    if (mode === 'shared') {
-      setMessage('Ready post opened — pick Instagram/Facebook if asked.')
-    } else if (mode === 'abort') {
-      setMessage('Share cancelled — caption is still copied.')
-    } else if (mode === 'store') {
+    if (mode === 'store') {
       setMessage('Opening the store — install, then paste your copied caption.')
-    } else if (mode === 'app' || mode === 'web') {
-      setMessage('Opening a ready text post (@KinesosScore + link). Caption copied too.')
+    } else if (mode === 'app') {
+      setMessage('Opening the app — caption copied (paste into your post).')
     } else {
       setMessage('Caption copied with @KinesosScore + link.')
     }
@@ -304,6 +332,7 @@ function GuestBadgeShareModal({
         aria-hidden="true"
       />
       <div
+        ref={modalScrollRef}
         className="confirm-modal confirm-modal-trust guest-badge-share-modal"
         role="dialog"
         aria-modal="true"
@@ -358,6 +387,7 @@ function GuestBadgeShareModal({
         ) : null}
 
         <div
+          ref={shareActionsRef}
           className="guest-badge-share-actions"
           aria-label="Share your card"
           data-capture-ignore="1"

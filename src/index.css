@@ -6122,6 +6122,20 @@ a:focus-visible {
   }
 }
 
+/* Slightly bigger pulse inside the share modal (mobile-friendly). */
+@keyframes fpc-award-idle-nudge-modal {
+  0%,
+  12%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  6% {
+    transform: translateY(-4px) scale(1.08);
+    filter: brightness(1.08);
+  }
+}
+
 @keyframes fpc-award-idle-shine {
   0%,
   12%,
@@ -6141,7 +6155,7 @@ a:focus-visible {
     .fpc-award-badge.is-strength {
     animation:
       fpc-award-enter 0.5s var(--motion-ease) both,
-      fpc-award-idle-nudge 3.4s var(--motion-ease) 0.9s infinite !important;
+      fpc-award-idle-nudge-modal 3.4s var(--motion-ease) 0.9s infinite !important;
   }
 
   .guest-badge-share-modal .guest-badge-share-stage .fpc-award-badge.is-running,
@@ -6150,7 +6164,7 @@ a:focus-visible {
     .fpc-award-badge.is-running {
     animation:
       fpc-award-enter 0.5s var(--motion-ease) 0.12s both,
-      fpc-award-idle-nudge 3.4s var(--motion-ease) 2s infinite !important;
+      fpc-award-idle-nudge-modal 3.4s var(--motion-ease) 2s infinite !important;
   }
 
   .guest-badge-share-modal .guest-badge-share-stage .fpc-award-badge.is-crown,
@@ -6159,7 +6173,7 @@ a:focus-visible {
     .fpc-award-badge.is-crown {
     animation:
       fpc-award-enter 0.5s var(--motion-ease) 0.2s both,
-      fpc-award-idle-nudge 3.4s var(--motion-ease) 3.1s infinite !important;
+      fpc-award-idle-nudge-modal 3.4s var(--motion-ease) 3.1s infinite !important;
   }
 
   .guest-badge-share-modal
