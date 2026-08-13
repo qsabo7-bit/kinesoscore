@@ -93,7 +93,7 @@ function GuestBadgeShareModal({
     includeHandle: true,
   })
   const outName = 'kinesoscore-badges.png'
-  const ringSize = isMobileShare ? 168 : 200
+  const ringSize = isMobileShare ? 142 : 200
 
   useEffect(() => {
     if (!open) return undefined
@@ -120,13 +120,18 @@ function GuestBadgeShareModal({
       await new Promise((r) => {
         requestAnimationFrame(() => requestAnimationFrame(r))
       })
+      // Freeze only during capture; re-enable idle animations afterward.
       node.classList.add('is-capture-ready')
-      const blob = await captureElementPng(node, {
-        pixelRatio: isMobileShare ? 2.5 : 3,
-        backgroundColor: '#0f1412',
-      })
-      if (cancelled || seq !== generateSeq.current) return
-      setExportBlob(blob)
+      try {
+        const blob = await captureElementPng(node, {
+          pixelRatio: isMobileShare ? 2.5 : 3,
+          backgroundColor: '#0f1412',
+        })
+        if (cancelled || seq !== generateSeq.current) return
+        setExportBlob(blob)
+      } finally {
+        node.classList.remove('is-capture-ready')
+      }
     }
 
     run()
@@ -134,6 +139,7 @@ function GuestBadgeShareModal({
         if (cancelled || seq !== generateSeq.current) return
         setError(err?.message || 'Could not create share image.')
         setExportBlob(null)
+        captureRef.current?.classList.remove('is-capture-ready')
       })
       .finally(() => {
         if (!cancelled && seq === generateSeq.current) setLoadingCard(false)
@@ -141,6 +147,7 @@ function GuestBadgeShareModal({
 
     return () => {
       cancelled = true
+      captureRef.current?.classList.remove('is-capture-ready')
     }
   }, [
     open,
@@ -204,18 +211,11 @@ function GuestBadgeShareModal({
   }
 
   const shareMobileToApp = async (network) => {
+    // Text-only ready post (caption already includes link + @KinesosScore).
     try {
       await copyText(caption)
     } catch {
       /* continue */
-    }
-
-    if (exportBlob) {
-      try {
-        downloadMomentCard(exportBlob, outName)
-      } catch {
-        /* still open app */
-      }
     }
 
     const mode = await openSocialApp(network, {
@@ -225,14 +225,18 @@ function GuestBadgeShareModal({
     trackShareEvent(`share_${network}`, {
       type: 'score_saved',
       source: 'guest_badge_capture',
-      mode: `mobile_${mode}`,
+      mode: `mobile_text_${mode}`,
     })
-    if (mode === 'store') {
-      setMessage('Opening the store — install, then post with your saved card.')
-    } else if (mode === 'app') {
-      setMessage('Opening the app — caption copied; card saved to attach.')
+    if (mode === 'shared') {
+      setMessage('Ready post opened — pick Instagram/Facebook if asked.')
+    } else if (mode === 'abort') {
+      setMessage('Share cancelled — caption is still copied.')
+    } else if (mode === 'store') {
+      setMessage('Opening the store — install, then paste your copied caption.')
+    } else if (mode === 'app' || mode === 'web') {
+      setMessage('Opening a ready text post (@KinesosScore + link). Caption copied too.')
     } else {
-      setMessage('Caption copied — card saved if download was allowed.')
+      setMessage('Caption copied with @KinesosScore + link.')
     }
   }
 

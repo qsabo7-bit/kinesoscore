@@ -15,20 +15,25 @@ describe('openSocialApp urls', () => {
     assert.match(urls.androidStore, /play\.google\.com/)
   })
 
-  it('builds Instagram app scheme + stores', () => {
-    const urls = buildSocialLaunchUrls('instagram', {})
-    assert.equal(urls.iosScheme, 'instagram://app')
-    assert.equal(urls.preferHttps, false)
+  it('builds Instagram Android text SEND intent', () => {
+    const urls = buildSocialLaunchUrls('instagram', {
+      caption: 'Try it free\nhttps://kinesoscore.com/scoring',
+    })
+    assert.equal(urls.preferSystemShare, true)
+    assert.match(urls.androidIntent, /android\.intent\.action\.SEND/)
     assert.match(urls.androidIntent, /com\.instagram\.android/)
+    assert.match(urls.androidIntent, /Try/)
   })
 
-  it('builds Facebook sharer + stores', () => {
+  it('builds Facebook sharer + Android text SEND', () => {
     const urls = buildSocialLaunchUrls('facebook', {
       caption: 'try it',
       scoringUrl: 'https://kinesoscore.com/scoring',
     })
     assert.match(urls.httpsUrl, /facebook\.com\/sharer/)
-    assert.match(urls.httpsUrl, /kinesoscore\.com/)
-    assert.match(urls.iosStore, /facebook/)
+    assert.match(urls.httpsUrl, /quote=/)
+    assert.equal(urls.preferHttps, true)
+    assert.match(urls.androidIntent, /com\.facebook\.katana/)
+    assert.match(urls.androidIntent, /android\.intent\.action\.SEND/)
   })
 })

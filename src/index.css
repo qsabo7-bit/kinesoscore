@@ -5489,24 +5489,25 @@ a:focus-visible {
 /* Mobile capture: match stacked badge layout so nothing gets clipped. */
 .guest-badge-share-capture.is-mobile-capture {
   overflow: visible;
-  padding: 0.85rem 0.55rem 0.75rem;
+  padding: 0.55rem 0.45rem 0.5rem;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  gap: 0.35rem;
 }
 
 .guest-badge-share-capture.is-mobile-capture .fpc-award-stage,
 .guest-badge-share-capture.is-mobile-capture .fpc-award-stage.has-flanks,
 .guest-badge-share-capture.is-mobile-capture .fpc-award-stage.has-flanks.has-crown {
-  width: min(100%, 20rem);
+  width: min(100%, 17.5rem);
   max-width: 100%;
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     'crown crown'
     'core core'
     'strength running';
-  column-gap: 0.55rem;
-  row-gap: 0.45rem;
+  column-gap: 0.4rem;
+  row-gap: 0.2rem;
   justify-items: center;
 }
 
@@ -5533,7 +5534,7 @@ a:focus-visible {
 .guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-strength,
 .guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-running {
   margin-top: 0;
-  width: min(100%, 6.25rem);
+  width: min(100%, 5.5rem);
 }
 
 .guest-badge-share-capture.is-mobile-capture .fpc-award-badge.is-strength::after,
@@ -5541,9 +5542,24 @@ a:focus-visible {
   display: none;
 }
 
+.guest-badge-share-capture.is-mobile-capture .fpc-award-crest {
+  width: 5.25rem;
+  height: 5.6rem;
+}
+
+.guest-badge-share-capture.is-mobile-capture .fpc-award-emblem {
+  width: 3.7rem;
+  height: 3rem;
+}
+
 .guest-badge-share-capture.is-mobile-capture .fpc-score-ring {
-  width: min(100%, 14.5rem);
-  padding-block: 0.35rem 0.2rem;
+  width: min(100%, 12.25rem);
+  padding-block: 0.15rem 0.05rem;
+  gap: 0.35rem;
+}
+
+.guest-badge-share-capture.is-mobile-capture .guest-badge-share-stage {
+  padding: 0.15rem 0.15rem 0;
 }
 
 .guest-badge-share-capture-footer {
@@ -5595,16 +5611,9 @@ a:focus-visible {
   width: min(100%, 22rem);
 }
 
+/* Enter + idle are set below with higher specificity; keep a safe default. */
 .guest-badge-share-stage .fpc-award-badge {
   animation: fpc-award-enter 0.5s var(--motion-ease) both;
-}
-
-.guest-badge-share-stage .fpc-award-badge.is-running {
-  animation-delay: 0.1s;
-}
-
-.guest-badge-share-stage .fpc-award-badge.is-crown {
-  animation-delay: 0.16s;
 }
 
 .guest-badge-share-hint {
@@ -6124,36 +6133,59 @@ a:focus-visible {
   }
 }
 
-/* Share modal badges: same idle loop on every device. */
+/* Share modal badges: idle loop on every device (beats earlier enter-only rules). */
 @media (prefers-reduced-motion: no-preference) {
-  .guest-badge-share-stage .fpc-award-badge.is-strength {
+  .guest-badge-share-modal .guest-badge-share-stage .fpc-award-badge.is-strength,
+  .guest-badge-share-capture:not(.is-capture-ready)
+    .guest-badge-share-stage
+    .fpc-award-badge.is-strength {
     animation:
       fpc-award-enter 0.5s var(--motion-ease) both,
-      fpc-award-idle-nudge 3.4s var(--motion-ease) 0.9s infinite;
+      fpc-award-idle-nudge 3.4s var(--motion-ease) 0.9s infinite !important;
   }
 
-  .guest-badge-share-stage .fpc-award-badge.is-running {
+  .guest-badge-share-modal .guest-badge-share-stage .fpc-award-badge.is-running,
+  .guest-badge-share-capture:not(.is-capture-ready)
+    .guest-badge-share-stage
+    .fpc-award-badge.is-running {
     animation:
       fpc-award-enter 0.5s var(--motion-ease) 0.12s both,
-      fpc-award-idle-nudge 3.4s var(--motion-ease) 2s infinite;
+      fpc-award-idle-nudge 3.4s var(--motion-ease) 2s infinite !important;
   }
 
-  .guest-badge-share-stage .fpc-award-badge.is-crown {
+  .guest-badge-share-modal .guest-badge-share-stage .fpc-award-badge.is-crown,
+  .guest-badge-share-capture:not(.is-capture-ready)
+    .guest-badge-share-stage
+    .fpc-award-badge.is-crown {
     animation:
       fpc-award-enter 0.5s var(--motion-ease) 0.2s both,
-      fpc-award-idle-nudge 3.4s var(--motion-ease) 3.1s infinite;
+      fpc-award-idle-nudge 3.4s var(--motion-ease) 3.1s infinite !important;
   }
 
-  .guest-badge-share-stage .fpc-award-badge.is-strength .fpc-award-crest-shine {
-    animation: fpc-award-idle-shine 3.4s var(--motion-ease) 0.9s infinite;
+  .guest-badge-share-modal
+    .guest-badge-share-stage
+    .fpc-award-badge.is-strength
+    .fpc-award-crest-shine,
+  .guest-badge-share-capture:not(.is-capture-ready)
+    .guest-badge-share-stage
+    .fpc-award-badge.is-strength
+    .fpc-award-crest-shine {
+    animation: fpc-award-idle-shine 3.4s var(--motion-ease) 0.9s infinite !important;
   }
 
-  .guest-badge-share-stage .fpc-award-badge.is-running .fpc-award-crest-shine {
-    animation: fpc-award-idle-shine 3.4s var(--motion-ease) 2s infinite;
+  .guest-badge-share-modal
+    .guest-badge-share-stage
+    .fpc-award-badge.is-running
+    .fpc-award-crest-shine,
+  .guest-badge-share-capture:not(.is-capture-ready)
+    .guest-badge-share-stage
+    .fpc-award-badge.is-running
+    .fpc-award-crest-shine {
+    animation: fpc-award-idle-shine 3.4s var(--motion-ease) 2s infinite !important;
   }
 }
 
-/* Keep PNG captures still. */
+/* Keep PNG captures still (only while is-capture-ready is on). */
 .guest-badge-share-capture.is-capture-ready .fpc-award-badge,
 .guest-badge-share-capture.is-capture-ready .fpc-award-crest-shine,
 .is-share-capture-root .fpc-award-badge,
