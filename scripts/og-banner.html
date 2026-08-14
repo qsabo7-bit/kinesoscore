@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>KinesoScore OG Banner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: #0b100e;
+      }
+      .banner {
+        width: 1200px;
+        height: 630px;
+        position: relative;
+        display: grid;
+        grid-template-columns: 1.02fr 1.38fr;
+        gap: 26px;
+        padding: 40px 42px 34px;
+        color: #f2f7f4;
+        font-family: Manrope, system-ui, sans-serif;
+        background:
+          radial-gradient(ellipse 70% 55% at 18% 20%, rgba(125, 255, 179, 0.16), transparent 58%),
+          radial-gradient(ellipse 50% 60% at 88% 78%, rgba(125, 255, 179, 0.08), transparent 55%),
+          linear-gradient(145deg, #121a16 0%, #0b100e 48%, #0a0f0c 100%);
+      }
+      .banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      .copy {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 16px;
+        padding-right: 6px;
+      }
+      .eyebrow {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #7dffb3;
+      }
+      .brand {
+        font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+        font-size: 74px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        line-height: 0.92;
+        text-transform: uppercase;
+        font-style: italic;
+        color: #f8fcf9;
+      }
+      .rule {
+        width: 110px;
+        height: 3px;
+        border-radius: 999px;
+        background: #7dffb3;
+        box-shadow: 0 0 18px rgba(125, 255, 179, 0.35);
+      }
+      .headline {
+        font-size: 26px;
+        font-weight: 700;
+        line-height: 1.25;
+        color: #f2f7f4;
+        max-width: 18ch;
+      }
+      .sub {
+        font-size: 16px;
+        line-height: 1.45;
+        color: #9aada2;
+        max-width: 28ch;
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 2px;
+      }
+      .pill {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #cfe8d9;
+        border: 1px solid rgba(125, 255, 179, 0.28);
+        background: rgba(125, 255, 179, 0.08);
+        border-radius: 999px;
+        padding: 6px 11px;
+      }
+      .url {
+        margin-top: 6px;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #7dffb3;
+      }
+      .stage {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.12fr 0.98fr;
+        gap: 14px;
+        align-items: stretch;
+        min-width: 0;
+      }
+      .panel {
+        border: 1px solid rgba(242, 247, 244, 0.12);
+        border-radius: 18px;
+        background:
+          linear-gradient(180deg, rgba(23, 29, 26, 0.96), rgba(15, 20, 18, 0.98));
+        box-shadow:
+          0 18px 40px rgba(0, 0, 0, 0.38),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        overflow: hidden;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px 9px;
+        border-bottom: 1px solid rgba(242, 247, 244, 0.08);
+      }
+      .panel-title {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #f2f7f4;
+      }
+      .panel-chip {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #0b100e;
+        background: #7dffb3;
+        border-radius: 999px;
+        padding: 4px 8px;
+      }
+      .dash-body {
+        padding: 12px 14px 14px;
+        display: grid;
+        gap: 10px;
+        flex: 1;
+      }
+      .score-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+      .ring-wrap {
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+      }
+      .ring {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, #0f1412 56%, transparent 57%),
+          conic-gradient(#7dffb3 0 278deg, rgba(242, 247, 244, 0.12) 278deg 360deg);
+        display: grid;
+        place-items: center;
+        position: relative;
+      }
+      .ring-num {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        line-height: 1;
+      }
+      .ring-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #8fa297;
+        margin-top: 1px;
+      }
+      .ring-center {
+        text-align: center;
+      }
+      .metrics {
+        display: grid;
+        gap: 7px;
+      }
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        padding: 7px 9px;
+        border-radius: 10px;
+        background: rgba(125, 255, 179, 0.05);
+        border: 1px solid rgba(242, 247, 244, 0.06);
+      }
+      .metric span {
+        font-size: 11px;
+        color: #9aada2;
+        font-weight: 600;
+      }
+      .metric strong {
+        font-size: 15px;
+        font-family: 'Barlow Condensed', sans-serif;
+        letter-spacing: 0.03em;
+        color: #f2f7f4;
+      }
+      .metric strong.up {
+        color: #7dffb3;
+      }
+      .badges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .badge {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 9px;
+        border-radius: 12px;
+        border: 1px solid rgba(242, 247, 244, 0.08);
+        background: rgba(242, 247, 244, 0.03);
+      }
+      .crest {
+        width: 34px;
+        height: 38px;
+        clip-path: polygon(50% 0, 88% 15%, 100% 52%, 84% 86%, 50% 100%, 16% 86%, 0 52%, 12% 15%);
+        display: grid;
+        place-items: center;
+        position: relative;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+      }
+      .crest.is-silver {
+        background: linear-gradient(160deg, #f3f6f8, #9aa7b2 45%, #6d7a86);
+      }
+      .crest.is-gold {
+        background: linear-gradient(160deg, #ffe7a0, #d4a017 48%, #8a6508);
+      }
+      .crest-mark {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: #101512;
+        letter-spacing: 0.02em;
+      }
+      .badge-copy strong {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #f2f7f4;
+        letter-spacing: 0.01em;
+      }
+      .badge-copy span {
+        display: block;
+        font-size: 10px;
+        font-weight: 600;
+        color: #8fa297;
+        margin-top: 1px;
+      }
+      .chart {
+        height: 58px;
+        border-radius: 12px;
+        border: 1px solid rgba(242, 247, 244, 0.07);
+        background:
+          linear-gradient(180deg, rgba(125, 255, 179, 0.07), transparent 70%),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 38px,
+            rgba(242, 247, 244, 0.04) 38px 39px
+          ),
+          #121814;
+        position: relative;
+        overflow: hidden;
+      }
+      .chart svg {
+        position: absolute;
+        inset: 6px 6px 2px;
+        width: calc(100% - 12px);
+        height: calc(100% - 8px);
+      }
+      .board-body {
+        padding: 8px 10px 10px;
+        display: grid;
+        gap: 5px;
+        flex: 1;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 26px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 7px 9px;
+        border-radius: 10px;
+        background: rgba(242, 247, 244, 0.03);
+        border: 1px solid rgba(242, 247, 244, 0.05);
+      }
+      .row.is-you {
+        background: rgba(125, 255, 179, 0.1);
+        border-color: rgba(125, 255, 179, 0.28);
+      }
+      .rank {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: #7dffb3;
+      }
+      .name {
+        font-size: 12px;
+        font-weight: 700;
+        color: #e8f0eb;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .name small {
+        display: block;
+        font-size: 9px;
+        font-weight: 600;
+        color: #8fa297;
+        margin-top: 1px;
+      }
+      .val {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #f2f7f4;
+      }
+      .habits {
+        margin-top: 4px;
+        padding: 9px 9px 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(125, 255, 179, 0.18);
+        background: rgba(125, 255, 179, 0.05);
+        display: grid;
+        gap: 7px;
+      }
+      .habits-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .habits-head strong {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #f2f7f4;
+      }
+      .habits-head span {
+        font-size: 10px;
+        font-weight: 700;
+        color: #7dffb3;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .habit-list {
+        display: grid;
+        gap: 5px;
+      }
+      .habit {
+        display: grid;
+        grid-template-columns: 14px 1fr auto;
+        gap: 7px;
+        align-items: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #cfe0d6;
+      }
+      .habit-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(125, 255, 179, 0.55);
+        background: #7dffb3;
+        box-shadow: inset 0 0 0 2px #0f1412;
+      }
+      .habit-dot.is-open {
+        background: transparent;
+        box-shadow: none;
+      }
+      .habit em {
+        font-style: normal;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        color: #7dffb3;
+        letter-spacing: 0.02em;
+      }
+      .board-foot {
+        margin-top: 2px;
+        padding: 0 4px;
+        font-size: 10px;
+        color: #8fa297;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner" id="og">
+      <section class="copy">
+        <p class="eyebrow">Free fitness platform</p>
+        <h1 class="brand">KinesoScore</h1>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="headline">One score for lifting + running. Track it. Rank it.</p>
+        <p class="sub">
+          Private dashboard history, award badges, habits, and opt-in This Week
+          leaderboards — built for people who train both.
+        </p>
+        <div class="pills">
+          <span class="pill">myKinesoScore™</span>
+          <span class="pill">Badges</span>
+          <span class="pill">Habits</span>
+          <span class="pill">Leaderboards</span>
+        </div>
+        <p class="url">kinesoscore.com</p>
+      </section>
+
+      <section class="stage" aria-hidden="true">
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Dashboard</h2>
+            <span class="panel-chip">Live</span>
+          </div>
+          <div class="dash-body">
+            <div class="score-row">
+              <div class="ring-wrap">
+                <div class="ring">
+                  <div class="ring-center">
+                    <div class="ring-num">77</div>
+                    <div class="ring-label">Score</div>
+                  </div>
+                </div>
+              </div>
+              <div class="metrics">
+                <div class="metric">
+                  <span>Strength</span>
+                  <strong>72</strong>
+                </div>
+                <div class="metric">
+                  <span>Running</span>
+                  <strong>82</strong>
+                </div>
+                <div class="metric">
+                  <span>This week</span>
+                  <strong class="up">+4</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="badges">
+              <div class="badge">
+                <div class="crest is-silver"><span class="crest-mark">72</span></div>
+                <div class="badge-copy">
+                  <strong>Silver Strength</strong>
+                  <span>Award unlocked</span>
+                </div>
+              </div>
+              <div class="badge">
+                <div class="crest is-gold"><span class="crest-mark">82</span></div>
+                <div class="badge-copy">
+                  <strong>Gold Running</strong>
+                  <span>Award unlocked</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart">
+              <svg viewBox="0 0 280 70" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#7dffb3" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="#7dffb3" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M0 52 C28 48, 42 44, 56 40 S90 28, 112 30 S150 42, 168 36 S210 18, 232 22 S260 30, 280 20 L280 70 L0 70 Z"
+                  fill="url(#fill)"
+                />
+                <path
+                  d="M0 52 C28 48, 42 44, 56 40 S90 28, 112 30 S150 42, 168 36 S210 18, 232 22 S260 30, 280 20"
+                  fill="none"
+                  stroke="#7dffb3"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">This Week</h2>
+            <span class="panel-chip">Board</span>
+          </div>
+          <div class="board-body">
+            <div class="row">
+              <span class="rank">1</span>
+              <div class="name">IronPace<small>myKinesoScore</small></div>
+              <span class="val">91</span>
+            </div>
+            <div class="row is-you">
+              <span class="rank">2</span>
+              <div class="name">You<small>Climbing</small></div>
+              <span class="val">77</span>
+            </div>
+            <div class="row">
+              <span class="rank">3</span>
+              <div class="name">SplitShift<small>Balanced</small></div>
+              <span class="val">74</span>
+            </div>
+
+            <div class="habits">
+              <div class="habits-head">
+                <strong>Habits</strong>
+                <span>3 of 4 today</span>
+              </div>
+              <div class="habit-list">
+                <div class="habit">
+                  <span class="habit-dot" aria-hidden="true"></span>
+                  <span>Exercise</span>
+                  <em>12d</em>
+                </div>
+                <div class="habit">
+                  <span class="habit-dot" aria-hidden="true"></span>
+                  <span>Drink water</span>
+                  <em>8d</em>
+                </div>
+                <div class="habit">
+                  <span class="habit-dot" aria-hidden="true"></span>
+                  <span>Sleep 7–8 hours</span>
+                  <em>5d</em>
+                </div>
+                <div class="habit">
+                  <span class="habit-dot is-open" aria-hidden="true"></span>
+                  <span>Stretch / mobility</span>
+                  <em>—</em>
+                </div>
+              </div>
+            </div>
+
+            <p class="board-foot">Opt-in rankings · habit streaks · resets Mondays UTC</p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </body>
+</html>
