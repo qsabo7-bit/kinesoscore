@@ -90,7 +90,6 @@ function App() {
   } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromLocation)
   const [authNotice, setAuthNotice] = useState('')
-  const [authMode, setAuthMode] = useState('login')
   /** @type {[{ boardKey?: string, period?: string, categoryId?: string } | null, Function]} */
   const [leaderboardFocus, setLeaderboardFocus] = useState(null)
   const openedRecovery = useRef(false)
@@ -102,7 +101,6 @@ function App() {
   const handleTabChange = (tabOrOpts) => {
     if (tabOrOpts && typeof tabOrOpts === 'object' && tabOrOpts.tab) {
       const { tab, boardKey, period, categoryId } = tabOrOpts
-      if (tab === 'login') setAuthMode('login')
       if (tab === 'leaderboard' || tab === 'leaderboard-habits') {
         setLeaderboardFocus({
           boardKey: boardKey || undefined,
@@ -120,7 +118,6 @@ function App() {
     }
 
     const tab = tabOrOpts
-    if (tab === 'login') setAuthMode('login')
     if (tab !== 'leaderboard' && tab !== 'leaderboard-habits') {
       setLeaderboardFocus(null)
     }
@@ -149,8 +146,7 @@ function App() {
 
   /** Guest CTAs: default to signup; pass 'login' for returning users. */
   const requestAuth = (mode = 'signup') => {
-    setAuthMode(mode === 'login' ? 'login' : 'signup')
-    setActiveTab('login')
+    setActiveTab(mode === 'login' ? 'login' : 'signup')
   }
 
   // Keep browser URL aligned with the active tab for canonical SEO paths.
@@ -227,7 +223,6 @@ function App() {
       setActiveTab('dashboard')
     } else {
       setAuthNotice(EMAIL_CONFIRMED_MESSAGE)
-      setAuthMode('login')
       setActiveTab('login')
     }
 
@@ -242,7 +237,6 @@ function App() {
 
   useEffect(() => {
     if (authUrlError && !passwordRecovery) {
-      setAuthMode('login')
       setActiveTab('login')
     }
   }, [authUrlError, passwordRecovery])
@@ -250,7 +244,7 @@ function App() {
   useEffect(() => {
     if (loading || passwordRecovery) return
 
-    if (isAuthenticated && activeTab === 'login') {
+    if (isAuthenticated && (activeTab === 'login' || activeTab === 'signup')) {
       setActiveTab('dashboard')
       return
     }
@@ -286,13 +280,11 @@ function App() {
           if (options.staySignedIn) {
             setActiveTab('dashboard')
           } else {
-            setAuthMode('login')
             setActiveTab('login')
           }
         }}
         onRequestLogin={() => {
           // Recovery abandon already awaited sign-out in ResetPasswordPage.
-          setAuthMode('login')
           setActiveTab('login')
         }}
       />
@@ -383,7 +375,10 @@ function App() {
     content = (
       <AuthPage
         initialMessage={authNotice}
-        initialMode={authMode}
+        initialMode={activeTab === 'signup' ? 'signup' : 'login'}
+        onModeChange={(mode) => {
+          setActiveTab(mode === 'signup' ? 'signup' : 'login')
+        }}
         onSuccess={() => {
           setAuthNotice('')
           setActiveTab('dashboard')

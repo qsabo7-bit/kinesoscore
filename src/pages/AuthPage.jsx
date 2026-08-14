@@ -29,7 +29,12 @@ async function applyLeaderboardNameIfPresent(userId, rawName) {
   await saveLeaderboardName(userId, trimmed)
 }
 
-function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
+function AuthPage({
+  onSuccess,
+  onModeChange,
+  initialMessage = '',
+  initialMode = 'login',
+}) {
   const {
     signIn,
     signUp,
@@ -90,11 +95,18 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
   }, [error, message])
 
   const switchMode = (nextMode) => {
-    setMode(nextMode)
+    const next = normalizeAuthMode(nextMode)
+    setMode(next)
     setError('')
     setMessage('')
     setPassword('')
-    if (nextMode !== 'signup') setLeaderboardName('')
+    if (next !== 'signup') setLeaderboardName('')
+    // Keep /login vs /signup in sync; forgot stays under /login.
+    if (next === 'login' || next === 'signup') {
+      onModeChange?.(next)
+    } else if (next === 'forgot') {
+      onModeChange?.('login')
+    }
   }
 
   const handleSubmit = async (event) => {
@@ -154,10 +166,11 @@ function AuthPage({ onSuccess, initialMessage = '', initialMode = 'login' }) {
           onSuccess?.('account')
         } else {
           if (lbDraft) stashPendingLeaderboardName(lbDraft)
+          setMode('login')
+          onModeChange?.('login')
           setMessage(
             'Account created. Check your email to confirm, then log in.',
           )
-          setMode('login')
         }
       } else {
         const data = await signIn({ email, password })

@@ -22,6 +22,7 @@ const SKIP_SHELL_TABS = new Set([
   'habits',
   'account',
   'login',
+  'signup',
   'reset-password',
 ])
 

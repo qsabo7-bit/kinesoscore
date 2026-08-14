@@ -593,6 +593,17 @@ export const PAGE_SEO = {
     ogType: 'website',
     breadcrumb: null,
   },
+  signup: {
+    tab: 'signup',
+    path: '/signup',
+    renderTab: 'login',
+    title: 'Create Account | KinesoScore',
+    description:
+      'Create a free KinesoScore account to save results and track progress.',
+    robots: 'noindex,nofollow',
+    ogType: 'website',
+    breadcrumb: null,
+  },
   'reset-password': {
     tab: 'reset-password',
     path: '/reset-password',
