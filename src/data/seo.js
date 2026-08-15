@@ -575,6 +575,15 @@ export const PAGE_SEO = {
     ogType: 'website',
     breadcrumb: null,
   },
+  groups: {
+    tab: 'groups',
+    path: '/groups',
+    title: 'Groups | KinesoScore',
+    description: 'Private KinesoScore Groups — create or join with an invite code.',
+    robots: 'noindex,nofollow',
+    ogType: 'website',
+    breadcrumb: null,
+  },
   account: {
     tab: 'account',
     path: '/account',
@@ -677,6 +686,20 @@ export function resolveSeoRoute(pathname) {
     !pathname || pathname === '/'
       ? '/'
       : pathname.replace(/\/+$/, '') || '/'
+
+  // Authenticated Groups: /groups/:groupId and /groups/:groupId/:section
+  if (/^\/groups\/[^/]+(?:\/[^/]+)?$/.test(normalized)) {
+    const page = PAGE_SEO.groups
+    const parts = normalized.split('/').filter(Boolean) // ['groups', id, section?]
+    return {
+      page,
+      renderTab: page.tab,
+      seoId: page.tab,
+      matched: true,
+      groupId: decodeURIComponent(parts[1] || ''),
+      groupSection: parts[2] ? decodeURIComponent(parts[2]) : null,
+    }
+  }
 
   const page = PATH_INDEX[normalized]
   if (page) {

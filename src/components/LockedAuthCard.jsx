@@ -46,6 +46,12 @@ function LockedAuthCard({
             <li className="is-done">Protein target 🥩</li>
             <li>Sleep window 😴</li>
           </ul>
+        ) : sampleKind === 'groups' ? (
+          <ul className="locked-auth-sample-list">
+            <li className="is-done">Morning crew</li>
+            <li className="is-done">Invite: KS-7F4K9P</li>
+            <li>4 members</li>
+          </ul>
         ) : (
           <div className="locked-auth-sample-profile">
             <span className="locked-auth-sample-name">Leaderboard Name</span>

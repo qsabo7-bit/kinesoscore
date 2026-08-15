@@ -29,3 +29,10 @@ CONTENT_STUDIO_SCORE=86 CONTENT_STUDIO_STRENGTH=78 CONTENT_STUDIO_RUNNING=94 npm
 - Same card language as users  
 - Soft CTA — “What’s yours?”  
 - Never invent athletes or scores  
+
+## Topic library (n8n-ready)
+Educational topic catalog with factual context for future automation:
+
+`content-studio/topic-library/` — see its README. Does not change the app UI.
+
+Local HTTP API for n8n: `npm run content:api` → see `content-studio/api/README.md`.

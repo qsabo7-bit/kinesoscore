@@ -144,7 +144,7 @@ function Header({ activeTab, onTabChange }) {
         key={tool.id}
         href={pathForTab(tool.id)}
         tabIndex={calculatorActive ? undefined : -1}
-        className={`sub-nav-tab${isActive ? ' is-active' : ''}${tool.id === 'scoring' ? ' brand-casing' : ''}`}
+        className={`sub-nav-tab${isActive ? ' is-active' : ''}${tool.id === 'scoring' ? ' is-mykinesoscore brand-casing' : ''}`}
         onClick={(event) => go(event, tool.id)}
         aria-current={isActive ? 'page' : undefined}
       >
@@ -157,6 +157,29 @@ function Header({ activeTab, onTabChange }) {
           </span>
         ) : null}
       </a>
+    )
+  }
+
+  const renderToolsRow = (group) => {
+    const isMilitary = group.category.id === 'military'
+    const chips = group.tools.map((tool) => renderToolChip(tool))
+
+    return (
+      <div key={group.category.id} className="site-header-tools-row">
+        <span className="site-header-tools-label">{group.stickyLabel}</span>
+        <div
+          className={`site-header-tools-chips${isMilitary ? ' is-military' : ''}`}
+        >
+          {isMilitary ? (
+            <div className="site-header-tools-chips-cluster">
+              <span className="military-chips-flag" aria-hidden="true" />
+              {chips}
+            </div>
+          ) : (
+            chips
+          )}
+        </div>
+      </div>
     )
   }
 
@@ -218,6 +241,9 @@ function Header({ activeTab, onTabChange }) {
                   aria-current={isActive ? 'page' : undefined}
                 >
                   {tab.name}
+                  {tab.id === 'groups' ? (
+                    <span className="nav-tab-beta">(beta)</span>
+                  ) : null}
                 </a>
               )
             })}
@@ -271,6 +297,9 @@ function Header({ activeTab, onTabChange }) {
                     aria-current={isActive ? 'page' : undefined}
                   >
                     {tab.name}
+                  {tab.id === 'groups' ? (
+                    <span className="nav-tab-beta">(beta)</span>
+                  ) : null}
                   </a>
                 )
               })}
@@ -288,28 +317,10 @@ function Header({ activeTab, onTabChange }) {
         <div className="site-header-tools-clip">
           <nav className="site-header-tools-stack" aria-label="Calculators">
             <div className="site-header-tools-desktop">
-              {calculatorGroups.map((group) => (
-                <div key={group.category.id} className="site-header-tools-row">
-                  <span className="site-header-tools-label">
-                    {group.stickyLabel}
-                  </span>
-                  <div className="site-header-tools-chips">
-                    {group.tools.map((tool) => renderToolChip(tool))}
-                  </div>
-                </div>
-              ))}
+              {calculatorGroups.map((group) => renderToolsRow(group))}
             </div>
             <div className="site-header-tools-mobile">
-              {calculatorGroups.map((group) => (
-                <div key={group.category.id} className="site-header-tools-row">
-                  <span className="site-header-tools-label">
-                    {group.stickyLabel}
-                  </span>
-                  <div className="site-header-tools-chips">
-                    {group.tools.map((tool) => renderToolChip(tool))}
-                  </div>
-                </div>
-              ))}
+              {calculatorGroups.map((group) => renderToolsRow(group))}
             </div>
           </nav>
         </div>

@@ -10,6 +10,7 @@ export {
   DEFAULT_LOCKED_PREVIEW,
   FITNESS_AGE_LOCKED_PREVIEW,
   FPC_SCORE_LOCKED_PREVIEW,
+  GROUPS_LOCKED_PREVIEW,
   HABITS_LOCKED_PREVIEW,
 } from './lockedPreviewCopy'
 export { default as PerformanceSummary } from './PerformanceSummary'

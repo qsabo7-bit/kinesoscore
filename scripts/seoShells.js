@@ -20,6 +20,7 @@ import { PAGE_FAQS_BY_TAB } from '../src/data/seoCopy.js'
 const SKIP_SHELL_TABS = new Set([
   'dashboard',
   'habits',
+  'groups',
   'account',
   'login',
   'signup',

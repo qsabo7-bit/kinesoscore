@@ -1039,6 +1039,13 @@ function DashboardHabitsSection({
         >
           Open Habits
         </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => onOpenTab?.('groups')}
+        >
+          Open Groups
+        </button>
       </div>
     </section>
   )

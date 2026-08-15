@@ -67,6 +67,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
 const HabitsPage = lazy(() => import('./pages/HabitsPage'))
+const GroupsPage = lazy(() => import('./pages/GroupsPage'))
 
 const EMAIL_CONFIRMED_MESSAGE =
   'Email confirmed. Log in to access your KinesoScore account.'
@@ -123,6 +124,15 @@ function App() {
     }
     if (user?.id && isCalculatorResumeTab(tab)) {
       rememberLastCalculatorTab(user.id, tab)
+    }
+    // Groups detail uses /groups/:id — clicking Groups in nav returns to the list.
+    if (
+      tab === 'groups' &&
+      typeof window !== 'undefined' &&
+      window.location.pathname.replace(/\/+$/, '').startsWith('/groups/')
+    ) {
+      window.history.pushState({}, '', '/groups')
+      window.dispatchEvent(new PopStateEvent('popstate'))
     }
     setActiveTab(tab)
   }
@@ -193,6 +203,14 @@ function App() {
     if (skipNextUrlPush.current) {
       skipNextUrlPush.current = false
       return
+    }
+
+    // Keep /groups/:id when Groups is active — do not rewrite to /groups.
+    if (
+      activeTab === 'groups' &&
+      (currentPath === '/groups' || currentPath.startsWith('/groups/'))
+    ) {
+      if (currentPath.startsWith('/groups/')) return
     }
 
     if (currentPath !== normalizedNext) {
@@ -423,6 +441,13 @@ function App() {
   } else if (renderTab === 'habits') {
     content = (
       <HabitsPage
+        onOpenTab={handleTabChange}
+        onRequestAuth={requestAuth}
+      />
+    )
+  } else if (renderTab === 'groups') {
+    content = (
+      <GroupsPage
         onOpenTab={handleTabChange}
         onRequestAuth={requestAuth}
       />

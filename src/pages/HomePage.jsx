@@ -33,7 +33,9 @@ function CompactToolList({ tools, onOpenTab }) {
         <li key={tool.id}>
           {tool.status === 'ready' ? (
             <a
-              className="home-tool-chip"
+              className={`home-tool-chip${
+                tool.id === 'scoring' ? ' is-mykinesoscore brand-casing' : ''
+              }`}
               href={pathForTab(tool.id)}
               onClick={(event) => handleToolClick(event, tool.id)}
             >
@@ -150,6 +152,19 @@ function HomePage({ onOpenTab, onRequestAuth }) {
                 stay private unless you opt in.
               </span>
             </button>
+            <button
+              type="button"
+              className="home-member-link"
+              onClick={() => onOpenTab('groups')}
+            >
+              <span className="home-member-label">
+                Groups <span className="nav-tab-beta">(beta)</span>
+              </span>
+              <span className="home-member-copy">
+                Private crew space — log weekly activity, goals, and group
+                boards with invite-only members.
+              </span>
+            </button>
           </section>
         </>
       ) : null}
@@ -215,7 +230,7 @@ function HomePage({ onOpenTab, onRequestAuth }) {
               onOpenTab(DEFAULT_CALCULATOR_ID)
             }}
           >
-            Open Strength
+            Open myKinesoScore™
           </a>
         </p>
       </section>

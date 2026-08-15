@@ -106,7 +106,10 @@ function PrivacyPage({ onOpenTab }) {
           <li>Provide, maintain, and improve the {BRAND.short} website and calculators.</li>
           <li>Create and authenticate accounts, and restore your session.</li>
           <li>Save and display your progress history and dashboard when you are signed in.</li>
-          <li>Respond to support or business inquiries you send us.</li>
+          <li>
+            Respond to support, business inquiries, or developer feedback you
+            send us.
+          </li>
           <li>Protect against abuse, fraud, and security incidents.</li>
           <li>Comply with applicable law when required.</li>
         </ul>

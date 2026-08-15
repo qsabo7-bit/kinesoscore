@@ -46,6 +46,12 @@ import {
   SaveResultButton,
   ThisWeekShareStatus,
 } from './tracking'
+import GroupShareControl from './GroupShareControl'
+import GroupSharePrompt, {
+  isGroupSharePromptMuted,
+} from './GroupSharePrompt'
+import { listMyGroupsForAssessmentBoard } from '../lib/groups'
+import { isSupabaseConfigured } from '../supabaseClient'
 
 /**
  * Universal result tracking for every calculator.
@@ -134,11 +140,15 @@ function CalculatorTracking({
   const [hadActiveShare, setHadActiveShare] = useState(false)
   /** Active share's source_record_id when one exists for this board. */
   const [activeShareSourceId, setActiveShareSourceId] = useState(null)
+  /** Most recently saved performance_records id (for Share with Groups). */
+  const [lastSavedRecordId, setLastSavedRecordId] = useState(null)
   /** Last confirmed public share value/unit (null if none). Never set from form input. */
   const [activeShareSnapshot, setActiveShareSnapshot] = useState(null)
   const [pendingShareJump, setPendingShareJump] = useState(null)
   /** @type {null | 'discard' | 'update'} */
   const [shareJumpBusy, setShareJumpBusy] = useState(null)
+  /** @type {null | { boardKey: string, sourceRecordId: string, label: string }} */
+  const [pendingGroupShare, setPendingGroupShare] = useState(null)
   const [hasLeaderboardName, setHasLeaderboardName] = useState(true)
   const touchStartX = useRef(null)
   /** Confirmed share baseline; only updated on fetch / successful upsert / clear. */
@@ -284,9 +294,28 @@ function CalculatorTracking({
 
   const shareEligible = Boolean(isAuthenticated && shareTarget)
 
+  const offerGroupShare = useCallback(
+    async (boardKey, sourceRecordId, label) => {
+      if (!boardKey || !sourceRecordId || !isSupabaseConfigured) return
+      if (isGroupSharePromptMuted(boardKey)) return
+      try {
+        const groups = await listMyGroupsForAssessmentBoard(boardKey)
+        if (!groups.length) return
+        setPendingGroupShare({
+          boardKey,
+          sourceRecordId,
+          label: label || 'this result',
+        })
+      } catch {
+        // Groups prompt is optional; never block the save flow.
+      }
+    },
+    [],
+  )
+
   useEffect(() => {
     if (
-      (!pendingShareJump && !pendingDeleteId) ||
+      (!pendingShareJump && !pendingDeleteId && !pendingGroupShare) ||
       typeof document === 'undefined'
     ) {
       return undefined
@@ -296,7 +325,7 @@ function CalculatorTracking({
     return () => {
       document.body.style.overflow = previous
     }
-  }, [pendingShareJump, pendingDeleteId])
+  }, [pendingShareJump, pendingDeleteId, pendingGroupShare])
 
   const shareBoardKey = shareTarget?.boardKey ?? null
 
@@ -544,6 +573,16 @@ function CalculatorTracking({
 
       setSavedMessage(true)
 
+      if (saved?.id) setLastSavedRecordId(saved.id)
+
+      if (saved?.id && shareTarget?.boardKey) {
+        void offerGroupShare(
+          shareTarget.boardKey,
+          saved.id,
+          shareTarget.exerciseName || 'this result',
+        )
+      }
+
       if (wantsShare && shareTarget) {
         if (!hasLeaderboardName) {
           setShareMessage(
@@ -714,6 +753,13 @@ function CalculatorTracking({
         sharePayload.boardKey,
         sharePayload.userId || user?.id,
       )
+      if (sharePayload.sourceRecordId && sharePayload.boardKey) {
+        void offerGroupShare(
+          sharePayload.boardKey,
+          sharePayload.sourceRecordId,
+          sharePayload.exerciseName || 'this result',
+        )
+      }
       // Private save already ran onSaved (snapshot / unlocks) before the jump prompt.
     } catch (shareErr) {
       setThisWeekShareStatus(null)
@@ -907,6 +953,16 @@ function CalculatorTracking({
         celebrationMessage={personalBestMessage}
         label={saveLabel}
       />
+      {shareEligible && user?.id ? (
+        <GroupShareControl
+          userId={user.id}
+          sourceRecordId={lastSavedRecordId || activeShareSourceId}
+          boardKey={shareTarget?.boardKey || null}
+          disabled={
+            saving || Boolean(pendingShareJump) || Boolean(pendingDeleteId)
+          }
+        />
+      ) : null}
       {saveFeedback ? (
         <p className="feedback feedback-success award-unlock-toast" role="status">
           {saveFeedback}
@@ -1178,6 +1234,13 @@ function CalculatorTracking({
             document.body,
           )
         : null}
+      <GroupSharePrompt
+        open={Boolean(pendingGroupShare)}
+        boardKey={pendingGroupShare?.boardKey || null}
+        sourceRecordId={pendingGroupShare?.sourceRecordId || null}
+        assessmentLabel={pendingGroupShare?.label || 'this result'}
+        onClose={() => setPendingGroupShare(null)}
+      />
     </div>
   )
 }

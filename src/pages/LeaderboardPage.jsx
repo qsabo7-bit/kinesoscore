@@ -240,7 +240,9 @@ function LeaderboardPage({
               key={item.id}
               type="button"
               className={`sub-nav-tab${categoryId === item.id ? ' is-active' : ''}${
-                item.id === 'score' ? ` ${BRAND_CASING_CLASS}` : ''
+                item.id === 'score'
+                  ? ` is-mykinesoscore-static ${BRAND_CASING_CLASS}`
+                  : ''
               }`}
               onClick={() => selectCategory(item)}
               aria-pressed={categoryId === item.id}
@@ -275,7 +277,9 @@ function LeaderboardPage({
         {!isHabitsCategory ? (
           <div className="leaderboard-period-block">
             <div
-              className="leaderboard-filter-group leaderboard-periods"
+              className={`leaderboard-filter-group leaderboard-periods${
+                categoryId === 'score' ? ' is-mykinesoscore-periods' : ''
+              }`}
               role="group"
               aria-label="Time period"
             >

@@ -20,7 +20,10 @@ export function getVisibleNavTabs({ isAuthenticated, showLogin }) {
   )
 
   if (isAuthenticated) {
-    tabs.push({ id: 'habits', name: 'Habits' })
+    tabs.push(
+      { id: 'habits', name: 'Habits' },
+      { id: 'groups', name: 'Groups' },
+    )
   }
 
   tabs.push({ id: 'about', name: 'About' })

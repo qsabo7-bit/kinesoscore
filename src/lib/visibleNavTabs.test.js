@@ -17,7 +17,7 @@ describe('getVisibleNavTabs', () => {
     ])
   })
 
-  it('puts Dashboard first when signed in and includes Habits', () => {
+  it('puts Dashboard first when signed in and includes Habits and Groups', () => {
     const ids = getVisibleNavTabs({
       isAuthenticated: true,
       showLogin: false,
@@ -27,6 +27,7 @@ describe('getVisibleNavTabs', () => {
       'calculators',
       'leaderboard',
       'habits',
+      'groups',
       'about',
     ])
   })

@@ -22,11 +22,19 @@ export const CALCULATOR_CATEGORIES = [
   {
     id: 'military',
     label: 'Military Assessments',
-    stickyLabel: 'Military',
+    stickyLabel: 'Military 🦅',
   },
 ]
 
 export const calculators = [
+  {
+    id: 'scoring',
+    name: 'myKinesoScore™',
+    description:
+      'Overall fitness score calculator combining strength and running percentiles.',
+    status: 'ready',
+    category: 'performance',
+  },
   {
     id: 'strength',
     name: 'Strength',
@@ -40,14 +48,6 @@ export const calculators = [
     name: 'Running',
     description:
       'Running fitness calculator for race predictions, pacing context, and endurance tracking.',
-    status: 'ready',
-    category: 'performance',
-  },
-  {
-    id: 'scoring',
-    name: 'myKinesoScore™',
-    description:
-      'Overall fitness score calculator combining strength and running percentiles.',
     status: 'ready',
     category: 'performance',
   },
@@ -171,7 +171,7 @@ export const calculators = [
   },
 ]
 
-export const DEFAULT_CALCULATOR_ID = 'strength'
+export const DEFAULT_CALCULATOR_ID = 'scoring'
 
 export const calculatorIds = new Set(calculators.map((tool) => tool.id))
 
@@ -244,6 +244,11 @@ export const navTabs = [
   {
     id: 'habits',
     name: 'Habits',
+    status: 'ready',
+  },
+  {
+    id: 'groups',
+    name: 'Groups',
     status: 'ready',
   },
   {

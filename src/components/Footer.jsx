@@ -69,6 +69,17 @@ function Footer({ onOpenTab }) {
                 </a>
               </li>
             ) : null}
+            {isAuthenticated ? (
+              <li>
+                <a
+                  className="site-footer-link"
+                  href={pathForTab('groups')}
+                  onClick={(event) => handleLink(event, 'groups')}
+                >
+                  Groups
+                </a>
+              </li>
+            ) : null}
             <li>
               <a
                 className="site-footer-link"
@@ -93,7 +104,9 @@ function Footer({ onOpenTab }) {
         <div className="site-footer-col">
           <p className="site-footer-heading">Contact</p>
           <ul className="site-footer-list">
-            <li className="site-footer-note">For business inquiries:</li>
+            <li className="site-footer-note">
+              For business inquiries or developer feedback:
+            </li>
             <li>
               <a
                 className="site-footer-link"

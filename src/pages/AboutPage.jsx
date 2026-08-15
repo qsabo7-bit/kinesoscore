@@ -138,7 +138,7 @@ function AboutPage({ onOpenTab }) {
           Business
         </h2>
         <p className="business-copy">
-          For business inquiries, contact{' '}
+          For business inquiries or developer feedback, contact{' '}
           <a
             className="business-email-inline"
             href={`mailto:${BRAND.businessEmail}`}

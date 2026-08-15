@@ -69,13 +69,24 @@ export const HABITS_LOCKED_PREVIEW = {
   ],
 }
 
+export const GROUPS_LOCKED_PREVIEW = {
+  title: 'Train with your group',
+  lead: 'Sign in to create or join private Groups:',
+  benefits: [
+    'Create a group',
+    'Join with an invite code',
+    'Log weekly fitness activity',
+    'See group and personal totals',
+  ],
+}
+
 export const ACCOUNT_LOCKED_PREVIEW = {
   title: 'Account Settings',
   lead: 'Create a free account to unlock:',
   benefits: [
     'Profile & Leaderboard Name',
     'Saved calculator history',
-    'Habits and progress sync',
+    'Habits, Groups, and progress sync',
     'Account security controls',
   ],
 }

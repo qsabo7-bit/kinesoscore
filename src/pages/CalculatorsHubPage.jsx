@@ -22,33 +22,42 @@ function ToolList({ tools, onOpenTab }) {
 
   return (
     <ul className="tool-list">
-      {tools.map((tool) => (
-        <li key={tool.id} className="tool-item">
-          <h3>
-            {tool.name}
-            {tool.badge ? (
-              <span
-                className={`nav-badge nav-badge-${String(tool.badge).toLowerCase()}`}
-                style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+      {tools.map((tool) => {
+        const isMyKineso = tool.id === 'scoring'
+        return (
+          <li key={tool.id} className="tool-item">
+            <h3>
+              {isMyKineso ? (
+                <span className={`mykineso-shine-text ${BRAND_CASING_CLASS}`}>
+                  {tool.name}
+                </span>
+              ) : (
+                tool.name
+              )}
+              {tool.badge ? (
+                <span
+                  className={`nav-badge nav-badge-${String(tool.badge).toLowerCase()}`}
+                  style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+                >
+                  {tool.badge}
+                </span>
+              ) : null}
+            </h3>
+            <p>{tool.description}</p>
+            {tool.status === 'ready' ? (
+              <a
+                className={`tool-link${isMyKineso ? ' is-mykinesoscore' : ''}`}
+                href={pathForTab(tool.id)}
+                onClick={(event) => handleToolClick(event, tool.id)}
               >
-                {tool.badge}
-              </span>
-            ) : null}
-          </h3>
-          <p>{tool.description}</p>
-          {tool.status === 'ready' ? (
-            <a
-              className="tool-link"
-              href={pathForTab(tool.id)}
-              onClick={(event) => handleToolClick(event, tool.id)}
-            >
-              Open {tool.name} calculator
-            </a>
-          ) : (
-            <span className="tool-status">In development</span>
-          )}
-        </li>
-      ))}
+                Open {tool.name} calculator
+              </a>
+            ) : (
+              <span className="tool-status">In development</span>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }
