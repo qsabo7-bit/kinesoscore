@@ -25,8 +25,8 @@ describe('getVisibleNavTabs', () => {
     assert.deepEqual(ids, [
       'dashboard',
       'calculators',
-      'leaderboard',
       'habits',
+      'leaderboard',
       'groups',
       'about',
     ])

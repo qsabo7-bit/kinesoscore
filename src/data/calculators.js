@@ -237,13 +237,13 @@ export const navTabs = [
     status: 'ready',
   },
   {
-    id: 'leaderboard',
-    name: 'Leaderboard',
+    id: 'habits',
+    name: 'Habits',
     status: 'ready',
   },
   {
-    id: 'habits',
-    name: 'Habits',
+    id: 'leaderboard',
+    name: 'Leaderboard',
     status: 'ready',
   },
   {

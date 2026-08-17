@@ -2,10 +2,19 @@ import { useAuth } from '../auth/AuthContext'
 import { BRAND } from '../data/brand'
 import { pathForTab } from '../data/seo'
 import { handleNavLinkClick } from '../lib/navLinkClick'
+import { getVisibleNavTabs } from '../lib/visibleNavTabs'
 
 function Footer({ onOpenTab }) {
   const { isAuthenticated } = useAuth()
   const handleLink = (event, tab) => handleNavLinkClick(event, tab, onOpenTab)
+  const navigateTabs = [
+    { id: 'home', name: 'Home' },
+    ...getVisibleNavTabs({
+      isAuthenticated: Boolean(isAuthenticated),
+      showLogin: false,
+    }).filter((tab) => tab.id !== 'home'),
+    { id: 'sources-methodology', name: 'Sources & Methodology' },
+  ]
 
   return (
     <footer className="site-footer">
@@ -20,84 +29,17 @@ function Footer({ onOpenTab }) {
         <div className="site-footer-col">
           <p className="site-footer-heading">Navigate</p>
           <ul className="site-footer-list">
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('home')}
-                onClick={(event) => handleLink(event, 'home')}
-              >
-                Home
-              </a>
-            </li>
-            {isAuthenticated ? (
-              <li>
+            {navigateTabs.map((tab) => (
+              <li key={tab.id}>
                 <a
                   className="site-footer-link"
-                  href={pathForTab('dashboard')}
-                  onClick={(event) => handleLink(event, 'dashboard')}
+                  href={pathForTab(tab.id)}
+                  onClick={(event) => handleLink(event, tab.id)}
                 >
-                  Dashboard
+                  {tab.name}
                 </a>
               </li>
-            ) : null}
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('calculators')}
-                onClick={(event) => handleLink(event, 'calculators')}
-              >
-                Calculators
-              </a>
-            </li>
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('leaderboard')}
-                onClick={(event) => handleLink(event, 'leaderboard')}
-              >
-                Leaderboard
-              </a>
-            </li>
-            {isAuthenticated ? (
-              <li>
-                <a
-                  className="site-footer-link"
-                  href={pathForTab('habits')}
-                  onClick={(event) => handleLink(event, 'habits')}
-                >
-                  Habits
-                </a>
-              </li>
-            ) : null}
-            {isAuthenticated ? (
-              <li>
-                <a
-                  className="site-footer-link"
-                  href={pathForTab('groups')}
-                  onClick={(event) => handleLink(event, 'groups')}
-                >
-                  Groups
-                </a>
-              </li>
-            ) : null}
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('about')}
-                onClick={(event) => handleLink(event, 'about')}
-              >
-                About
-              </a>
-            </li>
-            <li>
-              <a
-                className="site-footer-link"
-                href={pathForTab('sources-methodology')}
-                onClick={(event) => handleLink(event, 'sources-methodology')}
-              >
-                Sources &amp; Methodology
-              </a>
-            </li>
+            ))}
           </ul>
         </div>
 
