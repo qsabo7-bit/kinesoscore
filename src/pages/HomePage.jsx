@@ -5,8 +5,9 @@ import {
   DEFAULT_CALCULATOR_ID,
 } from '../data/calculators'
 import HomeMemberProgress from '../components/HomeMemberProgress'
-import { BRAND } from '../data/brand'
+import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { pathForTab } from '../data/seo'
+import { getThisWeekFocus } from '../lib/weekFocus'
 import homeHeroPhoto from '../assets/home-hero.png'
 
 /** Set to `null` to restore the CSS-only hero (no photo). */
@@ -62,6 +63,7 @@ function CompactToolList({ tools, onOpenTab }) {
 
 function HomePage({ onOpenTab, onRequestAuth }) {
   const { isAuthenticated, loading, firstName } = useAuth()
+  const focus = getThisWeekFocus()
   const toolGroups = CALCULATOR_CATEGORIES.map((category) => ({
     category,
     tools: calculatorsByCategory(category.id),
@@ -82,45 +84,76 @@ function HomePage({ onOpenTab, onRequestAuth }) {
           }
         />
         <div className="home-hero-content">
-          {showMemberCtas ? (
-            <p className="home-eyebrow home-hero-welcome">
-              Welcome, {firstName || 'Athlete'}
+          <div className="home-hero-copy">
+            {showMemberCtas ? (
+              <p className="home-eyebrow home-hero-welcome">
+                Welcome, {firstName || 'Athlete'}
+              </p>
+            ) : (
+              <p className="home-eyebrow home-hero-welcome">
+                Get scored · Claim a name
+              </p>
+            )}
+            <h1 className="home-brand">{BRAND.full}</h1>
+            <p className="home-tagline home-tagline-hero">
+              {showMemberCtas
+                ? 'Measure where you are — Improve where you’re going.'
+                : 'Get your score. Claim a name. Climb This Week.'}
             </p>
-          ) : null}
-          <h1 className="home-brand">{BRAND.full}</h1>
-          <p className="home-tagline home-tagline-hero">
-            Measure where you are — Improve where you&apos;re going.
-          </p>
-          {loading ? (
-            <div
-              className="confirm-actions home-auth-actions"
-              aria-busy="true"
-              aria-hidden="true"
-            >
-              <span className="btn btn-primary home-auth-placeholder">
-                Create Account
-              </span>
-              <span className="btn btn-ghost home-auth-placeholder">
-                Log in
-              </span>
-            </div>
-          ) : null}
+            {loading ? (
+              <div
+                className="confirm-actions home-auth-actions"
+                aria-busy="true"
+                aria-hidden="true"
+              >
+                <span className="btn btn-primary home-auth-placeholder">
+                  Try {BRAND.scoreName}
+                </span>
+              </div>
+            ) : null}
+            {showAuthCtas ? (
+              <div className="home-auth-actions">
+                <button
+                  type="button"
+                  className={`btn btn-primary ${BRAND_CASING_CLASS}`}
+                  onClick={() => onOpenTab?.(DEFAULT_CALCULATOR_ID)}
+                >
+                  Try {BRAND.scoreName} free
+                </button>
+                <p className="home-auth-links">
+                  <button
+                    type="button"
+                    className="home-auth-text"
+                    onClick={() => onRequestAuth?.('login')}
+                  >
+                    Log in
+                  </button>
+                  <span aria-hidden="true"> · </span>
+                  <button
+                    type="button"
+                    className="home-auth-text"
+                    onClick={() => onRequestAuth?.('signup')}
+                  >
+                    Create account
+                  </button>
+                </p>
+              </div>
+            ) : null}
+          </div>
           {showAuthCtas ? (
-            <div className="confirm-actions home-auth-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => onRequestAuth?.('signup')}
-              >
-                Create Account
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => onRequestAuth?.('login')}
-              >
-                Log in
-              </button>
+            <div className="home-proof-strip" aria-label="Product preview">
+              <div className="home-proof-card">
+                <p className="home-proof-kicker">This Week</p>
+                <p className="home-proof-primary">#12</p>
+                <p className="home-proof-secondary">Score preview</p>
+              </div>
+              <div className="home-proof-card">
+                <p className="home-proof-kicker">Habit XP</p>
+                <p className="home-proof-primary">Lv 4</p>
+                <p className="home-proof-secondary">
+                  {focus?.title || 'Steady'}
+                </p>
+              </div>
             </div>
           ) : null}
         </div>
@@ -169,6 +202,39 @@ function HomePage({ onOpenTab, onRequestAuth }) {
         </>
       ) : null}
 
+      {showAuthCtas ? (
+        <section className="home-guest-path" aria-label="Start path">
+          <h2 className="result-section-title">One path to the board</h2>
+          <ol className="home-guest-steps">
+            <li>
+              <strong>Score</strong> — run {BRAND.scoreName} free
+            </li>
+            <li>
+              <strong>Name</strong> — pick what others see when you share
+            </li>
+            <li>
+              <strong>Climb</strong> — opt in to This Week
+            </li>
+          </ol>
+          <div className="home-guest-path-cta">
+            <button
+              type="button"
+              className={`btn btn-primary ${BRAND_CASING_CLASS}`}
+              onClick={() => onOpenTab?.(DEFAULT_CALCULATOR_ID)}
+            >
+              Start with {BRAND.scoreName}
+            </button>
+            <button
+              type="button"
+              className="home-guest-alt"
+              onClick={() => onOpenTab?.('habits')}
+            >
+              Or try Habits first
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       <section className="home-tools" aria-labelledby="tools-heading">
         <h2 id="tools-heading">
           <button
@@ -176,13 +242,13 @@ function HomePage({ onOpenTab, onRequestAuth }) {
             className="home-section-link"
             onClick={() => onOpenTab('calculators')}
           >
-            Calculators
+            {showAuthCtas ? 'More tools' : 'Calculators'}
           </button>
         </h2>
         <p className="home-dashboard-summary">
-          Strength, endurance, {BRAND.scoreName}, fitness assessments, and
-          military assessments — with optional progress tracking when you sign
-          in.
+          {showAuthCtas
+            ? `After your score, browse strength, running, and assessments. Save and climb when you’re ready.`
+            : `Strength, endurance, ${BRAND.scoreName}, fitness assessments, and military assessments — with optional progress tracking when you sign in.`}
         </p>
 
         {toolGroups.map((group) => (

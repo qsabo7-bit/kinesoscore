@@ -124,7 +124,7 @@ export async function renderShareMomentCardBlob(opts = {}) {
   paintFrame(ctx, width, height)
   paintBrand(ctx, width, logo)
 
-  const contentTop = height * (format.id === 'story' ? 0.22 : 0.2)
+  const contentTop = height * (format.id === 'story' ? 0.24 : 0.22)
   paintHero(ctx, width, height, contentTop, model)
   paintFooter(ctx, width, height, model)
 
@@ -212,23 +212,32 @@ function canvasToPngBlob(canvas) {
 }
 
 function paintBackground(ctx, width, height) {
-  const grad = ctx.createLinearGradient(0, 0, width * 0.15, height)
-  grad.addColorStop(0, '#1a2922')
-  grad.addColorStop(0.42, '#121a17')
-  grad.addColorStop(1, '#0b100e')
+  const grad = ctx.createLinearGradient(0, 0, width * 0.12, height)
+  grad.addColorStop(0, '#1e3228')
+  grad.addColorStop(0.35, '#141c18')
+  grad.addColorStop(0.72, '#0d1310')
+  grad.addColorStop(1, '#080c0a')
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, width, height)
 
+  // Top product accent bar — reads as branded share chrome.
+  const bar = ctx.createLinearGradient(0, 0, width, 0)
+  bar.addColorStop(0, 'rgba(125, 255, 179, 0.95)')
+  bar.addColorStop(0.55, 'rgba(125, 255, 179, 0.55)')
+  bar.addColorStop(1, 'rgba(90, 160, 220, 0.45)')
+  ctx.fillStyle = bar
+  ctx.fillRect(0, 0, width, 10)
+
   const wash = ctx.createRadialGradient(
     width * 0.78,
-    height * 0.16,
+    height * 0.14,
     20,
     width * 0.7,
-    height * 0.2,
+    height * 0.18,
     height * 0.55,
   )
-  wash.addColorStop(0, 'rgba(125, 255, 179, 0.2)')
-  wash.addColorStop(0.5, 'rgba(125, 255, 179, 0.05)')
+  wash.addColorStop(0, 'rgba(125, 255, 179, 0.22)')
+  wash.addColorStop(0.5, 'rgba(125, 255, 179, 0.06)')
   wash.addColorStop(1, 'rgba(125, 255, 179, 0)')
   ctx.fillStyle = wash
   ctx.fillRect(0, 0, width, height)
@@ -241,15 +250,15 @@ function paintBackground(ctx, width, height) {
     height * 0.78,
     height * 0.4,
   )
-  wash2.addColorStop(0, 'rgba(90, 160, 220, 0.12)')
+  wash2.addColorStop(0, 'rgba(90, 160, 220, 0.14)')
   wash2.addColorStop(1, 'rgba(90, 160, 220, 0)')
   ctx.fillStyle = wash2
   ctx.fillRect(0, 0, width, height)
 
   ctx.save()
-  ctx.strokeStyle = 'rgba(242, 247, 244, 0.028)'
+  ctx.strokeStyle = 'rgba(242, 247, 244, 0.03)'
   ctx.lineWidth = 1
-  for (let i = -height; i < width + height; i += 30) {
+  for (let i = -height; i < width + height; i += 32) {
     ctx.beginPath()
     ctx.moveTo(i, 0)
     ctx.lineTo(i + height, height)
@@ -260,35 +269,35 @@ function paintBackground(ctx, width, height) {
   const vignette = ctx.createRadialGradient(
     width / 2,
     height * 0.48,
-    height * 0.28,
+    height * 0.26,
     width / 2,
     height * 0.5,
-    height * 0.72,
+    height * 0.74,
   )
   vignette.addColorStop(0, 'rgba(0,0,0,0)')
-  vignette.addColorStop(1, 'rgba(0,0,0,0.5)')
+  vignette.addColorStop(1, 'rgba(0,0,0,0.55)')
   ctx.fillStyle = vignette
   ctx.fillRect(0, 0, width, height)
 }
 
 function paintFrame(ctx, width, height) {
-  const inset = 40
-  ctx.strokeStyle = 'rgba(125, 255, 179, 0.2)'
-  ctx.lineWidth = 2
+  const inset = 36
+  ctx.strokeStyle = 'rgba(125, 255, 179, 0.28)'
+  ctx.lineWidth = 2.5
   ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
 
-  ctx.strokeStyle = 'rgba(242, 247, 244, 0.07)'
+  ctx.strokeStyle = 'rgba(242, 247, 244, 0.08)'
   ctx.lineWidth = 1
   ctx.strokeRect(
-    inset + 14,
-    inset + 14,
-    width - (inset + 14) * 2,
-    height - (inset + 14) * 2,
+    inset + 16,
+    inset + 16,
+    width - (inset + 16) * 2,
+    height - (inset + 16) * 2,
   )
 
-  const tick = 30
-  ctx.strokeStyle = 'rgba(125, 255, 179, 0.55)'
-  ctx.lineWidth = 3
+  const tick = 36
+  ctx.strokeStyle = 'rgba(125, 255, 179, 0.7)'
+  ctx.lineWidth = 3.5
   const corners = [
     [inset, inset],
     [width - inset, inset],
@@ -331,18 +340,22 @@ function paintBrand(ctx, width, logo) {
   ctx.font = '700 36px "Barlow Condensed", "Arial Narrow", sans-serif'
   ctx.fillText(BRAND.short.toUpperCase(), x + mark + 18, y + 34)
 
-  ctx.strokeStyle = 'rgba(125, 255, 179, 0.45)'
+  ctx.fillStyle = 'rgba(125, 255, 179, 0.75)'
+  ctx.font = '600 22px Manrope, "Segoe UI", sans-serif'
+  ctx.fillText('TRAIN · MEASURE · CLIMB', x + mark + 18, y + 62)
+
+  ctx.strokeStyle = 'rgba(125, 255, 179, 0.5)'
   ctx.lineWidth = 3
   ctx.beginPath()
-  ctx.moveTo(x, y + mark + 18)
-  ctx.lineTo(x + 210, y + mark + 18)
+  ctx.moveTo(x, y + mark + 28)
+  ctx.lineTo(x + 260, y + mark + 28)
   ctx.stroke()
 }
 
 function paintHero(ctx, width, height, contentTop, model) {
   const padX = 96
   const maxW = width - padX * 2
-  const footerReserve = 220
+  const footerReserve = 240
   let y = contentTop
 
   const hasScore = model.fitnessScore != null
@@ -548,21 +561,43 @@ function formatRankChip(model) {
 }
 
 function paintFooter(ctx, width, height, model) {
-  const y = height - 96
   const padX = 96
+  const barY = height - 128
+
+  ctx.fillStyle = 'rgba(8, 12, 10, 0.72)'
+  ctx.fillRect(0, barY, width, 128)
+
+  ctx.strokeStyle = 'rgba(125, 255, 179, 0.35)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(padX, barY)
+  ctx.lineTo(width - padX, barY)
+  ctx.stroke()
+
+  const y = height - 72
 
   if (model.athleteName) {
-    ctx.fillStyle = '#a8b8b0'
-    ctx.font = '600 30px Manrope, "Segoe UI", sans-serif'
-    const name = truncateToWidth(ctx, model.athleteName, width * 0.42)
+    ctx.fillStyle = '#c5d0c9'
+    ctx.font = '600 28px Manrope, "Segoe UI", sans-serif'
+    const name = truncateToWidth(ctx, model.athleteName, width * 0.4)
     ctx.fillText(name, padX, y)
+  } else {
+    ctx.fillStyle = 'rgba(125, 255, 179, 0.8)'
+    ctx.font = '700 24px "Barlow Condensed", "Arial Narrow", sans-serif'
+    ctx.fillText(BRAND.scoreName.toUpperCase(), padX, y)
   }
 
-  ctx.fillStyle = '#8fa098'
-  ctx.font = '600 30px Manrope, "Segoe UI", sans-serif'
+  ctx.fillStyle = '#f2f7f4'
+  ctx.font = '700 28px Manrope, "Segoe UI", sans-serif'
   const footer = model.footer || 'kinesoscore.com'
   const fw = ctx.measureText(footer).width
   ctx.fillText(footer, width - padX - fw, y)
+
+  ctx.fillStyle = 'rgba(168, 184, 176, 0.75)'
+  ctx.font = '500 20px Manrope, "Segoe UI", sans-serif'
+  const tag = 'Get scored · Climb This Week'
+  const tw = ctx.measureText(tag).width
+  ctx.fillText(tag, width - padX - tw, y + 28)
 }
 
 function roundRect(ctx, x, y, w, h, r) {

@@ -19,7 +19,16 @@ import {
   readWeekRankSnapshot,
   rememberWeekRankSnapshot,
 } from '../lib/weekRecap'
+import { getThisWeekFocus } from '../lib/weekFocus'
+import { evaluateAchievements } from '../lib/achievements'
 import { isSupabaseConfigured } from '../supabaseClient'
+
+function focusCtaLabel(focus) {
+  if (focus?.tab === 'scoring') return 'Update score'
+  if (focus?.tab === 'strength') return 'Log a lift'
+  if (focus?.tab === 'running') return 'Log a run'
+  return 'Review habits'
+}
 
 function resumeFromRecords(records) {
   const latest = buildDashboardModel(records || []).recentActivity?.[0]
@@ -31,10 +40,15 @@ function resumeFromRecords(records) {
 }
 
 /**
- * Single Dashboard “Today” ritual: week recap + resume + This Week rank.
- * Awards stay in the hero (not duplicated here).
+ * Single Dashboard “Today” ritual: habits run first, then week focus + rank.
  */
-function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
+function DashboardTodayStrip({
+  userId,
+  onOpenTab,
+  records = null,
+  habitProgress = null,
+}) {
+  const focus = getThisWeekFocus()
   const cachedRank = userId ? readWeekRankSnapshot(userId) : null
   const [recap, setRecap] = useState(null)
   const [resume, setResume] = useState(() => {
@@ -141,7 +155,10 @@ function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
           }
         }
 
-        if (best) rememberWeekRankSnapshot(userId, best)
+        if (best) {
+          rememberWeekRankSnapshot(userId, best)
+          evaluateAchievements(userId, { hasWeekRank: true })
+        }
 
         if (!cancelled) {
           setAthleteName(name || null)
@@ -163,6 +180,22 @@ function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
     }
   }, [userId])
 
+  const habitRatio =
+    habitProgress && habitProgress.total > 0
+      ? habitProgress.ratioLabel
+      : null
+  const habitIncomplete =
+    habitProgress &&
+    habitProgress.total > 0 &&
+    habitProgress.completed < habitProgress.total
+  const habitsAreFocus = habitIncomplete || !habitRatio
+  const ritualCtaLabel = !habitRatio
+    ? 'Start habits'
+    : habitIncomplete
+      ? 'Finish today’s run'
+      : focusCtaLabel(focus)
+  const ritualTab = habitsAreFocus ? 'habits' : focus?.tab || 'habits'
+
   return (
     <section
       id="dash-today"
@@ -172,6 +205,48 @@ function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
       <h2 id="dash-today-heading" className="result-section-title">
         Today
       </h2>
+
+      <div className="dashboard-today-ritual" aria-label="Run of the day">
+        <div className="dashboard-today-ritual-main">
+          <p className="dashboard-today-ritual-kicker">Run of the day</p>
+          <p className="dashboard-today-ritual-line">
+            {habitRatio ? (
+              <>
+                Habits <strong>{habitRatio}</strong>
+                {habitIncomplete ? (
+                  <span className="dashboard-today-ritual-warn">
+                    {week.best
+                      ? ` · finish to keep #${week.best.rank} in play`
+                      : ' · finish to lock in'}
+                  </span>
+                ) : habitProgress?.isComplete ? (
+                  <span className="dashboard-today-ritual-ok"> · clean</span>
+                ) : null}
+              </>
+            ) : (
+              <>Add habits to start today’s run</>
+            )}
+          </p>
+          {focus ? (
+            <p className="dashboard-today-ritual-focus">
+              This Week’s Focus · {focus.title}
+              {focus.blurb ? (
+                <span className="dashboard-today-ritual-blurb">
+                  {' '}
+                  — {focus.blurb}
+                </span>
+              ) : null}
+            </p>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          className="btn btn-primary dashboard-today-ritual-cta"
+          onClick={() => onOpenTab?.(ritualTab)}
+        >
+          {ritualCtaLabel}
+        </button>
+      </div>
 
       {recap ? (
         <div className="dashboard-today-recap" role="status">
@@ -267,10 +342,10 @@ function DashboardTodayStrip({ userId, onOpenTab, records = null }) {
       ) : null}
 
       <div className="confirm-actions dashboard-today-actions">
-        {resume ? (
+        {!habitsAreFocus && resume ? (
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-ghost"
             onClick={() => onOpenTab?.(resume.tab)}
           >
             Continue {resume.label}

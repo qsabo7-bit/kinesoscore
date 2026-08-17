@@ -61,6 +61,16 @@ import {
 } from '../lib/fitnessScoreSnapshots'
 import { fetchPerformanceRecords } from '../lib/performanceRecords'
 import { estimated5kAutofillPatch } from '../lib/runningTracking'
+import {
+  estimateThisWeekPlace,
+  formatEstimatedPlaceLabel,
+} from '../lib/estimateThisWeekPlace'
+import { getLeaderboardSampleRows } from '../lib/leaderboardSamples'
+import {
+  fetchPublicLeaderboard,
+  leaderboardBoardLabel,
+} from '../lib/publicLeaderboard'
+import { isSupabaseConfigured } from '../supabaseClient'
 
 function toSeconds(hours, minutes, seconds) {
   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)
@@ -338,6 +348,46 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       strengthScore: result.score.strengthScore,
     })
   }, [result.score])
+
+  const [weekPlaceRows, setWeekPlaceRows] = useState(() =>
+    getLeaderboardSampleRows('mykinesoscore'),
+  )
+
+  useEffect(() => {
+    if (!result.score?.FPCScore || !isSupabaseConfigured) return undefined
+    let cancelled = false
+    fetchPublicLeaderboard('mykinesoscore', 'this_week')
+      .then((live) => {
+        if (cancelled) return
+        if (Array.isArray(live) && live.length > 0) {
+          setWeekPlaceRows(live)
+        }
+      })
+      .catch(() => {
+        // Keep sample rows.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [result.score?.FPCScore])
+
+  const guestWeekPlace = useMemo(() => {
+    if (!result.score?.FPCScore) return null
+    return estimateThisWeekPlace(
+      weekPlaceRows,
+      result.score.FPCScore,
+      true,
+    )
+  }, [result.score, weekPlaceRows])
+
+  const guestWeekPlaceLabel = useMemo(
+    () =>
+      formatEstimatedPlaceLabel(
+        guestWeekPlace,
+        leaderboardBoardLabel('mykinesoscore'),
+      ),
+    [guestWeekPlace],
+  )
 
   const [guestBadgeShareOpen, setGuestBadgeShareOpen] = useState(false)
   const [guestBadgesRevealed, setGuestBadgesRevealed] = useState(false)
@@ -861,6 +911,9 @@ function ScoringPage({ onRequestAuth, onOpenTab }) {
       {result.score && !authLoading && !isAuthenticated ? (
         <GuestSaveScorePrompt
           score={result.score.FPCScore}
+          placeLabel={guestWeekPlaceLabel}
+          placeRank={guestWeekPlace?.rank ?? null}
+          boardLabel={leaderboardBoardLabel('mykinesoscore')}
           onRequestAuth={onRequestAuth}
         />
       ) : null}

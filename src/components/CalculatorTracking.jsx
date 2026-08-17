@@ -27,6 +27,8 @@ import {
   recordsInMassUnit,
   savePerformanceRecord,
 } from '../lib/performanceRecords'
+import { buildSaveGameFeedback } from '../lib/saveGameFeedback'
+import { evaluateAchievements } from '../lib/achievements'
 import {
   buildDerivedEstimated5kRecords,
   excludeStoredEstimated5kRecords,
@@ -50,6 +52,8 @@ import GroupShareControl from './GroupShareControl'
 import GroupSharePrompt, {
   isGroupSharePromptMuted,
 } from './GroupSharePrompt'
+import GuestWeekPlaceHint from './GuestWeekPlaceHint'
+import { BRAND } from '../data/brand'
 import { listMyGroupsForAssessmentBoard } from '../lib/groups'
 import { isSupabaseConfigured } from '../supabaseClient'
 
@@ -377,6 +381,9 @@ function CalculatorTracking({
   }, [isAuthenticated, user?.id, shareBoardKey])
 
   const announceThisWeekShare = async (boardKey, userId = user?.id) => {
+    if (userId) {
+      evaluateAchievements(userId, { hasShare: true, hasWeekRank: true })
+    }
     if (!userId || !boardKey) {
       setThisWeekShareStatus(null)
       setShareMessage('Shared to the global leaderboard (This Week + All Time).')
@@ -565,13 +572,26 @@ function CalculatorTracking({
 
       if (isPersonalBest) {
         setPersonalBestMessage(
-          priorSummary
-            ? 'New personal best'
-            : 'First saved result — personal best set',
+          buildSaveGameFeedback({
+            isPersonalBest: true,
+            priorSummary,
+            numericResult,
+            higherIsBetter: trackHigherIsBetter,
+          }),
+        )
+      } else {
+        setPersonalBestMessage(
+          buildSaveGameFeedback({
+            isPersonalBest: false,
+            priorSummary,
+            numericResult,
+            higherIsBetter: trackHigherIsBetter,
+          }),
         )
       }
 
       setSavedMessage(true)
+      evaluateAchievements(user.id, { hasSave: true })
 
       if (saved?.id) setLastSavedRecordId(saved.id)
 
@@ -748,6 +768,8 @@ function CalculatorTracking({
             ? 'First saved result — personal best set'
             : 'New personal best',
         )
+      } else {
+        setPersonalBestMessage('Result saved · keep grinding')
       }
       await announceThisWeekShare(
         sharePayload.boardKey,
@@ -898,10 +920,28 @@ function CalculatorTracking({
       lead: lockedPreview?.lead ?? DEFAULT_LOCKED_PREVIEW.lead,
       benefits: lockedPreview?.benefits ?? DEFAULT_LOCKED_PREVIEW.benefits,
     }
+    const guestTarget = resolveLeaderboardShareTarget(
+      calculatorType,
+      selectedTrack?.exerciseName,
+      selectedTrack?.higherIsBetter !== false,
+    )
+    const showWeekHint =
+      calculatorType !== BRAND.scoreCalculatorType &&
+      guestTarget?.boardKey &&
+      Number.isFinite(Number(resultValue))
 
     return (
       <div className="tracking-panel">
         <h2 className="result-section-title">Your Progress</h2>
+        {showWeekHint ? (
+          <GuestWeekPlaceHint
+            boardKey={guestTarget.boardKey}
+            resultValue={Number(resultValue)}
+            higherIsBetter={guestTarget.higherIsBetter !== false}
+            onRequestAuth={onRequestAuth}
+            onOpenTab={onOpenTab}
+          />
+        ) : null}
         <LockedGraphPreview
           onRequestAuth={onRequestAuth}
           yAxisLabel={axisLabel}

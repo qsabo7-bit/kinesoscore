@@ -183,22 +183,35 @@ const HABIT_SAMPLES = [
     rank: 1,
     leaderboard_name: 'DawnStack',
     result_display: '12,480 XP',
+    lifetime_xp: 12480,
     awards: SAMPLE_AWARDS_CROWN,
   },
   {
     rank: 2,
     leaderboard_name: 'SteadyCue',
     result_display: '9,150 XP',
+    lifetime_xp: 9150,
     awards: SAMPLE_AWARDS_TOP,
   },
   {
     rank: 3,
     leaderboard_name: 'RoutineBay',
     result_display: '6,720 XP',
+    lifetime_xp: 6720,
     awards: SAMPLE_AWARDS_MID,
   },
-  { rank: 4, leaderboard_name: 'CheckInCo', result_display: '4,110 XP' },
-  { rank: 5, leaderboard_name: 'HabitArc', result_display: '2,340 XP' },
+  {
+    rank: 4,
+    leaderboard_name: 'CheckInCo',
+    result_display: '4,110 XP',
+    lifetime_xp: 4110,
+  },
+  {
+    rank: 5,
+    leaderboard_name: 'HabitArc',
+    result_display: '2,340 XP',
+    lifetime_xp: 2340,
+  },
 ]
 
 /**

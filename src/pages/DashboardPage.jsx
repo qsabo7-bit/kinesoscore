@@ -23,6 +23,11 @@ import { habitCardImage, habitDisplayName } from '../data/habitCatalog'
 import { DASHBOARD_GRAPH_METRICS } from '../data/dashboardMetrics'
 import { habitLevelFromXp } from '../lib/habitLevels'
 import {
+  computeHabitConsistency,
+  consistencyTitle,
+} from '../lib/habitConsistency'
+import { evaluateHabitAchievementSignals } from '../lib/habitAchievementSignals'
+import {
   RUNNING_DISTANCE_TRACKS,
   RUNNING_GRAPH_TRACKS,
 } from '../data/trackingTracks'
@@ -197,6 +202,24 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   )
   const [showOnboarding, setShowOnboarding] = useState(false)
   const todayKey = localDateKey()
+  const habitProgress = useMemo(
+    () =>
+      habitDayProgress(
+        todayKey,
+        habitState.habits,
+        habitState.checkins,
+        todayKey,
+      ),
+    [habitState.habits, habitState.checkins, todayKey],
+  )
+  const habitLifetimeXp = useMemo(
+    () => sumLifetimeHabitXp(habitState.checkins),
+    [habitState.checkins],
+  )
+  const habitLevelState = useMemo(
+    () => habitLevelFromXp(habitLifetimeXp),
+    [habitLifetimeXp],
+  )
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id || loadingData) return undefined
@@ -598,7 +621,15 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           <p className="page-eyebrow">Dashboard</p>
           <div className="dashboard-welcome-row">
             <ProfileAvatar avatarId={avatarId} size="md" />
-            <h1>Welcome, {firstName || 'Athlete'}</h1>
+            <div className="dashboard-welcome-copy">
+              <h1>Welcome, {firstName || 'Athlete'}</h1>
+              {habitState.habits.length > 0 ? (
+                <p className="dashboard-cross-progress">
+                  Habit Lv {habitLevelState.level}
+                  {resolvedAwards?.awards?.crown ? ' · Crown' : ''}
+                </p>
+              ) : null}
+            </div>
           </div>
           <p className="page-lead">
             {isDense ? 'Your week at a glance' : 'Your Fitness Progress'}
@@ -641,6 +672,7 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
           userId={user.id}
           onOpenTab={onOpenTab}
           records={records}
+          habitProgress={habitProgress}
         />
       ) : null}
 
@@ -940,6 +972,14 @@ function DashboardHabitsSection({
   )
   const lifetimeXp = sumLifetimeHabitXp(habitState.checkins)
   const levelState = useMemo(() => habitLevelFromXp(lifetimeXp), [lifetimeXp])
+  const consistency30 = useMemo(
+    () =>
+      computeHabitConsistency(habitState.habits, habitState.checkins, {
+        windowDays: 30,
+        todayKey,
+      }),
+    [habitState.habits, habitState.checkins, todayKey],
+  )
   const todayXpEarned = useMemo(() => {
     let total = 0
     for (const row of habitState.checkins) {
@@ -1032,12 +1072,15 @@ function DashboardHabitsSection({
               {hasHabits
                 ? `${lifetimeXp.toLocaleString()} XP · Today ${progress.ratioLabel}${
                     todayXpEarned > 0 ? ` · +${todayXpEarned}` : ''
-                  }`
+                  } · ${consistency30.label} steady`
                 : 'XP cards and daily check-ins'}
             </span>
             {hasHabits ? (
               <span className="dashboard-habits-pills">
                 <span className="dashboard-habits-pill">Lv {levelState.level}</span>
+                <span className="dashboard-habits-pill">
+                  {consistencyTitle(consistency30.percent)}
+                </span>
                 <span
                   className={`dashboard-habits-pill${
                     incompleteToday ? ' is-warn' : ' is-ok'
@@ -1082,6 +1125,8 @@ function DashboardHabitsSection({
               {levelState.xpIntoLevel.toLocaleString()} /{' '}
               {levelState.xpForNext.toLocaleString()} XP to level{' '}
               {levelState.level + 1}
+              {' · '}
+              Consistency {consistency30.label} (30d)
             </p>
 
             <ul className="habits-card-grid habits-card-grid-dashboard">
@@ -1151,6 +1196,21 @@ function DashboardHabitsSection({
                               saved,
                             ],
                           }))
+                          evaluateHabitAchievementSignals(
+                            userId,
+                            habitState.habits,
+                            [
+                              ...habitState.checkins.filter(
+                                (row) =>
+                                  !(
+                                    row.habit_id === habit.id &&
+                                    String(row.checkin_date) === todayKey
+                                  ),
+                              ),
+                              saved,
+                            ],
+                            todayKey,
+                          )
                         } catch (err) {
                           setHabitState((prev) => ({
                             ...prev,

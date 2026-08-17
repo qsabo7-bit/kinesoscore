@@ -18,10 +18,11 @@ import {
   requestShareMoment,
   shouldAutoPromptShareMoment,
 } from '../lib/shareMoments'
+import { evaluateAchievements } from '../lib/achievements'
 import ShareMomentButton from './ShareMomentButton'
 
 /**
- * First-session path: pick track → Leaderboard Name → go save / share.
+ * Day One quest: pick track → Leaderboard Name → first action.
  */
 function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
   const [step, setStep] = useState(1)
@@ -42,7 +43,6 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
         if (cancelled) return
         setSavedName(name)
         setNameDraft(name || '')
-        // Returning user with a name can jump past name step after track pick.
       })
       .catch(() => {
         if (cancelled) return
@@ -61,8 +61,11 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
 
   const finishAndGo = () => {
     markOnboardingCompleted(userId, trackId)
-    // Pre-select Share globally / Share streak on the destination page.
     markOnboardingShareHint()
+    evaluateAchievements(userId, {
+      dayOneQuest: true,
+      hasLeaderboardName: Boolean(savedName || String(nameDraft || '').trim()),
+    })
     const name = savedName || String(nameDraft || '').trim()
     if (name && shouldAutoPromptShareMoment('onboarding_complete')) {
       requestShareMoment({
@@ -109,6 +112,7 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
       const name = await saveLeaderboardName(userId, checked.name)
       setSavedName(name)
       setNameDraft(name)
+      evaluateAchievements(userId, { hasLeaderboardName: true })
       setStep(3)
     } catch (err) {
       setError(
@@ -128,9 +132,9 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
     >
       <div className="onboarding-wizard-top">
         <div>
-          <p className="page-eyebrow">Get set in under a minute</p>
+          <p className="page-eyebrow">Day One quest</p>
           <h2 id="onboarding-title" className="result-section-title">
-            Join {BRAND.short}
+            Start your run on {BRAND.short}
           </h2>
         </div>
         <button
@@ -142,7 +146,7 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
         </button>
       </div>
 
-      <ol className="onboarding-steps" aria-label="Setup steps">
+      <ol className="onboarding-steps" aria-label="Day One steps">
         {[1, 2, 3].map((n) => (
           <li
             key={n}
@@ -158,7 +162,9 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
 
       {step === 1 ? (
         <div className="onboarding-panel">
-          <p className="onboarding-lead">What do you want to track first?</p>
+          <p className="onboarding-lead">
+            Step 1 — Pick your first track.
+          </p>
           <div className="onboarding-track-grid" role="list">
             {ONBOARDING_TRACKS.map((item) => (
               <button
@@ -180,7 +186,7 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
       {step === 2 ? (
         <form className="onboarding-panel auth-form" onSubmit={handleSaveName}>
           <p className="onboarding-lead">
-            Pick a Leaderboard Name — this is what others see when you share.
+            Step 2 — Claim a Leaderboard Name (what others see when you share).
           </p>
           {loadingName ? (
             <p className="calc-hint">Loading…</p>
@@ -238,12 +244,12 @@ function OnboardingWizard({ userId, onOpenTab, onDismiss }) {
           <p className="onboarding-lead">
             {track?.id === 'habits' ? (
               <>
-                Check in today on Habits, then share your streak to the Habit
-                Streaks board when you&apos;re ready.
+                Step 3 — Open Habits, add a few cards, log one today, then share
+                XP when you&apos;re ready.
               </>
             ) : (
               <>
-                Calculate a result on{' '}
+                Step 3 — Calculate on{' '}
                 <strong>{track?.label || 'your track'}</strong>, save it, and
                 choose <strong>Share globally</strong> to land on This Week.
               </>

@@ -7,6 +7,7 @@ import {
   logGroupActivity,
 } from '../lib/groups'
 import { getLastLogAmount, setLastLogAmount } from '../lib/groupPrefs'
+import { evaluateAchievements } from '../lib/achievements'
 import { useFocusTrap } from '../lib/useFocusTrap'
 
 const QUICK_AMOUNTS = [10, 25, 50, 100]
@@ -133,6 +134,7 @@ function GroupLogActivityModal({
       })
       rememberType(activityTypeId)
       setLastLogAmount(groupId, activityTypeId, value)
+      if (userId) evaluateAchievements(userId, { hasGroupLog: true })
       onLogged?.(saved)
       onClose?.()
     } catch (err) {

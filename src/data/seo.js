@@ -49,9 +49,9 @@ export const PAGE_SEO = {
   home: {
     tab: 'home',
     path: '/',
-    title: 'KinesoScore | Fitness Score & Performance Calculators',
+    title: 'KinesoScore | Get your score. Climb This Week.',
     description:
-      'Free fitness score, 1RM, running, VO₂, and military calculators. Track strength and endurance in one place — start with myKinesoScore™.',
+      'Get your score. Claim a name. Climb This Week. Free myKinesoScore™, daily habits, and opt-in boards — plus 1RM, running, and military calculators.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [{ name: 'Home', path: '/' }],

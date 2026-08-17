@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import LockedAuthCard from '../components/LockedAuthCard'
+import GuestHabitsDemo from '../components/GuestHabitsDemo'
 import UnitToggle from '../components/UnitToggle'
-import { HABITS_LOCKED_PREVIEW } from '../components/tracking'
 import {
   habitBaseXp,
   habitCardImage,
@@ -21,6 +20,11 @@ import {
 } from '../lib/habits'
 import { habitLevelFromXp } from '../lib/habitLevels'
 import {
+  computeHabitConsistency,
+  consistencyTitle,
+} from '../lib/habitConsistency'
+import { evaluateHabitAchievementSignals } from '../lib/habitAchievementSignals'
+import {
   perHabitStreakEndingOn,
   previewHabitXpForDate,
   sumLifetimeHabitXp,
@@ -30,6 +34,8 @@ import {
   friendlyHabitXpShareError,
   setHabitXpShare,
 } from '../lib/habitXpShares'
+import { evaluateAchievements } from '../lib/achievements'
+import { getThisWeekFocus } from '../lib/weekFocus'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
 import { consumeOnboardingShareHint } from '../lib/onboarding'
 import { useFocusTrap } from '../lib/useFocusTrap'
@@ -107,6 +113,24 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     return best
   }, [activeHabits, checkins, completedByHabit, todayKey])
 
+  const consistency7 = useMemo(
+    () =>
+      computeHabitConsistency(habits, checkins, {
+        windowDays: 7,
+        todayKey,
+      }),
+    [habits, checkins, todayKey],
+  )
+  const consistency30 = useMemo(
+    () =>
+      computeHabitConsistency(habits, checkins, {
+        windowDays: 30,
+        todayKey,
+      }),
+    [habits, checkins, todayKey],
+  )
+  const weekFocus = getThisWeekFocus()
+
   useEffect(() => {
     if (!xpBurst) return undefined
     const timer = window.setTimeout(() => setXpBurst(null), 900)
@@ -154,6 +178,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
             'Setup tip: tap Share XP to appear on the Habit XP board.',
           )
         }
+        evaluateHabitAchievementSignals(user.id, nextHabits, nextCheckins, todayKey)
       } catch (err) {
         if (cancelled) return
         setError(friendlyHabitError(err, 'Could not load habits.'))
@@ -192,6 +217,9 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           ? 'Your lifetime habit XP is shared publicly (Leaderboard Name + XP only).'
           : 'XP sharing turned off. Your private habits and XP are unchanged.',
       )
+      if (row?.is_active) {
+        evaluateAchievements(user.id, { hasShare: true })
+      }
     } catch (err) {
       setShareMessage(friendlyHabitXpShareError(err))
     } finally {
@@ -232,12 +260,14 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
 
     try {
       const saved = await setHabitCheckin(user.id, habitId, nextCompleted, todayKey)
-      setCheckins((rows) => {
-        const others = rows.filter(
+      const nextCheckins = [
+        ...checkins.filter(
           (r) => !(r.habit_id === habitId && String(r.checkin_date) === todayKey),
-        )
-        return [...others, saved]
-      })
+        ),
+        saved,
+      ]
+      setCheckins(nextCheckins)
+      evaluateHabitAchievementSignals(user.id, habits, nextCheckins, todayKey)
     } catch (err) {
       setCheckins(previous)
       setXpBurst(null)
@@ -253,10 +283,9 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     setError('')
     try {
       const row = await addHabitFromCatalog(user.id, habitKey)
-      setHabits((list) => {
-        const without = list.filter((h) => h.id !== row.id)
-        return [...without, row]
-      })
+      const nextHabits = [...habits.filter((h) => h.id !== row.id), row]
+      setHabits(nextHabits)
+      evaluateHabitAchievementSignals(user.id, nextHabits, checkins, todayKey)
     } catch (err) {
       setError(friendlyHabitError(err, 'Could not add habit.'))
     }
@@ -305,13 +334,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
 
   if (!isAuthenticated) {
     return (
-      <main className="page habits-page">
-        <LockedAuthCard
-          eyebrow="Routine"
-          title={HABITS_LOCKED_PREVIEW.title}
-          lead={HABITS_LOCKED_PREVIEW.lead}
-          benefits={HABITS_LOCKED_PREVIEW.benefits}
-          sampleKind="habits"
+      <main className="page habits-page habits-page-play">
+        <GuestHabitsDemo
           onRequestAuth={onRequestAuth}
           onOpenTab={onOpenTab}
         />
@@ -452,7 +476,52 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
             </span>
           </div>
         </div>
+
+        {activeHabits.length > 0 ? (
+          <div className="habits-run-stat habits-consistency-stat">
+            <span className="habits-run-kicker">Consistency</span>
+            <strong className="habits-run-value habits-run-value-sm">
+              {consistency30.label}
+            </strong>
+            <span className="habits-run-sub">
+              7d {consistency7.label} · 30d {consistency30.label} ·{' '}
+              {consistencyTitle(consistency30.percent)}
+            </span>
+            <div
+              className="habits-xp-meter"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={consistency30.percent}
+              aria-label="30-day consistency"
+            >
+              <span
+                className="habits-xp-meter-fill"
+                style={{ width: `${consistency30.percent}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
       </section>
+
+      {weekFocus ? (
+        <section className="habits-week-focus" aria-label={weekFocus.label}>
+          <div>
+            <p className="habits-week-focus-kicker">This Week’s Focus</p>
+            <p className="habits-week-focus-title">{weekFocus.title}</p>
+            <p className="calc-hint">{weekFocus.blurb}</p>
+          </div>
+          {weekFocus.tab && weekFocus.tab !== 'habits' ? (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => onOpenTab?.(weekFocus.tab)}
+            >
+              Open
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 
@@ -696,7 +765,11 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
                     type="button"
                     className={`habit-card${checked ? ' is-done' : ''}${
                       busyHabitId === habit.id ? ' is-busy' : ''
-                    }${justCompletedId === habit.id ? ' is-burst' : ''}`}
+                    }${justCompletedId === habit.id ? ' is-burst' : ''}${
+                      weekFocus?.habitKey === habit.habit_key
+                        ? ' is-week-focus'
+                        : ''
+                    }`}
                     disabled={busyHabitId === habit.id}
                     aria-pressed={checked}
                     aria-label={`${habit.habit_name}${checked ? ', completed' : ', not completed'}. ${preview.xp} XP`}
@@ -718,6 +791,9 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
                       <span className="habit-card-scrim" aria-hidden="true" />
                     </span>
                     <span className="habit-card-badges" aria-hidden="true">
+                      {weekFocus?.habitKey === habit.habit_key ? (
+                        <span className="habit-card-focus-chip">Focus</span>
+                      ) : null}
                       <span className="habit-card-xp-chip">
                         {checked ? `+${preview.xp}` : preview.xp} XP
                       </span>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ShareMomentButton from './ShareMomentButton'
 import { BRAND } from '../data/brand'
 
 const DISMISS_KEY = 'ks-guest-save-score-dismissed'
@@ -15,7 +16,13 @@ function readDismissed() {
  * Guest-only soft CTA after a myKinesoScore result.
  * Score stays visible; this asks to save + unlock dashboard — not a hard gate.
  */
-function GuestSaveScorePrompt({ score, onRequestAuth }) {
+function GuestSaveScorePrompt({
+  score,
+  placeLabel = null,
+  placeRank = null,
+  boardLabel = 'This Week',
+  onRequestAuth,
+}) {
   const [dismissed, setDismissed] = useState(readDismissed)
 
   if (dismissed) return null
@@ -45,9 +52,19 @@ function GuestSaveScorePrompt({ score, onRequestAuth }) {
             ? `Keep your ${rounded}?`
             : `Keep your ${BRAND.scoreName}?`}
         </h2>
+        {placeRank ? (
+          <p className="guest-save-prompt-rank">
+            <span className="guest-save-prompt-hash">~#</span>
+            <span className="guest-save-prompt-number">{placeRank}</span>
+            <span className="guest-save-prompt-rank-label">this week</span>
+          </p>
+        ) : null}
         <p className="guest-save-prompt-lead">
-          Create a free account to save this score and open your private
-          dashboard — history, trends, and This Week boards.
+          {placeRank
+            ? 'Create a free account to save this score and claim a real This Week spot.'
+            : placeLabel
+              ? `${placeLabel} Create a free account to save this score and claim a real This Week spot.`
+              : `Create a free account to save this score and open your private dashboard — history, trends, and This Week boards.`}
         </p>
       </div>
       <div className="guest-save-prompt-actions">
@@ -56,8 +73,19 @@ function GuestSaveScorePrompt({ score, onRequestAuth }) {
           className="btn btn-primary"
           onClick={() => onRequestAuth?.('signup')}
         >
-          Create free account
+          Save & claim This Week
         </button>
+        {placeRank ? (
+          <ShareMomentButton
+            type="this_week_rank"
+            title="This Week preview"
+            primary={`#${placeRank}`}
+            secondary={boardLabel}
+            filename="kinesoscore-this-week-preview.png"
+            label="Share preview"
+            className="btn btn-ghost"
+          />
+        ) : null}
         <button
           type="button"
           className="btn btn-ghost"

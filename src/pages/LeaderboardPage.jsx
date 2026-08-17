@@ -20,10 +20,12 @@ import {
   friendlyPublicHabitXpError,
 } from '../lib/publicHabitXp'
 import { resolveLeaderboardRows } from '../lib/leaderboardSamples'
+import { habitXpPublicTitle } from '../lib/weekFocus'
 
 /**
  * Public Leaderboard page (Habits tab uses lifetime XP RPC).
  * Anyone can browse live boards. Joining/sharing still requires a Leaderboard Name.
+ * Guest browse CTA + filter chip scroll chrome tuned for mobile/desktop.
  */
 function LeaderboardPage({
   onOpenTab,
@@ -148,6 +150,7 @@ function LeaderboardPage({
   const canViewLive = !authLoading
   const showJoinBanner =
     !authLoading && isAuthenticated && hasLeaderboardName === false
+  const showGuestBanner = !authLoading && !isAuthenticated
 
   useEffect(() => {
     if (!canViewLive) return undefined
@@ -163,6 +166,7 @@ function LeaderboardPage({
             leaderboard_name: row.leaderboard_name,
             avatar_id: row.avatar_id,
             awards: row.awards,
+            lifetime_xp: Number(row.lifetime_xp || 0),
             result_display: `${Number(row.lifetime_xp || 0).toLocaleString()} XP`,
           })),
         )
@@ -293,9 +297,8 @@ function LeaderboardPage({
               <>
                 <ThisWeekCountdown className="leaderboard-week-countdown" />
                 <p className="calc-hint leaderboard-period-hint">
-                  UTC calendar week (Monday 00:00 UTC → next Monday). Shares posted
-                  this week appear here and on All Time; when the UTC week ends they
-                  leave This Week only.
+                  Resets Monday 00:00 UTC. Shares this week show here and on All
+                  Time.
                 </p>
               </>
             ) : null}
@@ -303,27 +306,68 @@ function LeaderboardPage({
         ) : null}
       </div>
 
+      {showGuestBanner ? (
+        <section
+          className="leaderboard-guest-banner"
+          aria-label="Browse as a guest"
+        >
+          <div>
+            <h2 className="result-section-title">Browse free · claim a spot</h2>
+            <p className="calc-hint">
+              Sample and live boards are open to everyone. Create an account to
+              save results and opt in with a Leaderboard Name.
+            </p>
+          </div>
+          <div className="confirm-actions">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => onRequestAuth?.('signup')}
+            >
+              Create Account
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => onRequestAuth?.('login')}
+            >
+              Log in
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       {isHabitsCategory ? (
         <section className="leaderboard-habits-banner" aria-label="Habit XP board">
           <div className="leaderboard-habits-banner-main">
             <p className="leaderboard-habits-banner-kicker">Lifetime board</p>
             <h2 className="leaderboard-habits-banner-title">Habit XP</h2>
             <p className="calc-hint leaderboard-habits-banner-copy">
-              Opt-in totals from daily habit cards — name + XP only, never which
-              habits you track.
+              Opt-in totals from daily habit cards — name + XP + title flair
+              only, never which habits you track.
             </p>
             <div className="leaderboard-habits-meter" aria-hidden="true">
               <span className="leaderboard-habits-meter-fill" />
             </div>
           </div>
           <div className="leaderboard-habits-banner-actions">
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => onOpenTab?.('habits')}
-            >
-              Open Habits
-            </button>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => onOpenTab?.('habits')}
+              >
+                Open Habits
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => onRequestAuth?.('signup')}
+              >
+                Start tracking
+              </button>
+            )}
           </div>
           <details className="dashboard-progress-details leaderboard-habits-fold">
             <summary className="dashboard-progress-summary">
@@ -425,6 +469,7 @@ function LeaderboardPage({
                   : `${leaderboardBoardLabel(effectiveBoardKey)} leaderboard`
               }
               resultLabel={isHabitsCategory ? 'Lifetime XP' : 'Result'}
+              showXpTitles={isHabitsCategory}
             />
           ) : null}
           {!loadingBoard && !error && isSample ? (
@@ -525,6 +570,7 @@ function LeaderboardTable({
   resultLabel = 'Result',
   isSample = false,
   highlightName = null,
+  showXpTitles = false,
 }) {
   const highlight =
     highlightName && String(highlightName).trim()
@@ -551,6 +597,18 @@ function LeaderboardTable({
               String(row.leaderboard_name || '')
                 .trim()
                 .toLowerCase() === highlight
+            let xpAmount = 0
+            if (Number.isFinite(Number(row.result_value))) {
+              xpAmount = Number(row.result_value)
+            } else if (Number.isFinite(Number(row.lifetime_xp))) {
+              xpAmount = Number(row.lifetime_xp)
+            } else {
+              const digits = String(row.result_display || '').replace(/[^\d]/g, '')
+              xpAmount = digits ? Number(digits) : 0
+            }
+            const xpTitle = showXpTitles
+              ? habitXpPublicTitle(xpAmount)
+              : null
             return (
               <tr
                 key={`${row.rank}-${row.leaderboard_name}-${row.result_display}`}
@@ -566,6 +624,9 @@ function LeaderboardTable({
                     />
                     <span className="leaderboard-name-text">
                       {row.leaderboard_name}
+                      {xpTitle ? (
+                        <span className="leaderboard-xp-title">{xpTitle}</span>
+                      ) : null}
                       {isYou ? (
                         <span className="leaderboard-you-badge">You</span>
                       ) : null}

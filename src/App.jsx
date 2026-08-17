@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useAuth } from './auth/AuthContext'
+import AchievementToast from './components/AchievementToast'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import PageChunkFallback from './components/PageChunkFallback'
@@ -512,6 +513,7 @@ function App() {
         <Footer onOpenTab={handleTabChange} />
       </div>
       <ScrollToTopButton />
+      <AchievementToast />
     </div>
   )
 }

@@ -34,6 +34,11 @@ import {
   saveFirstName,
   validateFirstName,
 } from '../lib/profileName'
+import { listAchievementsForUser, evaluateAchievements } from '../lib/achievements'
+import { habitLevelFromXp } from '../lib/habitLevels'
+import { sumLifetimeHabitXp } from '../lib/habitXp'
+import { fetchHabitCheckins } from '../lib/habits'
+import { localDateKey, shiftLocalDateKey } from '../lib/habitDates'
 import { useFocusTrap } from '../lib/useFocusTrap'
 
 function formatDate(iso) {
@@ -78,6 +83,10 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
   const [lbMessage, setLbMessage] = useState('')
   const [showAwardsPublicly, setShowAwardsPublicly] = useState(true)
   const [publicAwards, setPublicAwards] = useState(null)
+  const [habitLevel, setHabitLevel] = useState(null)
+  const [achievements, setAchievements] = useState(() =>
+    listAchievementsForUser(user?.id),
+  )
   const [awardsBusy, setAwardsBusy] = useState(false)
   const [awardsError, setAwardsError] = useState('')
   const [awardsMessage, setAwardsMessage] = useState('')
@@ -164,6 +173,24 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
         setPublicAwards(null)
         // Soft-fail: public awards unavailable until migration 015 is applied.
       })
+
+    const todayKey = localDateKey()
+    fetchHabitCheckins(userId, {
+      fromDate: shiftLocalDateKey(todayKey, -400),
+      toDate: todayKey,
+    })
+      .then((checkins) => {
+        if (cancelled) return
+        const xp = sumLifetimeHabitXp(checkins)
+        setHabitLevel(habitLevelFromXp(xp).level)
+        setAchievements(listAchievementsForUser(userId))
+      })
+      .catch(() => {
+        if (cancelled) return
+        setHabitLevel(null)
+      })
+
+    setAchievements(listAchievementsForUser(userId))
 
     return () => {
       cancelled = true
@@ -303,6 +330,8 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
       setLbMessage(
         wasNew ? 'Leaderboard Name saved.' : 'Leaderboard Name updated.',
       )
+      evaluateAchievements(user.id, { hasLeaderboardName: true })
+      setAchievements(listAchievementsForUser(user.id))
       // New profiles default to public awards — seed tiers from latest snapshot.
       if (wasNew) {
         try {
@@ -541,7 +570,7 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
         >
           <div className="account-panel-head">
             <h2 id="account-public-heading">Public</h2>
-            <p>Leaderboard name, icon, and medals</p>
+            <p>Leaderboard name, icon, medals, and habit level</p>
           </div>
 
           <div className="avatar-picker-block">
@@ -664,6 +693,16 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
                 </p>
               ) : null}
 
+              {habitLevel != null && habitLevel > 0 ? (
+                <p className="account-habit-level-chip" role="status">
+                  Habit Level {habitLevel}
+                  <span className="calc-hint">
+                    {' '}
+                    · shown privately here; XP board shows title flair only
+                  </span>
+                </p>
+              ) : null}
+
               <SoftReveal open={confirmClearName}>
                 <div
                   ref={clearNameDialogRef}
@@ -752,6 +791,32 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
               ) : null}
             </form>
           )}
+        </section>
+
+        <section
+          className="account-panel"
+          aria-labelledby="account-achievements-heading"
+        >
+          <div className="account-panel-head">
+            <h2 id="account-achievements-heading">Achievements</h2>
+            <p>Unlocks from Habits, saves, boards, and Day One</p>
+          </div>
+          <ul className="account-achievements-grid">
+            {achievements.map((item) => (
+              <li
+                key={item.id}
+                className={`account-achievement${
+                  item.unlocked ? ' is-unlocked' : ' is-locked'
+                }`}
+              >
+                <span className="account-achievement-title">{item.title}</span>
+                <span className="account-achievement-blurb">{item.blurb}</span>
+                <span className="account-achievement-state">
+                  {item.unlocked ? 'Unlocked' : 'Locked'}
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section
