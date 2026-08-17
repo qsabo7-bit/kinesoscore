@@ -671,8 +671,8 @@ export const LEADERBOARD_SEO = {
   title: 'About the KinesoScore leaderboard',
   paragraphs: [
     'Global rankings from results athletes choose to share — self-reported community comparisons with Leaderboard Name, profile icon, and result, not independently verified scores, and not a feed of every private save.',
-    'Browse myKinesoScore™, running, strength, fitness assessments, military assessments, and Habit Streaks. Performance boards support All Time and This Week (UTC); Habit Streaks use All Time only.',
-    'Create a Leaderboard Name in Account Settings, then opt in when saving an eligible result (or share your streak from Habits). Private history stays private by default.',
+    'Browse myKinesoScore™, running, strength, fitness assessments, military assessments, and Habit XP. Performance boards support All Time and This Week (UTC); Habit XP uses All Time only.',
+    'Create a Leaderboard Name in Account Settings, then opt in when saving an eligible result (or share your lifetime XP from Habits). Private history stays private by default.',
   ],
   faqs: [
     {
@@ -683,7 +683,7 @@ export const LEADERBOARD_SEO = {
     {
       question: 'What is the difference between All Time and This Week?',
       answer:
-        'All Time ranks eligible active shares across history for that performance board. This Week is the current UTC calendar week (Monday 00:00 UTC through the following Monday): anything shared during that window appears on both boards, then drops off This Week when the UTC week ends while All Time keeps it. Habit Streaks are All Time only. Athletes may also opt in to show Strength/Running medal tiers (and Crown) next to their Leaderboard Name — never raw scores.',
+        'All Time ranks eligible active shares across history for that performance board. This Week is the current UTC calendar week (Monday 00:00 UTC through the following Monday): anything shared during that window appears on both boards, then drops off This Week when the UTC week ends while All Time keeps it. Habit XP is All Time only. Athletes may also opt in to show Strength/Running medal tiers (and Crown) next to their Leaderboard Name — never raw scores.',
     },
     {
       question: 'Do private calculator saves appear on the leaderboard?',
@@ -691,9 +691,9 @@ export const LEADERBOARD_SEO = {
         'No. Saves remain private unless you opt in to share globally. You can keep using every calculator without joining the leaderboard.',
     },
     {
-      question: 'What do Habit Streaks show?',
+      question: 'What does Habit XP show?',
       answer:
-        'Habit Streaks list athletes who opt in from Habits. Public rows show a Leaderboard Name, profile icon, and current streak — never which habits you track or your check-in history. Habit Streaks use All Time (current streak), not This Week.',
+        'Habit XP lists athletes who opt in from Habits. Public rows show a Leaderboard Name, profile icon, and lifetime XP — never which habits you track or your check-in history. Habit XP uses All Time only, not This Week.',
     },
   ],
   relatedNote: {

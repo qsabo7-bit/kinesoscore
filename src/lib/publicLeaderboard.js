@@ -47,14 +47,15 @@ export const LEADERBOARD_UI_CATEGORIES = [
   },
   {
     id: 'habits',
-    label: 'Habit Streaks',
-    boardKeys: ['habits:streak'],
+    label: 'Habit XP',
+    boardKeys: ['habits:xp'],
   },
 ]
 
 const BOARD_LABELS = {
   mykinesoscore: BRAND.scoreName,
-  'habits:streak': 'Habit Streaks',
+  'habits:xp': 'Habit XP',
+  'habits:streak': 'Habit XP',
   'strength:Bench Press': 'Bench Press',
   'strength:Squat': 'Squat',
   'strength:Deadlift': 'Deadlift',
@@ -94,7 +95,7 @@ export function leaderboardBoardLabel(boardKey) {
  */
 export function calculatorTabForBoardKey(boardKey) {
   const key = String(boardKey || '')
-  if (key === 'habits:streak') return 'habits'
+  if (key === 'habits:xp' || key === 'habits:streak') return 'habits'
   const target = LEADERBOARD_SHARE_TARGETS.find((item) => item.boardKey === key)
   if (!target) return 'scoring'
   if (target.calculatorType === BRAND.scoreCalculatorType) return 'scoring'

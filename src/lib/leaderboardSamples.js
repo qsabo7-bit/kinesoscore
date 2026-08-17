@@ -182,23 +182,23 @@ const HABIT_SAMPLES = [
   {
     rank: 1,
     leaderboard_name: 'DawnStack',
-    result_display: '42 days',
+    result_display: '12,480 XP',
     awards: SAMPLE_AWARDS_CROWN,
   },
   {
     rank: 2,
     leaderboard_name: 'SteadyCue',
-    result_display: '31 days',
+    result_display: '9,150 XP',
     awards: SAMPLE_AWARDS_TOP,
   },
   {
     rank: 3,
     leaderboard_name: 'RoutineBay',
-    result_display: '24 days',
+    result_display: '6,720 XP',
     awards: SAMPLE_AWARDS_MID,
   },
-  { rank: 4, leaderboard_name: 'CheckInCo', result_display: '18 days' },
-  { rank: 5, leaderboard_name: 'HabitArc', result_display: '12 days' },
+  { rank: 4, leaderboard_name: 'CheckInCo', result_display: '4,110 XP' },
+  { rank: 5, leaderboard_name: 'HabitArc', result_display: '2,340 XP' },
 ]
 
 /**
@@ -208,7 +208,7 @@ const HABIT_SAMPLES = [
 export function getLeaderboardSampleRows(boardKey) {
   const key = String(boardKey || '')
   let rows = SCORE_SAMPLES
-  if (key === 'habits:streak') rows = HABIT_SAMPLES
+  if (key === 'habits:xp' || key === 'habits:streak') rows = HABIT_SAMPLES
   else if (key === 'mykinesoscore') rows = SCORE_SAMPLES
   else if (key.startsWith('running:')) rows = RUNNING_SAMPLES
   else if (key.startsWith('strength:')) rows = STRENGTH_SAMPLES

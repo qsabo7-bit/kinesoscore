@@ -413,7 +413,7 @@ function GroupsPage({ onOpenTab, onRequestAuth }) {
                   type="button"
                   role="tab"
                   aria-selected={detailTab === tab.id}
-                  className={`btn btn-ghost groups-tab groups-tab-primary${
+                  className={`leaderboard-chip groups-tab groups-tab-primary${
                     detailTab === tab.id ? ' is-active' : ''
                   }`}
                   onClick={() => selectDetailTab(tab.id)}
@@ -424,7 +424,7 @@ function GroupsPage({ onOpenTab, onRequestAuth }) {
               <div className="groups-tabs-more-wrap">
                 <button
                   type="button"
-                  className={`btn btn-ghost groups-tab${
+                  className={`leaderboard-chip groups-tab${
                     detailTab === 'people' || detailTab === 'settings'
                       ? ' is-active'
                       : ''
@@ -439,7 +439,7 @@ function GroupsPage({ onOpenTab, onRequestAuth }) {
                     <button
                       type="button"
                       role="menuitem"
-                      className={`btn btn-ghost${
+                      className={`leaderboard-chip${
                         detailTab === 'people' ? ' is-active' : ''
                       }`}
                       onClick={() => {
@@ -452,7 +452,7 @@ function GroupsPage({ onOpenTab, onRequestAuth }) {
                     <button
                       type="button"
                       role="menuitem"
-                      className={`btn btn-ghost${
+                      className={`leaderboard-chip${
                         detailTab === 'settings' ? ' is-active' : ''
                       }`}
                       onClick={() => {
@@ -469,7 +469,7 @@ function GroupsPage({ onOpenTab, onRequestAuth }) {
                 type="button"
                 role="tab"
                 aria-selected={detailTab === 'people'}
-                className={`btn btn-ghost groups-tab groups-tab-desktop${
+                className={`leaderboard-chip groups-tab groups-tab-desktop${
                   detailTab === 'people' ? ' is-active' : ''
                 }`}
                 onClick={() => selectDetailTab('people')}
@@ -480,7 +480,7 @@ function GroupsPage({ onOpenTab, onRequestAuth }) {
                 type="button"
                 role="tab"
                 aria-selected={detailTab === 'settings'}
-                className={`btn btn-ghost groups-tab groups-tab-desktop${
+                className={`leaderboard-chip groups-tab groups-tab-desktop${
                   detailTab === 'settings' ? ' is-active' : ''
                 }`}
                 onClick={() => selectDetailTab('settings')}

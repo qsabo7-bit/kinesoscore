@@ -627,7 +627,7 @@ export const PAGE_SEO = {
     path: '/leaderboard',
     title: 'Fitness Leaderboard | Opt-In Rankings | KinesoScore',
     description:
-      'Compare opt-in fitness scores, strength, running, WODs, and habit streaks. Private saves stay private — share with a Leaderboard Name and profile icon.',
+      'Compare opt-in fitness scores, strength, running, WODs, and habit XP. Private saves stay private — share with a Leaderboard Name and profile icon.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
@@ -639,15 +639,15 @@ export const PAGE_SEO = {
   'leaderboard-habits': {
     tab: 'leaderboard-habits',
     path: '/leaderboard/habits',
-    title: 'Habit Streak Leaderboard | KinesoScore',
+    title: 'Habit XP Leaderboard | KinesoScore',
     description:
-      'Opt-in habit streak rankings by Leaderboard Name, profile icon, and current streak — never which habits you track or private check-ins.',
+      'Opt-in habit lifetime XP rankings by Leaderboard Name, profile icon, and total XP — never which habits you track or private check-ins.',
     robots: 'index,follow',
     ogType: 'website',
     breadcrumb: [
       { name: 'Home', path: '/' },
       { name: 'Leaderboard', path: '/leaderboard' },
-      { name: 'Habit Streaks', path: '/leaderboard/habits' },
+      { name: 'Habit XP', path: '/leaderboard/habits' },
     ],
   },
   'not-found': {

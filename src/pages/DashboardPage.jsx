@@ -10,6 +10,7 @@ import DashboardJumpNav from '../components/DashboardJumpNav'
 import DashboardTodayStrip from '../components/DashboardTodayStrip'
 import OnboardingWizard from '../components/OnboardingWizard'
 import ProfileAvatar from '../components/ProfileAvatar'
+import UnitToggle from '../components/UnitToggle'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
 import { shouldShowOnboarding } from '../lib/onboarding'
 import {
@@ -18,7 +19,9 @@ import {
   ProgressGraph,
 } from '../components/tracking'
 import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
+import { habitCardImage, habitDisplayName } from '../data/habitCatalog'
 import { DASHBOARD_GRAPH_METRICS } from '../data/dashboardMetrics'
+import { habitLevelFromXp } from '../lib/habitLevels'
 import {
   RUNNING_DISTANCE_TRACKS,
   RUNNING_GRAPH_TRACKS,
@@ -54,7 +57,6 @@ import {
   buildDerivedEstimated5kRecords,
   isActualRunningExerciseName,
 } from '../lib/runningTracking'
-import { habitDisplayName } from '../data/habitCatalog'
 import { localDateKey, shiftLocalDateKey } from '../lib/habitDates'
 import {
   fetchActiveHabits,
@@ -62,11 +64,12 @@ import {
   friendlyHabitError,
   setHabitCheckin,
 } from '../lib/habits'
-import { resolveHabitStreakAtRisk } from '../lib/habitStreakAtRisk'
 import {
-  computeHabitStreak,
-  habitDayProgress,
-} from '../lib/habitStreaks'
+  habitXpDailyRecords,
+  previewHabitXpForDate,
+  sumLifetimeHabitXp,
+} from '../lib/habitXp'
+import { habitDayProgress } from '../lib/habitStreaks'
 import { isSupabaseConfigured } from '../supabaseClient'
 
 const PREFERRED_RUNNING_TRACK_ID =
@@ -901,6 +904,25 @@ function DashboardPage({ onOpenTab, onRequestAuth }) {
   )
 }
 
+function readDashboardHabitsExpanded(fallback) {
+  try {
+    const raw = localStorage.getItem('ks.dashboard.habitsExpanded')
+    if (raw === '1') return true
+    if (raw === '0') return false
+  } catch {
+    // ignore
+  }
+  return fallback
+}
+
+function writeDashboardHabitsExpanded(open) {
+  try {
+    localStorage.setItem('ks.dashboard.habitsExpanded', open ? '1' : '0')
+  } catch {
+    // ignore
+  }
+}
+
 function DashboardHabitsSection({
   habitState,
   setHabitState,
@@ -908,69 +930,186 @@ function DashboardHabitsSection({
   userId,
   onOpenTab,
 }) {
+  const [xpRange, setXpRange] = useState('1m')
+  const [showChart, setShowChart] = useState(false)
   const progress = habitDayProgress(
     todayKey,
     habitState.habits,
     habitState.checkins,
     todayKey,
   )
-  const streak = computeHabitStreak(habitState.habits, habitState.checkins, {
-    todayKey,
-  })
-  const atRisk = resolveHabitStreakAtRisk(
-    habitState.habits,
-    habitState.checkins,
-    todayKey,
+  const lifetimeXp = sumLifetimeHabitXp(habitState.checkins)
+  const levelState = useMemo(() => habitLevelFromXp(lifetimeXp), [lifetimeXp])
+  const todayXpEarned = useMemo(() => {
+    let total = 0
+    for (const row of habitState.checkins) {
+      if (String(row.checkin_date) !== todayKey) continue
+      if (!row.completed) continue
+      const xp = Number(row.xp_awarded)
+      if (Number.isFinite(xp) && xp > 0) total += Math.floor(xp)
+    }
+    return total
+  }, [habitState.checkins, todayKey])
+
+  const incompleteToday =
+    progress.total > 0 && progress.completed < progress.total
+
+  const [expanded, setExpanded] = useState(() =>
+    readDashboardHabitsExpanded(incompleteToday),
   )
 
+  useEffect(() => {
+    if (habitState.loading) return
+    try {
+      if (localStorage.getItem('ks.dashboard.habitsExpanded') != null) return
+    } catch {
+      // ignore
+    }
+    setExpanded(incompleteToday)
+  }, [habitState.loading, incompleteToday])
+
+  const xpSeries = useMemo(
+    () => habitXpDailyRecords(habitState.checkins, xpRange, todayKey),
+    [habitState.checkins, xpRange, todayKey],
+  )
+  const xpChartRecords = useMemo(
+    () => xpSeries.filter((row) => Number(row.result_value) > 0),
+    [xpSeries],
+  )
+
+  const hasHabits = !habitState.loading && habitState.habits.length > 0
+  const ringSize = 44
+  const ringStroke = 4
+  const ringRadius = (ringSize - ringStroke) / 2
+  const ringCirc = 2 * Math.PI * ringRadius
+  const levelOffset = ringCirc * (1 - levelState.progress)
+
   return (
-    <section
-      className="dashboard-section account-card dashboard-habits"
-      aria-labelledby="dash-habits"
+    <details
+      id="dash-habits"
+      className={`dashboard-section dashboard-progress-details dashboard-habits${
+        incompleteToday ? ' is-at-risk' : ''
+      }`}
+      open={expanded}
+      onToggle={(event) => {
+        const next = event.currentTarget.open
+        setExpanded(next)
+        writeDashboardHabitsExpanded(next)
+      }}
     >
-      <h2 id="dash-habits" className="result-section-title">
-        Habits
-      </h2>
-      {atRisk ? (
-        <p className="habit-at-risk-banner" role="status">
-          🔥 Streak at risk — {atRisk.streakAtRisk} day
-          {atRisk.streakAtRisk === 1 ? '' : 's'} on the line. Today{' '}
-          {atRisk.progress.ratioLabel}.
-        </p>
-      ) : null}
-      {habitState.loading ? <p className="calc-hint">Loading habits…</p> : null}
-      {habitState.error ? (
-        <p className="feedback feedback-error">{habitState.error}</p>
-      ) : null}
-      {!habitState.loading && habitState.habits.length === 0 ? (
-        <p className="dashboard-empty-copy">
-          Start a habit in your routine to track daily completion.
-        </p>
-      ) : null}
-      {!habitState.loading && habitState.habits.length > 0 ? (
-        <>
-          <p className="calc-hint">
-            Today {progress.ratioLabel}
-            {' · '}
-            Streak {streak} day{streak === 1 ? '' : 's'}
+      <summary className="dashboard-progress-summary dashboard-habits-summary">
+        <span className="dashboard-habits-summary-leading">
+          {hasHabits ? (
+            <span className="dashboard-habits-mini-orb" aria-hidden="true">
+              <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`}>
+                <circle
+                  className="habits-level-ring-track"
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={ringRadius}
+                  fill="none"
+                  strokeWidth={ringStroke}
+                />
+                <circle
+                  className="habits-level-ring-fill"
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={ringRadius}
+                  fill="none"
+                  strokeWidth={ringStroke}
+                  strokeDasharray={ringCirc}
+                  strokeDashoffset={levelOffset}
+                  strokeLinecap="square"
+                  transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+                />
+              </svg>
+              <span className="dashboard-habits-mini-level">{levelState.level}</span>
+            </span>
+          ) : null}
+          <span className="dashboard-progress-summary-copy">
+            <span className="result-section-title">Habits</span>
+            <span className="dashboard-progress-summary-hint">
+              {hasHabits
+                ? `${lifetimeXp.toLocaleString()} XP · Today ${progress.ratioLabel}${
+                    todayXpEarned > 0 ? ` · +${todayXpEarned}` : ''
+                  }`
+                : 'XP cards and daily check-ins'}
+            </span>
+            {hasHabits ? (
+              <span className="dashboard-habits-pills">
+                <span className="dashboard-habits-pill">Lv {levelState.level}</span>
+                <span
+                  className={`dashboard-habits-pill${
+                    incompleteToday ? ' is-warn' : ' is-ok'
+                  }`}
+                >
+                  Today {progress.ratioLabel}
+                </span>
+              </span>
+            ) : null}
+          </span>
+        </span>
+        <span className="dashboard-progress-summary-cta">
+          <span className="dashboard-progress-summary-cta-label" />
+          <span
+            className="dashboard-progress-summary-chevron"
+            aria-hidden="true"
+          />
+        </span>
+      </summary>
+
+      <div className="dashboard-progress-body dashboard-habits-panel">
+        {habitState.loading ? <p className="calc-hint">Loading habits…</p> : null}
+        {habitState.error ? (
+          <p className="feedback feedback-error">{habitState.error}</p>
+        ) : null}
+
+        {!habitState.loading && habitState.habits.length === 0 ? (
+          <p className="dashboard-empty-copy">
+            Start a habit in your routine to earn XP and track daily completion.
           </p>
-          <ul className="habits-check-list habits-check-list-compact habits-check-list-dashboard">
-            {habitState.habits.map((habit) => {
-              const checked = habitState.checkins.some(
-                (row) =>
-                  row.habit_id === habit.id &&
-                  String(row.checkin_date) === todayKey &&
-                  row.completed,
-              )
-              return (
-                <li key={habit.id} className="habits-check-item">
-                  <label className="habits-check-label">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={async (event) => {
+        ) : null}
+
+        {hasHabits ? (
+          <>
+            <div className="dashboard-habits-meter" aria-hidden="true">
+              <span
+                className="dashboard-habits-meter-fill"
+                style={{ width: `${Math.round(levelState.progress * 100)}%` }}
+              />
+            </div>
+            <p className="calc-hint dashboard-habits-level-hint">
+              {levelState.xpIntoLevel.toLocaleString()} /{' '}
+              {levelState.xpForNext.toLocaleString()} XP to level{' '}
+              {levelState.level + 1}
+            </p>
+
+            <ul className="habits-card-grid habits-card-grid-dashboard">
+              {habitState.habits.map((habit) => {
+                const checked = habitState.checkins.some(
+                  (row) =>
+                    row.habit_id === habit.id &&
+                    String(row.checkin_date) === todayKey &&
+                    row.completed,
+                )
+                const image = habitCardImage(habit)
+                const preview = previewHabitXpForDate(
+                  habit,
+                  habitState.checkins,
+                  todayKey,
+                )
+                return (
+                  <li key={habit.id}>
+                    <button
+                      type="button"
+                      className={`habit-card habit-card-compact${
+                        checked ? ' is-done' : ''
+                      }`}
+                      aria-pressed={checked}
+                      aria-label={`${habit.habit_name}${checked ? ', completed' : ''}`}
+                      onClick={async () => {
                         if (!userId) return
-                        const next = event.target.checked
+                        const next = !checked
                         const previous = habitState.checkins
                         setHabitState((prev) => ({
                           ...prev,
@@ -987,6 +1126,7 @@ function DashboardHabitsSection({
                               habit_id: habit.id,
                               checkin_date: todayKey,
                               completed: next,
+                              xp_awarded: next ? preview.xp : 0,
                               user_id: userId,
                             },
                           ],
@@ -1022,32 +1162,78 @@ function DashboardHabitsSection({
                           }))
                         }
                       }}
-                    />
-                    <span>{habitDisplayName(habit)}</span>
-                  </label>
-                </li>
-              )
-            })}
-          </ul>
-        </>
-      ) : null}
-      <div className="confirm-actions">
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => onOpenTab?.('habits')}
-        >
-          Open Habits
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => onOpenTab?.('groups')}
-        >
-          Open Groups
-        </button>
+                    >
+                      <span
+                        className="habit-card-media"
+                        style={
+                          image
+                            ? { backgroundImage: `url(${image})` }
+                            : undefined
+                        }
+                      >
+                        <span className="habit-card-scrim" aria-hidden="true" />
+                      </span>
+                      <span className="habit-card-body">
+                        <span className="habit-card-title">
+                          {habit.habit_name || habitDisplayName(habit)}
+                        </span>
+                        <span className="habit-card-meta">
+                          {checked ? `+${preview.xp} XP` : `${preview.xp} XP`}
+                        </span>
+                      </span>
+                      <span className="habit-card-check" aria-hidden="true">
+                        {checked ? '✓' : ''}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+
+            <div className="dashboard-habits-chart-wrap">
+              <UnitToggle
+                className="is-compact"
+                label="XP chart"
+                value={showChart ? 'show' : 'hide'}
+                options={[
+                  { value: 'hide', label: 'Hide' },
+                  { value: 'show', label: 'Show' },
+                ]}
+                onChange={(next) => setShowChart(next === 'show')}
+              />
+              {showChart ? (
+                <div className="dashboard-habits-chart">
+                  <GraphRangeToggle value={xpRange} onChange={setXpRange} />
+                  <ProgressGraph
+                    records={xpChartRecords}
+                    yAxisLabel="XP"
+                    valueKind="number"
+                    emptyMessage="No habit XP in this range yet.\nLog habits to build your daily XP chart."
+                  />
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+
+        <div className="confirm-actions">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => onOpenTab?.('habits')}
+          >
+            Open Habits
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => onOpenTab?.('leaderboard-habits')}
+          >
+            XP board
+          </button>
+        </div>
       </div>
-    </section>
+    </details>
   )
 }
 

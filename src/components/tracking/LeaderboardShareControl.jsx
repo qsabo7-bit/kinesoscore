@@ -1,3 +1,5 @@
+import UnitToggle from '../UnitToggle'
+
 /**
  * Opt-in global leaderboard share control (Stage 4).
  * Default private. Only rendered for authenticated users on allowlisted tracks.
@@ -11,36 +13,22 @@ function LeaderboardShareControl({
 }) {
   return (
     <div className="leaderboard-share-control">
-      <p className="leaderboard-share-label">Global leaderboard</p>
+      <UnitToggle
+        className="is-compact is-stretch"
+        label="Global leaderboard"
+        value={mode === 'global' ? 'global' : 'private'}
+        options={[
+          { value: 'private', label: 'Private' },
+          { value: 'global', label: 'Share' },
+        ]}
+        onChange={onChange}
+        disabled={disabled}
+      />
       <p className="calc-hint leaderboard-share-hint">
         Private by default. Applies when you save. Share globally to appear on
         All Time and This Week (UTC). Only your Leaderboard Name and this result
         are published — never your email or first name. Scores are self-reported.
       </p>
-      <div
-        className="leaderboard-share-toggle"
-        role="group"
-        aria-label="Global leaderboard sharing"
-      >
-        <button
-          type="button"
-          className={`leaderboard-share-option${mode === 'private' ? ' is-active' : ''}`}
-          onClick={() => onChange('private')}
-          disabled={disabled}
-          aria-pressed={mode === 'private'}
-        >
-          Keep Private
-        </button>
-        <button
-          type="button"
-          className={`leaderboard-share-option${mode === 'global' ? ' is-active' : ''}`}
-          onClick={() => onChange('global')}
-          disabled={disabled}
-          aria-pressed={mode === 'global'}
-        >
-          Share globally
-        </button>
-      </div>
       {mode === 'global' && !hasLeaderboardName ? (
         <p className="feedback feedback-error" role="status">
           A Leaderboard Name is required to share results globally.{' '}

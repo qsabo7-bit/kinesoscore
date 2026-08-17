@@ -62,9 +62,9 @@ export const HABITS_LOCKED_PREVIEW = {
   title: 'Build a private routine',
   lead: 'Sign in to track habits on your account — nothing is public unless you opt in:',
   benefits: [
-    'Daily checklist',
-    'Streak tracking',
-    'Optional streak sharing',
+    'Picture habit cards',
+    'XP with streak multipliers',
+    'Optional lifetime XP sharing',
     'Private history',
   ],
 }

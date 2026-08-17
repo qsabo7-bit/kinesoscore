@@ -4,6 +4,7 @@ import ProfileAvatar from '../components/ProfileAvatar'
 import PublicAwardBadges from '../components/PublicAwardBadges'
 import SeoIntro from '../components/SeoIntro'
 import ThisWeekCountdown from '../components/ThisWeekCountdown'
+import UnitToggle from '../components/UnitToggle'
 import { BRAND, BRAND_CASING_CLASS } from '../data/brand'
 import { LEADERBOARD_SEO } from '../data/seoCopy'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
@@ -15,13 +16,13 @@ import {
   leaderboardBoardLabel,
 } from '../lib/publicLeaderboard'
 import {
-  fetchPublicHabitStreaks,
-  friendlyPublicHabitStreakError,
-} from '../lib/publicHabitStreaks'
+  fetchPublicHabitXp,
+  friendlyPublicHabitXpError,
+} from '../lib/publicHabitXp'
 import { resolveLeaderboardRows } from '../lib/leaderboardSamples'
 
 /**
- * Stage 5 public Leaderboard page (Habits tab reuses Stage 8 public streak RPC).
+ * Public Leaderboard page (Habits tab uses lifetime XP RPC).
  * Anyone can browse live boards. Joining/sharing still requires a Leaderboard Name.
  */
 function LeaderboardPage({
@@ -84,7 +85,7 @@ function LeaderboardPage({
   useEffect(() => {
     if (initialCategoryId === 'habits') {
       setCategoryId('habits')
-      setBoardKey('habits:streak')
+      setBoardKey('habits:xp')
       setPeriod('all_time')
       return
     }
@@ -156,13 +157,13 @@ function LeaderboardPage({
     let cancelled = false
 
     const load = isHabitsCategory
-      ? fetchPublicHabitStreaks('all_time').then((data) =>
+      ? fetchPublicHabitXp('all_time').then((data) =>
           data.map((row) => ({
             rank: row.rank,
             leaderboard_name: row.leaderboard_name,
             avatar_id: row.avatar_id,
             awards: row.awards,
-            result_display: `${row.streak} day${row.streak === 1 ? '' : 's'}`,
+            result_display: `${Number(row.lifetime_xp || 0).toLocaleString()} XP`,
           })),
         )
       : fetchPublicLeaderboard(effectiveBoardKey, period)
@@ -178,7 +179,7 @@ function LeaderboardPage({
           key,
           rows: [],
           error: isHabitsCategory
-            ? friendlyPublicHabitStreakError(err)
+            ? friendlyPublicHabitXpError(err)
             : friendlyPublicLeaderboardError(err),
         })
       })
@@ -198,7 +199,7 @@ function LeaderboardPage({
   const liveRows = live.key === requestKey ? live.rows : []
   const error = live.key === requestKey ? live.error : ''
   const { rows, isSample } = resolveLeaderboardRows(
-    isHabitsCategory ? 'habits:streak' : effectiveBoardKey,
+    isHabitsCategory ? 'habits:xp' : effectiveBoardKey,
     liveRows,
   )
 
@@ -239,7 +240,7 @@ function LeaderboardPage({
             <button
               key={item.id}
               type="button"
-              className={`sub-nav-tab${categoryId === item.id ? ' is-active' : ''}${
+              className={`leaderboard-chip${categoryId === item.id ? ' is-active' : ''}${
                 item.id === 'score'
                   ? ` is-mykinesoscore-static ${BRAND_CASING_CLASS}`
                   : ''
@@ -276,31 +277,18 @@ function LeaderboardPage({
 
         {!isHabitsCategory ? (
           <div className="leaderboard-period-block">
-            <div
-              className={`leaderboard-filter-group leaderboard-periods${
+            <UnitToggle
+              className={`is-compact${
                 categoryId === 'score' ? ' is-mykinesoscore-periods' : ''
               }`}
-              role="group"
-              aria-label="Time period"
-            >
-              <button
-                type="button"
-                className={`leaderboard-chip${period === 'all_time' ? ' is-active' : ''}`}
-                onClick={() => setPeriod('all_time')}
-                aria-pressed={period === 'all_time'}
-              >
-                All Time
-              </button>
-              <button
-                type="button"
-                className={`leaderboard-chip${period === 'this_week' ? ' is-active' : ''}`}
-                onClick={() => setPeriod('this_week')}
-                aria-pressed={period === 'this_week'}
-                title="UTC calendar week · Monday 00:00 UTC through Sunday"
-              >
-                This Week (UTC)
-              </button>
-            </div>
+              label="Period"
+              value={period}
+              options={[
+                { value: 'all_time', label: 'All Time' },
+                { value: 'this_week', label: 'This Week' },
+              ]}
+              onChange={setPeriod}
+            />
             {period === 'this_week' ? (
               <>
                 <ThisWeekCountdown className="leaderboard-week-countdown" />
@@ -315,17 +303,63 @@ function LeaderboardPage({
         ) : null}
       </div>
 
-      <p className="calc-hint leaderboard-board-caption">
-        {isHabitsCategory
-          ? 'Habit Streaks'
-          : leaderboardBoardLabel(effectiveBoardKey)}
-        {' · '}
-        {isHabitsCategory
-          ? 'All time'
-          : period === 'this_week'
-            ? 'This week (UTC)'
-            : 'All time'}
-      </p>
+      {isHabitsCategory ? (
+        <section className="leaderboard-habits-banner" aria-label="Habit XP board">
+          <div className="leaderboard-habits-banner-main">
+            <p className="leaderboard-habits-banner-kicker">Lifetime board</p>
+            <h2 className="leaderboard-habits-banner-title">Habit XP</h2>
+            <p className="calc-hint leaderboard-habits-banner-copy">
+              Opt-in totals from daily habit cards — name + XP only, never which
+              habits you track.
+            </p>
+            <div className="leaderboard-habits-meter" aria-hidden="true">
+              <span className="leaderboard-habits-meter-fill" />
+            </div>
+          </div>
+          <div className="leaderboard-habits-banner-actions">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => onOpenTab?.('habits')}
+            >
+              Open Habits
+            </button>
+          </div>
+          <details className="dashboard-progress-details leaderboard-habits-fold">
+            <summary className="dashboard-progress-summary">
+              <span className="dashboard-progress-summary-copy">
+                <span className="result-section-title">How Habit XP works</span>
+                <span className="dashboard-progress-summary-hint">
+                  Base XP, streaks, and privacy
+                </span>
+              </span>
+              <span className="dashboard-progress-summary-cta">
+                <span className="dashboard-progress-summary-cta-label" />
+                <span
+                  className="dashboard-progress-summary-chevron"
+                  aria-hidden="true"
+                />
+              </span>
+            </summary>
+            <div className="dashboard-progress-body">
+              <ul className="leaderboard-habits-details-list">
+                <li>Each habit has a base XP value by difficulty.</li>
+                <li>Per-habit streaks multiply XP up to 1.5× after five days.</li>
+                <li>Missing a day resets that habit’s multiplier.</li>
+                <li>Sharing is optional and can be turned off anytime in Habits.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+      ) : null}
+
+      {!isHabitsCategory ? (
+        <p className="calc-hint leaderboard-board-caption">
+          {leaderboardBoardLabel(effectiveBoardKey)}
+          {' · '}
+          {period === 'this_week' ? 'This week (UTC)' : 'All time'}
+        </p>
+      ) : null}
 
       <p className="calc-hint leaderboard-trust-note" role="note">
         Self-reported from opted-in athletes — not independently verified.
@@ -343,7 +377,7 @@ function LeaderboardPage({
             <p className="calc-hint">
               You can browse every board now. Add a Leaderboard Name to share
               your own results
-              {isHabitsCategory ? ' or habit streak' : ''}.
+              {isHabitsCategory ? ' or habit XP' : ''}.
             </p>
           </div>
           <button
@@ -365,7 +399,7 @@ function LeaderboardPage({
           {loadingBoard ? (
             <p className="calc-hint">
               {isHabitsCategory
-                ? 'Loading streak leaderboard…'
+                ? 'Loading XP leaderboard…'
                 : 'Loading leaderboard…'}
             </p>
           ) : null}
@@ -387,10 +421,10 @@ function LeaderboardPage({
               }
               caption={
                 isHabitsCategory
-                  ? 'Habit streak leaderboard'
+                  ? 'Habit XP leaderboard'
                   : `${leaderboardBoardLabel(effectiveBoardKey)} leaderboard`
               }
-              resultLabel={isHabitsCategory ? 'Current Streak' : 'Result'}
+              resultLabel={isHabitsCategory ? 'Lifetime XP' : 'Result'}
             />
           ) : null}
           {!loadingBoard && !error && isSample ? (

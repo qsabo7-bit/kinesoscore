@@ -4,6 +4,7 @@ import LockedAuthCard from '../components/LockedAuthCard'
 import ProfileAvatar from '../components/ProfileAvatar'
 import PublicAwardBadges from '../components/PublicAwardBadges'
 import SoftReveal from '../components/SoftReveal'
+import UnitToggle from '../components/UnitToggle'
 import { ACCOUNT_LOCKED_PREVIEW } from '../components/tracking'
 import {
   AVATAR_CATALOG,
@@ -724,34 +725,19 @@ function AccountPage({ onOpenTab, onRequestAuth }) {
                   </div>
                 </div>
                 <SoftReveal open={Boolean(lbSaved)}>
-                  <div
-                    className="leaderboard-share-toggle account-awards-toggle"
-                    role="group"
-                    aria-label="Show awards on leaderboards"
-                  >
-                    <button
-                      type="button"
-                      className={`leaderboard-share-option${
-                        !showAwardsPublicly ? ' is-active' : ''
-                      }`}
-                      onClick={() => handleTogglePublicAwards(false)}
-                      disabled={awardsBusy || lbLoading}
-                      aria-pressed={!showAwardsPublicly}
-                    >
-                      Private
-                    </button>
-                    <button
-                      type="button"
-                      className={`leaderboard-share-option${
-                        showAwardsPublicly ? ' is-active' : ''
-                      }`}
-                      onClick={() => handleTogglePublicAwards(true)}
-                      disabled={awardsBusy || lbLoading}
-                      aria-pressed={showAwardsPublicly}
-                    >
-                      Public
-                    </button>
-                  </div>
+                  <UnitToggle
+                    className="is-compact"
+                    label="Medals on boards"
+                    value={showAwardsPublicly ? 'public' : 'private'}
+                    options={[
+                      { value: 'private', label: 'Private' },
+                      { value: 'public', label: 'Public' },
+                    ]}
+                    onChange={(next) =>
+                      handleTogglePublicAwards(next === 'public')
+                    }
+                    disabled={awardsBusy || lbLoading}
+                  />
                 </SoftReveal>
               </div>
               {awardsError ? (

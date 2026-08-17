@@ -24,8 +24,8 @@ describe('leaderboardSamples', () => {
   })
 
   it('picks habit-specific samples', () => {
-    const rows = getLeaderboardSampleRows('habits:streak')
-    assert.match(rows[0].result_display, /day/)
+    const rows = getLeaderboardSampleRows('habits:xp')
+    assert.match(rows[0].result_display, /XP/)
   })
 
   it('matches live formatting for military, reps, and Cindy boards', () => {

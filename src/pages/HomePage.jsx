@@ -148,8 +148,8 @@ function HomePage({ onOpenTab, onRequestAuth }) {
             >
               <span className="home-member-label">Habits</span>
               <span className="home-member-copy">
-                Private daily routines with optional Habit Streaks — check-ins
-                stay private unless you opt in.
+                Private daily routines with optional Habit XP — check-ins
+                stay private unless you share lifetime XP.
               </span>
             </button>
             <button

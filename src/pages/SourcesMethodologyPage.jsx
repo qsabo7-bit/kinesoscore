@@ -58,7 +58,7 @@ function SourcesMethodologyPage({ onOpenTab }) {
           diagnostics, or officially certified military scoring systems.
         </p>
         <p>
-          Habits and Habit Streaks are product features, not published formulas:
+          Habits and Habit XP are product features, not published formulas:
           check-ins stay private, and optional streak sharing publishes only a
           Leaderboard Name and current streak. Dashboard awards are private
           markers derived from your Strength and Running components — they are

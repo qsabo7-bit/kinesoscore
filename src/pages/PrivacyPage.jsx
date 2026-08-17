@@ -81,7 +81,7 @@ function PrivacyPage({ onOpenTab }) {
           <li>
             <strong>Optional public leaderboard data.</strong> If you create a
             Leaderboard Name and opt in to share, we may show that name, your
-            preset profile icon, the shared result or habit streak, and (unless
+            preset profile icon, the shared result or habit XP, and (unless
             you hide them) medal tiers next to your name. Email and legal name
             stay private.
           </li>

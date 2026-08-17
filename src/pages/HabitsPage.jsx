@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import LockedAuthCard from '../components/LockedAuthCard'
+import UnitToggle from '../components/UnitToggle'
 import { HABITS_LOCKED_PREVIEW } from '../components/tracking'
-import { habitDisplayName } from '../data/habitCatalog'
+import {
+  habitBaseXp,
+  habitCardImage,
+  habitDisplayName,
+} from '../data/habitCatalog'
 import { formatLocalDateLabel, localDateKey, shiftLocalDateKey } from '../lib/habitDates'
 import {
   addHabitFromCatalog,
@@ -14,24 +19,24 @@ import {
   reorderActiveHabits,
   setHabitCheckin,
 } from '../lib/habits'
-import { resolveHabitStreakAtRisk } from '../lib/habitStreakAtRisk'
+import { habitLevelFromXp } from '../lib/habitLevels'
 import {
-  computeHabitStreak,
-  habitDayProgress,
-} from '../lib/habitStreaks'
+  perHabitStreakEndingOn,
+  previewHabitXpForDate,
+  sumLifetimeHabitXp,
+} from '../lib/habitXp'
 import {
-  fetchHabitStreakShare,
-  friendlyHabitStreakShareError,
-  setHabitStreakShare,
-} from '../lib/habitStreakShares'
+  fetchHabitXpShare,
+  friendlyHabitXpShareError,
+  setHabitXpShare,
+} from '../lib/habitXpShares'
 import { fetchLeaderboardName } from '../lib/leaderboardProfile'
 import { consumeOnboardingShareHint } from '../lib/onboarding'
 import { useFocusTrap } from '../lib/useFocusTrap'
 import { isSupabaseConfigured } from '../supabaseClient'
 
 /**
- * Stage 7 private Habit Tracker.
- * Guests see an auth prompt; signed-in users manage habits + today checkins.
+ * Private Habit Tracker with picture cards + XP.
  */
 function HabitsPage({ onOpenTab, onRequestAuth }) {
   const { isAuthenticated, user, loading: authLoading } = useAuth()
@@ -50,7 +55,9 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
   const [shareActive, setShareActive] = useState(false)
   const [shareBusy, setShareBusy] = useState(false)
   const [shareMessage, setShareMessage] = useState('')
-  const [publicStreak, setPublicStreak] = useState(null)
+  const [publicXp, setPublicXp] = useState(null)
+  const [xpBurst, setXpBurst] = useState(null)
+  const [justCompletedId, setJustCompletedId] = useState('')
 
   const activeHabits = useMemo(
     () => habits.filter((h) => h.is_active).sort((a, b) => a.sort_order - b.sort_order),
@@ -60,9 +67,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     () => availableCatalogHabits(habits),
     [habits],
   )
-  const progress = habitDayProgress(todayKey, activeHabits, checkins, todayKey)
-  const streak = computeHabitStreak(activeHabits, checkins, { todayKey })
-  const atRisk = resolveHabitStreakAtRisk(activeHabits, checkins, todayKey)
+  const lifetimeXp = useMemo(() => sumLifetimeHabitXp(checkins), [checkins])
+  const levelState = useMemo(() => habitLevelFromXp(lifetimeXp), [lifetimeXp])
 
   const completedByHabit = useMemo(() => {
     const map = new Map()
@@ -72,6 +78,46 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     }
     return map
   }, [checkins, todayKey])
+
+  const todayDone = activeHabits.filter((h) => completedByHabit.get(h.id)).length
+  const todayTotal = activeHabits.length
+  const todayRatio = todayTotal ? todayDone / todayTotal : 0
+  const todayXpEarned = useMemo(() => {
+    let total = 0
+    for (const row of checkins) {
+      if (String(row.checkin_date) !== todayKey) continue
+      if (!row.completed) continue
+      const xp = Number(row.xp_awarded)
+      if (Number.isFinite(xp) && xp > 0) total += Math.floor(xp)
+    }
+    return total
+  }, [checkins, todayKey])
+
+  const bestActiveStreak = useMemo(() => {
+    let best = 0
+    for (const habit of activeHabits) {
+      const checked = completedByHabit.get(habit.id) === true
+      const streak = perHabitStreakEndingOn(
+        habit.id,
+        checkins,
+        checked ? todayKey : shiftLocalDateKey(todayKey, -1),
+      )
+      if (streak > best) best = streak
+    }
+    return best
+  }, [activeHabits, checkins, completedByHabit, todayKey])
+
+  useEffect(() => {
+    if (!xpBurst) return undefined
+    const timer = window.setTimeout(() => setXpBurst(null), 900)
+    return () => window.clearTimeout(timer)
+  }, [xpBurst])
+
+  useEffect(() => {
+    if (!justCompletedId) return undefined
+    const timer = window.setTimeout(() => setJustCompletedId(''), 650)
+    return () => window.clearTimeout(timer)
+  }, [justCompletedId])
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id || !isSupabaseConfigured) return undefined
@@ -87,7 +133,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           fetchUserHabits(user.id),
           fetchHabitCheckins(user.id, { fromDate, toDate: todayKey }),
           fetchLeaderboardName(user.id).catch(() => null),
-          fetchHabitStreakShare(user.id).catch(() => null),
+          fetchHabitXpShare(user.id).catch(() => null),
         ])
         if (cancelled) return
         setHabits(nextHabits)
@@ -98,14 +144,14 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           consumeOnboardingShareHint()
         setHasLeaderboardName(Boolean(name))
         setShareActive(Boolean(share?.is_active))
-        setPublicStreak(
-          share?.is_active && Number.isFinite(Number(share?.streak))
-            ? Number(share.streak)
+        setPublicXp(
+          share?.is_active && Number.isFinite(Number(share?.lifetime_xp))
+            ? Number(share.lifetime_xp)
             : null,
         )
         if (preferShare) {
           setShareMessage(
-            'Setup tip: tap Share streak to appear on the Habit Streaks board.',
+            'Setup tip: tap Share XP to appear on the Habit XP board.',
           )
         }
       } catch (err) {
@@ -126,7 +172,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     const nextActive = mode === 'global'
     if (nextActive && !hasLeaderboardName) {
       setShareMessage(
-        'Add a Leaderboard Name in Account Settings before sharing your streak.',
+        'Add a Leaderboard Name in Account Settings before sharing your XP.',
       )
       return
     }
@@ -134,20 +180,20 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     setShareBusy(true)
     setShareMessage('')
     try {
-      const row = await setHabitStreakShare(nextActive, todayKey)
+      const row = await setHabitXpShare(nextActive)
       setShareActive(Boolean(row?.is_active))
-      setPublicStreak(
-        row?.is_active && Number.isFinite(Number(row?.streak))
-          ? Number(row.streak)
+      setPublicXp(
+        row?.is_active && Number.isFinite(Number(row?.lifetime_xp))
+          ? Number(row.lifetime_xp)
           : null,
       )
       setShareMessage(
         row?.is_active
-          ? 'Your current streak is shared publicly (Leaderboard Name + streak only).'
-          : 'Streak sharing turned off. Your private habits and streak are unchanged.',
+          ? 'Your lifetime habit XP is shared publicly (Leaderboard Name + XP only).'
+          : 'XP sharing turned off. Your private habits and XP are unchanged.',
       )
     } catch (err) {
-      setShareMessage(friendlyHabitStreakShareError(err))
+      setShareMessage(friendlyHabitXpShareError(err))
     } finally {
       setShareBusy(false)
     }
@@ -158,6 +204,16 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     setBusyHabitId(habitId)
     setError('')
     const previous = checkins
+    const habit = activeHabits.find((h) => h.id === habitId)
+    const preview = habit
+      ? previewHabitXpForDate(habit, checkins, todayKey)
+      : { xp: 0 }
+
+    if (nextCompleted && preview.xp > 0) {
+      setXpBurst({ id: `${habitId}-${Date.now()}`, amount: preview.xp })
+      setJustCompletedId(habitId)
+    }
+
     setCheckins((rows) => {
       const others = rows.filter(
         (r) => !(r.habit_id === habitId && String(r.checkin_date) === todayKey),
@@ -168,6 +224,7 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           habit_id: habitId,
           checkin_date: todayKey,
           completed: nextCompleted,
+          xp_awarded: nextCompleted ? preview.xp : 0,
           user_id: user.id,
         },
       ]
@@ -183,6 +240,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
       })
     } catch (err) {
       setCheckins(previous)
+      setXpBurst(null)
+      setJustCompletedId('')
       setError(friendlyHabitError(err, 'Could not save check-in.'))
     } finally {
       setBusyHabitId('')
@@ -260,102 +319,189 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
     )
   }
 
+  const ringSize = 118
+  const ringStroke = 8
+  const ringRadius = (ringSize - ringStroke) / 2
+  const ringCirc = 2 * Math.PI * ringRadius
+  const levelOffset = ringCirc * (1 - levelState.progress)
+  const dayCirc = 2 * Math.PI * 34
+  const dayOffset = dayCirc * (1 - todayRatio)
+
   return (
-    <main className="page habits-page">
-      <header className="page-header">
-        <p className="page-eyebrow">Routine</p>
-        <h1>Habits</h1>
-        <p className="page-lead">
-          Choose habits for your routine and mark them complete each day. A day
-          counts toward your streak only when every active habit is done.
-        </p>
+    <main className="page habits-page habits-page-play">
+      {xpBurst ? (
+        <div className="habits-xp-burst" key={xpBurst.id} aria-hidden="true">
+          +{xpBurst.amount} XP
+        </div>
+      ) : null}
+
+      <header className="habits-hero" aria-labelledby="habits-title">
+        <div className="habits-hero-copy">
+          <p className="page-eyebrow">Daily run</p>
+          <h1 id="habits-title">Habits</h1>
+          <p className="habits-hero-date">
+            {formatLocalDateLabel(todayKey, {
+              weekday: 'long',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </p>
+          <p className="habits-hero-lead">
+            Clear your cards. Stack XP. Keep the streak multiplier climbing.
+          </p>
+        </div>
+
+        <div className="habits-level-orb" aria-live="polite">
+          <svg
+            className="habits-level-ring"
+            width={ringSize}
+            height={ringSize}
+            viewBox={`0 0 ${ringSize} ${ringSize}`}
+            aria-hidden="true"
+          >
+            <circle
+              className="habits-level-ring-track"
+              cx={ringSize / 2}
+              cy={ringSize / 2}
+              r={ringRadius}
+              fill="none"
+              strokeWidth={ringStroke}
+            />
+            <circle
+              className="habits-level-ring-fill"
+              cx={ringSize / 2}
+              cy={ringSize / 2}
+              r={ringRadius}
+              fill="none"
+              strokeWidth={ringStroke}
+              strokeDasharray={ringCirc}
+              strokeDashoffset={levelOffset}
+              strokeLinecap="square"
+              transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+            />
+          </svg>
+          <div className="habits-level-orb-copy">
+            <span className="habits-level-label">Level</span>
+            <strong className="habits-level-value">{levelState.level}</strong>
+          </div>
+        </div>
       </header>
 
-      <p className="calc-hint habits-date-label">
-        Today · {formatLocalDateLabel(todayKey)}
-      </p>
-
-      <div className="habits-summary" aria-live="polite">
-        <p>
-          <span className="result-label">Today</span>{' '}
-          <strong>{progress.ratioLabel}</strong>
-        </p>
-        <p>
-          <span className="result-label">Streak</span>{' '}
-          <strong>
-            {streak} day{streak === 1 ? '' : 's'}
+      <section className="habits-run-board" aria-label="XP progress">
+        <div className="habits-run-stat">
+          <span className="habits-run-kicker">Lifetime XP</span>
+          <strong className="habits-run-value">
+            {lifetimeXp.toLocaleString()}
           </strong>
-        </p>
-      </div>
+          <span className="habits-run-sub">
+            {levelState.xpIntoLevel.toLocaleString()} /{' '}
+            {levelState.xpForNext.toLocaleString()} to Lv {levelState.level + 1}
+          </span>
+          <div
+            className="habits-xp-meter"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(levelState.progress * 100)}
+            aria-label="Progress to next level"
+          >
+            <span
+              className="habits-xp-meter-fill"
+              style={{ width: `${Math.round(levelState.progress * 100)}%` }}
+            />
+          </div>
+        </div>
 
-      {atRisk ? (
-        <p className="habit-at-risk-banner" role="status">
-          🔥 Streak at risk — {atRisk.streakAtRisk} day
-          {atRisk.streakAtRisk === 1 ? '' : 's'} on the line. Finish today’s
-          habits ({atRisk.progress.ratioLabel}) to keep it alive.
-        </p>
-      ) : null}
+        <div className="habits-run-stat habits-run-stat-today">
+          <div className="habits-day-ring-wrap" aria-hidden="true">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle
+                className="habits-day-ring-track"
+                cx="40"
+                cy="40"
+                r="34"
+                fill="none"
+                strokeWidth="7"
+              />
+              <circle
+                className="habits-day-ring-fill"
+                cx="40"
+                cy="40"
+                r="34"
+                fill="none"
+                strokeWidth="7"
+                strokeDasharray={dayCirc}
+                strokeDashoffset={dayOffset}
+                strokeLinecap="square"
+                transform="rotate(-90 40 40)"
+              />
+            </svg>
+            <span className="habits-day-ring-label">
+              {todayDone}/{todayTotal || 0}
+            </span>
+          </div>
+          <div>
+            <span className="habits-run-kicker">Today</span>
+            <strong className="habits-run-value habits-run-value-sm">
+              +{todayXpEarned} XP
+            </strong>
+            <span className="habits-run-sub">
+              {bestActiveStreak > 0
+                ? `Best streak ${bestActiveStreak} day${bestActiveStreak === 1 ? '' : 's'}`
+                : 'Tap a card to start'}
+            </span>
+          </div>
+        </div>
+      </section>
 
       {error ? <p className="feedback feedback-error">{error}</p> : null}
 
-      <div className="confirm-actions habits-toolbar">
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => setEditing((value) => !value)}
-        >
-          {editing ? 'Done editing' : 'Edit My Habits'}
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => onOpenTab?.('leaderboard-habits')}
-        >
-          View Habit Streaks
-        </button>
+      <div className="habits-toolbar-row">
+        <div className="confirm-actions habits-toolbar">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => setEditing((value) => !value)}
+          >
+            {editing ? 'Done editing' : 'Edit routine'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => onOpenTab?.('leaderboard-habits')}
+          >
+            XP board
+          </button>
+        </div>
       </div>
 
       {!editing ? (
         <section
-          className="leaderboard-share-control habits-share-control"
-          aria-label="Habit streak sharing"
+          className="habits-share-control habits-share-compact"
+          aria-label="Habit XP sharing"
         >
-          <p className="leaderboard-share-label">Habit Streaks</p>
+          <UnitToggle
+            className="is-compact is-stretch"
+            label="XP privacy"
+            value={shareActive ? 'share' : 'private'}
+            options={[
+              { value: 'private', label: 'Private' },
+              { value: 'share', label: 'Share XP' },
+            ]}
+            onChange={(next) =>
+              handleShareMode(next === 'share' ? 'global' : 'private')
+            }
+            disabled={shareBusy}
+          />
           <p className="calc-hint leaderboard-share-hint">
-            Private by default. Publishes immediately (unlike calculator shares,
-            which apply when you save). Shares your Leaderboard Name, profile
-            icon, and current streak — never which habits you track.
-            Private streaks use your local calendar day; public streaks use a UTC
-            as-of date, so they can briefly differ near midnight.
-            {publicStreak != null ? ` Public streak: ${publicStreak} day${publicStreak === 1 ? '' : 's'}.` : ''}
+            Public share shows name + lifetime XP only.
+            {publicXp != null
+              ? ` Live: ${publicXp.toLocaleString()} XP.`
+              : ''}
           </p>
-          <div
-            className="leaderboard-share-toggle"
-            role="group"
-            aria-label="Habit streak sharing"
-          >
-            <button
-              type="button"
-              className={`leaderboard-share-option${shareActive ? '' : ' is-active'}`}
-              onClick={() => handleShareMode('private')}
-              disabled={shareBusy}
-              aria-pressed={!shareActive}
-            >
-              Keep Private
-            </button>
-            <button
-              type="button"
-              className={`leaderboard-share-option${shareActive ? ' is-active' : ''}`}
-              onClick={() => handleShareMode('global')}
-              disabled={shareBusy}
-              aria-pressed={shareActive}
-            >
-              Share My Habit Streak
-            </button>
-          </div>
           {!hasLeaderboardName ? (
             <p className="feedback feedback-error" role="status">
-              A Leaderboard Name is required to share your streak.{' '}
+              A Leaderboard Name is required to share your XP.{' '}
               <button
                 type="button"
                 className="text-link-button"
@@ -384,7 +530,10 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
             <ul className="habits-edit-list">
               {activeHabits.map((habit, index) => (
                 <li key={habit.id} className="habits-edit-item">
-                  <span>{habitDisplayName(habit)}</span>
+                  <span>
+                    {habitDisplayName(habit)}
+                    <span className="calc-hint"> · {habitBaseXp(habit)} XP</span>
+                  </span>
                   <div className="habits-edit-actions">
                     <button
                       type="button"
@@ -433,8 +582,8 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
                 <strong>Remove this habit?</strong>
               </p>
               <p>
-                It leaves your active routine. Past check-ins stay in history,
-                and your streak may change if today no longer counts as complete.
+                It leaves your active routine. Past check-ins and earned XP stay
+                in history.
               </p>
               <div className="confirm-actions">
                 <button
@@ -463,9 +612,22 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
           <ul className="habits-catalog-list">
             {catalogAvailable.map((item) => (
               <li key={item.key} className="habits-catalog-item">
-                <div>
-                  <strong>{habitDisplayName(item)}</strong>
-                  <p className="calc-hint">{item.description}</p>
+                <div className="habits-catalog-item-copy">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="habits-catalog-thumb"
+                      width={56}
+                      height={56}
+                    />
+                  ) : null}
+                  <div>
+                    <strong>{habitDisplayName(item)}</strong>
+                    <p className="calc-hint">
+                      {item.description} · {item.baseXp} XP
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -485,10 +647,10 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
 
       {!loading && !editing && activeHabits.length === 0 ? (
         <section className="habits-empty account-card">
-          <h2 className="result-section-title">Start a habit in your routine</h2>
+          <h2 className="result-section-title">Build your first run</h2>
           <p>
-            Add habits you want to track each day. Your checklist stays private
-            on your account.
+            Add a few cards you actually want to hit today. XP stays private
+            until you choose to share.
           </p>
           <div className="confirm-actions">
             <button
@@ -503,32 +665,88 @@ function HabitsPage({ onOpenTab, onRequestAuth }) {
       ) : null}
 
       {!loading && !editing && activeHabits.length > 0 ? (
-        <section className="habits-checklist account-card" aria-label="Today checklist">
-          <h2 className="result-section-title sr-only">Today&apos;s habits</h2>
-          <ul className="habits-check-list">
-            {activeHabits.map((habit) => {
+        <section className="habits-cards" aria-label="Today habit cards">
+          <div className="habits-cards-head">
+            <h2 className="habits-cards-title">Today&apos;s cards</h2>
+            <p className="calc-hint habits-cards-hint">
+              Tap to complete · streak boosts XP up to 1.5×
+            </p>
+          </div>
+          <ul className="habits-card-grid">
+            {activeHabits.map((habit, index) => {
               const checked = completedByHabit.get(habit.id) === true
+              const image = habitCardImage(habit)
+              const preview = previewHabitXpForDate(habit, checkins, todayKey)
+              const streak = perHabitStreakEndingOn(
+                habit.id,
+                checkins,
+                checked ? todayKey : shiftLocalDateKey(todayKey, -1),
+              )
+              const multLabel = preview.multiplier
+                .toFixed(2)
+                .replace(/\.00$/, '')
+                .replace(/(\.\d)0$/, '$1')
               return (
-                <li key={habit.id} className="habits-check-item">
-                  <label className="habits-check-label">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={busyHabitId === habit.id}
-                      onChange={(event) =>
-                        toggleCheckin(habit.id, event.target.checked)
+                <li
+                  key={habit.id}
+                  style={{ '--habit-card-i': index }}
+                  className="habits-card-slot"
+                >
+                  <button
+                    type="button"
+                    className={`habit-card${checked ? ' is-done' : ''}${
+                      busyHabitId === habit.id ? ' is-busy' : ''
+                    }${justCompletedId === habit.id ? ' is-burst' : ''}`}
+                    disabled={busyHabitId === habit.id}
+                    aria-pressed={checked}
+                    aria-label={`${habit.habit_name}${checked ? ', completed' : ', not completed'}. ${preview.xp} XP`}
+                    onClick={() => toggleCheckin(habit.id, !checked)}
+                  >
+                    <span
+                      className="habit-card-media"
+                      style={
+                        image
+                          ? { backgroundImage: `url(${image})` }
+                          : undefined
                       }
-                    />
-                    <span>{habitDisplayName(habit)}</span>
-                  </label>
+                    >
+                      {!image ? (
+                        <span className="habit-card-emoji" aria-hidden="true">
+                          {habitDisplayName(habit).split(' ').pop()}
+                        </span>
+                      ) : null}
+                      <span className="habit-card-scrim" aria-hidden="true" />
+                    </span>
+                    <span className="habit-card-badges" aria-hidden="true">
+                      <span className="habit-card-xp-chip">
+                        {checked ? `+${preview.xp}` : preview.xp} XP
+                      </span>
+                      {streak > 0 ? (
+                        <span className="habit-card-streak-chip">
+                          {streak}d · {multLabel}×
+                        </span>
+                      ) : (
+                        <span className="habit-card-streak-chip is-muted">
+                          {multLabel}×
+                        </span>
+                      )}
+                    </span>
+                    <span className="habit-card-body">
+                      <span className="habit-card-title">
+                        {habit.habit_name || habitDisplayName(habit)}
+                      </span>
+                      <span className="habit-card-meta">
+                        {checked ? 'Logged today' : 'Tap to log'}
+                      </span>
+                    </span>
+                    <span className="habit-card-check" aria-hidden="true">
+                      {checked ? '✓' : ''}
+                    </span>
+                  </button>
                 </li>
               )
             })}
           </ul>
-          <p className="calc-hint">
-            Complete all {activeHabits.length} active habit
-            {activeHabits.length === 1 ? '' : 's'} today to continue your streak.
-          </p>
         </section>
       ) : null}
 

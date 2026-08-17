@@ -195,7 +195,7 @@ function DashboardThisWeekStrip({ userId, onOpenTab }) {
           className="btn btn-ghost"
           onClick={() => onOpenTab?.('leaderboard-habits')}
         >
-          Habit Streaks
+          Habit XP
         </button>
       </div>
     </section>

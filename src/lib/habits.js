@@ -67,7 +67,9 @@ export async function fetchHabitCheckins(userId, range = {}) {
   requireConfigured()
   let query = supabase
     .from('habit_checkins')
-    .select('id, user_id, habit_id, checkin_date, completed, created_at, updated_at')
+    .select(
+      'id, user_id, habit_id, checkin_date, completed, xp_awarded, created_at, updated_at',
+    )
     .eq('user_id', userId)
     .order('checkin_date', { ascending: false })
 
@@ -207,5 +209,31 @@ export function availableCatalogHabits(userHabits) {
   const activeKeys = new Set(
     (userHabits || []).filter((h) => h.is_active).map((h) => h.habit_key),
   )
-  return HABIT_CATALOG.filter((item) => !activeKeys.has(item.key))
+  const featuredOrder = new Map(
+    [
+      'sleep_7_8',
+      'protein',
+      'water',
+      'mobility',
+      'strength',
+      'nature',
+      'exercise',
+      'walk_move',
+      'sleep_schedule',
+      'screen_limit',
+      'recovery_day',
+      'meditation',
+    ].map((key, index) => [key, index]),
+  )
+  return HABIT_CATALOG.filter((item) => !activeKeys.has(item.key)).sort(
+    (a, b) => {
+      const ai = featuredOrder.has(a.key)
+        ? featuredOrder.get(a.key)
+        : 100 + HABIT_CATALOG.findIndex((item) => item.key === a.key)
+      const bi = featuredOrder.has(b.key)
+        ? featuredOrder.get(b.key)
+        : 100 + HABIT_CATALOG.findIndex((item) => item.key === b.key)
+      return ai - bi
+    },
+  )
 }

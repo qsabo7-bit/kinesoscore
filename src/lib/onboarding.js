@@ -61,7 +61,7 @@ export const ONBOARDING_TRACKS = [
   {
     id: 'habits',
     label: 'Habits',
-    blurb: 'Daily streak tracking',
+    blurb: 'Picture cards + habit XP',
     tab: 'habits',
   },
 ]
